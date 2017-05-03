@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Linq;
 using System;
 
-public class RoofClassifier {
+public class RidgeFirstClassifier {
 	private PointCloud pointCloud;
 	private Vector3[] points;
 	private PointHashSet pointHashSet;
@@ -44,7 +44,7 @@ public class RoofClassifier {
 		}
 	}
 
-	public RoofClassifier(PointCloud pointCloud) {
+	public RidgeFirstClassifier(PointCloud pointCloud) {
 		this.pointCloud = pointCloud;
 		this.points = pointCloud.Points;
 		this.pointCloud.ResetColors(Color.red);

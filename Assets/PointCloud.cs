@@ -11,8 +11,6 @@ public class PointCloud : MonoBehaviour {
 	public Vector3[] Points;
 	[SerializeField, HideInInspector]
 	public Color[] Colors;
-
-	public RoofClassifier RoofClassifier;
 	
 	public void Load(Vector3[] points) {
 		this.Points = points;
