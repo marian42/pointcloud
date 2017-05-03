@@ -5,13 +5,10 @@ using System.Linq;
 using System;
 
 public class RoofClassifier {
+	private PointCloud pointCloud;
 	private Vector3[] points;
 	private PointHashSet pointHashSet;
 	private PointHashSet largeBucketHashSet;
-	public Color[] PointColoring {
-		get;
-		private set;
-	}
 	private IEnumerable<Ridge> ridges;
 
 	public class Ridge {
@@ -47,12 +44,10 @@ public class RoofClassifier {
 		}
 	}
 
-	public RoofClassifier(Vector3[] points) {
-		this.points = points;
-		this.PointColoring = new Color[this.points.Length];
-		for (int i = 0; i < this.points.Length; i++) {
-			this.PointColoring[i] = Color.red;
-		}
+	public RoofClassifier(PointCloud pointCloud) {
+		this.pointCloud = pointCloud;
+		this.points = pointCloud.Points;
+		this.pointCloud.ResetColors(Color.red);
 	}
 
 	private IEnumerable<Vector3> findRidgePoints() {
@@ -157,12 +152,17 @@ public class RoofClassifier {
 		var mesh = new Mesh();
 		mesh.vertices = verts.ToArray();
 		mesh.triangles = triangles.ToArray();
-		var filter = GameObject.Find("Ridges").GetComponent<MeshFilter>().sharedMesh = mesh;		
+
+		var prefab = Resources.Load("RidgeMesh") as GameObject;
+		var gameObject = GameObject.Instantiate(prefab) as GameObject;
+		// gameObject.transform.parent = this.pointCloud.transform; // TODO this destroys the gameObject :(
+		gameObject.GetComponent<MeshFilter>().sharedMesh = mesh;
+		gameObject.transform.position = Vector3.zero;
 	}
 
 	private void markClassified(IEnumerable<Vector3> roofPoints, Color color) {
 		foreach (var roofPoint in roofPoints) {
-			this.PointColoring[this.pointHashSet.GetIndex(roofPoint)] = color;
+			this.pointCloud.Colors[this.pointHashSet.GetIndex(roofPoint)] = color;
 		}
 	}
 }

@@ -20,14 +20,17 @@ public class PointCloudEditor : Editor {
 			string selected = EditorUtility.OpenFilePanel("Load file", Application.dataPath, "xyz");
 			if (selected.Any() && File.Exists(selected)) {
 				pointCloud.Load(XYZLoader.LoadFile(selected));
+				pointCloud.Show();
 			}
 		}
 
-		if (GUILayout.Button("Classify")) {
-			pointCloud.ClassifyAndShow();
-		}
-
 		GUILayout.EndHorizontal();
+
+		if (GUILayout.Button("Classify by ridge")) {
+			var roofClassifier = new RoofClassifier(pointCloud);
+			roofClassifier.Classify();
+			pointCloud.Show();
+		}
 	}
 
 	private void hideSelectionHighlight() {

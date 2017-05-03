@@ -8,43 +8,36 @@ using System;
 public class PointCloud : MonoBehaviour {
 	private const int pointsPerMesh = 60000;
 	[SerializeField, HideInInspector]
-	private Vector3[] points;
-	private Color[] colors;
-	Vector3 center;
+	public Vector3[] Points;
+	[SerializeField, HideInInspector]
+	public Color[] Colors;
 
 	public RoofClassifier RoofClassifier;
 	
 	public void Load(Vector3[] points) {
-		this.points = points;
+		this.Points = points;
 		this.moveToCenter();
-		
-
-		Debug.Log("Loaded " + this.points.Length + " points.");
+		this.ResetColors(Color.red);
 	}
 
-	public void ClassifyAndShow() {
-		this.transform.DestroyAllChildren();
-		this.runClassifier();
-
-		for (int start = 0; start < points.Length; start += pointsPerMesh) {
-			this.createMeshObject(start, Math.Min(start + pointsPerMesh, points.Length - 1));
+	public void ResetColors(Color color) {
+		this.Colors = new Color[this.Points.Length];
+		for (int i = 0; i < this.Points.Length; i++) {
+			this.Colors[i] = color;
 		}
 	}
 
-	private void runClassifier() {
-		this.RoofClassifier = new RoofClassifier(this.points);
-		RoofClassifier.Classify();
-
-		this.colors = new Color[this.points.Length];
-		for (int i = 0; i < this.points.Length; i++) {
-			this.colors[i] = RoofClassifier.PointColoring[i];
+	public void Show() {
+		this.transform.DestroyAllChildren();
+		for (int start = 0; start < Points.Length; start += pointsPerMesh) {
+			this.createMeshObject(start, Math.Min(start + pointsPerMesh, Points.Length - 1));
 		}
 	}
 
 	private void moveToCenter() {
-		float minX = points[0].x, minY = points[0].y, minZ = points[0].z, maxX = points[0].x, maxY = points[0].y, maxZ = points[0].z;
+		float minX = Points[0].x, minY = Points[0].y, minZ = Points[0].z, maxX = Points[0].x, maxY = Points[0].y, maxZ = Points[0].z;
 
-		foreach (var point in this.points) {
+		foreach (var point in this.Points) {
 			if (point.x < minX) minX = point.x;
 			if (point.y < minY) minY = point.y;
 			if (point.x < minZ) minZ = point.z;
@@ -52,10 +45,7 @@ public class PointCloud : MonoBehaviour {
 			if (point.y > maxY) maxY = point.y;
 			if (point.x > maxZ) maxZ = point.z;
 		}
-		this.center = new Vector3(Mathf.Lerp(minX, maxX, 0.5f), minY, Mathf.Lerp(minZ, maxZ, 0.5f));
-		for (int i = 0; i < this.points.Length; i++) {
-			this.points[i] = this.points[i] - this.center;
-		}
+		this.transform.position = new Vector3(Mathf.Lerp(minX, maxX, 0.5f), minY, Mathf.Lerp(minZ, maxZ, 0.5f));
 	}
 
 	private void createMeshObject(int fromIndex, int toIndex) {
@@ -70,8 +60,8 @@ public class PointCloud : MonoBehaviour {
 		Color[] meshColors = new Color[toIndex - fromIndex];
 		for (int i = fromIndex; i < toIndex; ++i) {
 			indecies[i - fromIndex] = i - fromIndex;
-			meshPoints[i - fromIndex] = this.points[i];
-			meshColors[i - fromIndex] = this.colors[i];
+			meshPoints[i - fromIndex] = this.Points[i];
+			meshColors[i - fromIndex] = this.Colors[i];
 		}
 
 		mesh.vertices = meshPoints;
