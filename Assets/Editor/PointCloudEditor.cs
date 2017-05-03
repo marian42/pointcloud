@@ -24,6 +24,20 @@ public class PointCloudEditor : Editor {
 			}
 		}
 
+		if (GUILayout.Button("Load folder...")) {
+			var folder = new DirectoryInfo(Application.dataPath + "/data/buildings/");
+			foreach (var xyzFile in folder.GetFiles()) {
+				if (xyzFile.Extension.ToLower() != ".xyz") {
+					continue;
+				}
+				GameObject go = new GameObject();
+				go.name = xyzFile.Name.Substring(0, xyzFile.Name.Length - xyzFile.Extension.Length);
+				var newPointCloud = go.AddComponent<PointCloud>();
+				newPointCloud.Load(XYZLoader.LoadFile(xyzFile.FullName));
+				newPointCloud.Show();
+			}
+		}
+
 		GUILayout.EndHorizontal();
 
 		if (GUILayout.Button("Classify by ridge")) {
