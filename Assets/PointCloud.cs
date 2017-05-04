@@ -43,7 +43,7 @@ public class PointCloud : MonoBehaviour {
 			if (point.y > maxY) maxY = point.y;
 			if (point.x > maxZ) maxZ = point.z;
 		}
-		this.transform.position = new Vector3(Mathf.Lerp(minX, maxX, 0.5f), minY, Mathf.Lerp(minZ, maxZ, 0.5f));
+		this.transform.position = new Vector3(Mathf.Lerp(minX, maxX, 0.5f), Mathf.Lerp(minY, maxY, 0.5f), Mathf.Lerp(minZ, maxZ, 0.5f));
 	}
 
 	private void createMeshObject(int fromIndex, int toIndex) {

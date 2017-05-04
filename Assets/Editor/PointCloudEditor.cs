@@ -45,6 +45,10 @@ public class PointCloudEditor : Editor {
 			roofClassifier.Classify();
 			pointCloud.Show();
 		}
+		if (GUILayout.Button("Classify using Hough transform")) {
+			var roofClassifier = new HoughClassifier(pointCloud);
+			roofClassifier.Classify();
+		}
 	}
 
 	private void hideSelectionHighlight() {
