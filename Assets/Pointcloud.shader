@@ -1,6 +1,6 @@
 ﻿// https://github.com/leon196/PointCloudExporter/blob/master/Assets/Shaders/PointCloud.shader
 
-Shader "Unlit/PointCloud"
+Shader "Custom/PointCloud"
 {
 	Properties
 	{
@@ -56,7 +56,7 @@ Shader "Unlit/PointCloud"
 			void geom (point GS_INPUT tri[1], inout TriangleStream<FS_INPUT> triStream)
 			{
 				FS_INPUT pIn = (FS_INPUT)0;
-				pIn.normal = mul(unity_ObjectToWorld, tri[0].normal);
+				pIn.normal = UNITY_MATRIX_IT_MV[2].xyz;
 				pIn.color = tri[0].color;
 
 				float4 vertex = mul(unity_ObjectToWorld, tri[0].vertex);
