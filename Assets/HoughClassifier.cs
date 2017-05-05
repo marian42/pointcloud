@@ -32,11 +32,23 @@ public class HoughClassifier {
 	private readonly float[] min = new float[] { -1.2f, -1.2f, -6 };
 	private readonly float[] max = new float[] { +1.2f, +1.2f, -3 };
 	private const float maxDistance = 0.3f;
-	private const float minHits = 1000;
+	private const float minHits = 100;
 	private int[, ,] houghSpace;
 
+	private static float map(float oldLower, float oldUpper, float newLower, float newUpper, float value) {
+		return Mathf.LerpUnclamped(newLower, newUpper, (value - oldLower) / (oldUpper - oldLower));
+	}
+
+	private static int limit(int lower, int upper, int value) {
+		return System.Math.Max(lower, System.Math.Min(upper, value));
+	}
+
 	private Plane getHoughPlane(int i0, int i1, int i2) {
-		return new Plane(new Vector3(Mathf.Lerp(min[0], max[0], i0 / (float)(ranges[0])), 1.0f, Mathf.Lerp(min[1], max[1], i1 / (float)(ranges[1]))).normalized, Mathf.Lerp(min[2], max[2], i2 / (float)(ranges[2])));
+		return new Plane(new Vector3(map(0, ranges[0], min[0], max[0], i0), 1.0f, map(0, ranges[1], min[1], max[1], i1)), map(0, ranges[2], min[2], max[2], i2));
+	}
+
+	private Plane getHoughPlane(int i0, int i1) {
+		return new Plane(new Vector3(map(0, ranges[0], min[0], max[0], i0), 1.0f, map(0, ranges[1], min[1], max[1], i1)), 0);
 	}
 
 	private int getHoughHitsSafely(int i0, int i1, int i2) {
@@ -66,11 +78,21 @@ public class HoughClassifier {
 		Timekeeping.CompleteTask("Init Hough Space");
 		for (int i0 = 0; i0 < ranges[0]; i0++) {
 			for (int i1 = 0; i1 < ranges[1]; i1++) {
-				for (int i2= 0; i2 < ranges[2]; i2++) {
-					Plane plane = this.getHoughPlane(i0, i1, i2);
-					for (int i = 0; i < this.centeredPoints.Length; i++) {
-						if (Mathf.Abs(plane.GetDistanceToPoint(this.centeredPoints[i])) < maxDistance) {
-							houghSpace[i0, i1, i2]++;
+				Plane plane = this.getHoughPlane(i0, i1);
+				for (int i = 0; i < this.centeredPoints.Length; i++) {
+					float distance = plane.GetDistanceToPoint(this.centeredPoints[i]);
+					int start = Mathf.FloorToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance - maxDistance));
+					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + maxDistance));
+					if ((start >= 0 && start < ranges[2]) || (end >= 0 && end < ranges[2])) {
+						for (int i2 = limit(0, ranges[2] - 1, start); i2 <= limit(0, ranges[2] - 1, end); i2++) {
+							try {
+								houghSpace[i0, i1, i2]++;
+							}
+							catch (System.IndexOutOfRangeException e) {
+								Debug.Log(i0 + ", " + i1 + ", " + i2);
+								throw e;
+							}
+							
 						}
 					}
 				}
