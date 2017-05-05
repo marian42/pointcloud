@@ -66,7 +66,6 @@ public class HoughClassifier {
 	}
 
 	private void houghTransform() {
-		int logCount = 100;
 		houghSpace = new int[ranges[0], ranges[1], ranges[2]];
 		Timekeeping.CompleteTask("Init Hough Space");
 		for (int i0 = 0; i0 < ranges[0]; i0++) {
@@ -76,10 +75,6 @@ public class HoughClassifier {
 					float distance = -plane.GetDistanceToPoint(this.pointCloud.CenteredPoints[i]);
 					int start = Mathf.FloorToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance - maxDistance));
 					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + maxDistance));
-					if (i < 10 && logCount > 0) {
-						logCount--;
-						Debug.Log(start + " -> " + end);
-					}
 					if ((start >= 0 && start < ranges[2]) || (end >= 0 && end < ranges[2])) {
 						for (int i2 = limit(0, ranges[2] - 1, start); i2 <= limit(0, ranges[2] - 1, end); i2++) {
 							houghSpace[i0, i1, i2]++;							
@@ -103,37 +98,19 @@ public class HoughClassifier {
 					}
 				}
 			}
-		}
-		foreach (var tuple in this.houghPlanes.OrderBy(t => t.Value2).Take(4)) {
-			var plane = tuple.Value1;
-			this.createDebugPlane(plane, "Plane: " + tuple.Value2 + " points, n: " + (plane.normal / plane.normal.y) + ", d: " + plane.distance);		
-		}
+		}	
 
 		Timekeeping.CompleteTask("Find planes");
-		Debug.Log("best: " + max);
+		Debug.Log("Found " + this.houghPlanes.Count + " planes, best: " + max);
 	}
 
 	private void createDebugPlane(Plane plane, string name) {
-		GameObject container = new GameObject();
-		container.name = name;
-		container.tag = "Quad";
-		container.transform.parent = this.pointCloud.transform;
-		container.transform.localPosition = -plane.normal * plane.distance;
-			
-		{
-			var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-			quad.transform.parent = container.transform;
-			quad.transform.localScale = Vector3.one * 10.0f;
-			quad.transform.localPosition = Vector3.zero;
-			quad.transform.rotation = Quaternion.LookRotation(plane.normal);
-		}
-		{
-			var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-			quad.transform.parent = container.transform;
-			quad.transform.localScale = Vector3.one * 10.0f;
-			quad.transform.localPosition = Vector3.zero;
-			quad.transform.rotation = Quaternion.LookRotation(-plane.normal);
-		}
+		GameObject planeGameObject = new GameObject();
+		planeGameObject.name = name;
+		var planeBehaviour = planeGameObject.AddComponent<PlaneBehaviour>();
+		planeBehaviour.Plane = plane;
+		planeBehaviour.PointCloud = this.pointCloud;
+		planeGameObject.transform.parent = this.pointCloud.transform;
 	}
 
 	private void deleteQuads() {
@@ -149,5 +126,9 @@ public class HoughClassifier {
 	}
 
 	private void displayPlanes() {
+		foreach (var tuple in this.houghPlanes.OrderByDescending(t => t.Value2).Take(4)) {
+			var plane = tuple.Value1;
+			this.createDebugPlane(plane, "Plane: " + tuple.Value2 + " points, n: " + (plane.normal / plane.normal.y) + ", d: " + plane.distance);
+		}
 	}
 }

@@ -40,6 +40,11 @@ public class PointCloudEditor : Editor {
 
 		GUILayout.EndHorizontal();
 
+		if (GUILayout.Button("Reset colors")) {
+			pointCloud.ResetColors(Color.red);
+			pointCloud.Show();
+		}
+
 		if (GUILayout.Button("Classify by ridge")) {
 			var roofClassifier = new RidgeFirstClassifier(pointCloud);
 			roofClassifier.Classify();

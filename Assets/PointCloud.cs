@@ -28,7 +28,7 @@ public class PointCloud : MonoBehaviour {
 	}
 
 	public void Show() {
-		this.transform.DestroyAllChildren();
+		this.deleteMeshes();
 		for (int start = 0; start < Points.Length; start += pointsPerMesh) {
 			this.createMeshObject(start, Math.Min(start + pointsPerMesh, Points.Length - 1));
 		}
@@ -72,5 +72,17 @@ public class PointCloud : MonoBehaviour {
 		mesh.vertices = meshPoints;
 		mesh.colors = meshColors;
 		mesh.SetIndices(indecies, MeshTopology.Points, 0);		
+	}
+
+	private void deleteMeshes() {
+		var existingMeshes = new List<GameObject>();
+		foreach (var child in this.transform) {
+			if ((child as Transform).tag == "PointMesh") {
+				existingMeshes.Add((child as Transform).gameObject);
+			}
+		}
+		foreach (var existingQuad in existingMeshes) {
+			GameObject.DestroyImmediate(existingQuad);
+		}
 	}
 }
