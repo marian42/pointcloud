@@ -85,14 +85,7 @@ public class HoughClassifier {
 					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + maxDistance));
 					if ((start >= 0 && start < ranges[2]) || (end >= 0 && end < ranges[2])) {
 						for (int i2 = limit(0, ranges[2] - 1, start); i2 <= limit(0, ranges[2] - 1, end); i2++) {
-							try {
-								houghSpace[i0, i1, i2]++;
-							}
-							catch (System.IndexOutOfRangeException e) {
-								Debug.Log(i0 + ", " + i1 + ", " + i2);
-								throw e;
-							}
-							
+							houghSpace[i0, i1, i2]++;							
 						}
 					}
 				}
