@@ -13,10 +13,12 @@ public class HoughClassifier {
 	}
 
 	public void Classify() {
+		Timekeeping.Reset();
 		this.deleteQuads();
 		this.centerPoints();
 		this.houghTransform();
 		this.displayPlanes();
+		Debug.Log(Timekeeping.GetStatus());
 	}
 
 	private void centerPoints() {
@@ -30,7 +32,7 @@ public class HoughClassifier {
 	private readonly float[] min = new float[] { -1.2f, -1.2f, -6 };
 	private readonly float[] max = new float[] { +1.2f, +1.2f, -3 };
 	private const float maxDistance = 0.3f;
-	private const float minHits = 100;
+	private const float minHits = 1000;
 	private int[, ,] houghSpace;
 
 	private Plane getHoughPlane(int i0, int i1, int i2) {
@@ -61,6 +63,7 @@ public class HoughClassifier {
 
 	private void houghTransform() {
 		houghSpace = new int[ranges[0], ranges[1], ranges[2]];
+		Timekeeping.CompleteTask("Init Hough Space");
 		for (int i0 = 0; i0 < ranges[0]; i0++) {
 			for (int i1 = 0; i1 < ranges[1]; i1++) {
 				for (int i2= 0; i2 < ranges[2]; i2++) {
@@ -73,6 +76,7 @@ public class HoughClassifier {
 				}
 			}
 		}
+		Timekeeping.CompleteTask("Transform to Hough");
 		this.houghPlanes = new List<Plane>();
 		int max = 0;
 		for (int i0 = 0; i0 < ranges[0]; i0++) {
@@ -81,7 +85,7 @@ public class HoughClassifier {
 					if (houghSpace[i0, i1, i2] > minHits && this.isLocalMaximum(i0, i1, i2, 2)) {
 						Plane plane = this.getHoughPlane(i0, i1, i2);
 						this.houghPlanes.Add(plane);
-						this.createDebugPlane(plane, "Plane: " + houghSpace[i0, i1, i2] + "points, n: " + (plane.normal / plane.normal.y) + ", d: " + plane.distance);
+						this.createDebugPlane(plane, "Plane: " + houghSpace[i0, i1, i2] + " points, n: " + (plane.normal / plane.normal.y) + ", d: " + plane.distance);
 					}
 					if (houghSpace[i0, i1, i2] > max) {
 						max = houghSpace[i0, i1, i2];
@@ -89,6 +93,7 @@ public class HoughClassifier {
 				}
 			}
 		}
+		Timekeeping.CompleteTask("Find planes");
 		Debug.Log("best: " + max);
 	}
 
