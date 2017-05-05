@@ -124,22 +124,24 @@ public class HoughClassifier {
 	}
 
 	private void createDebugPlane(Plane plane, string name) {
+		GameObject container = new GameObject();
+		container.name = name;
+		container.tag = "Quad";
+		container.transform.parent = this.pointCloud.transform;
+		container.transform.localPosition = -plane.normal * plane.distance;
+			
 		{
 			var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-			quad.name = name;
-			quad.tag = "Quad";
-			quad.transform.parent = this.pointCloud.transform;
+			quad.transform.parent = container.transform;
 			quad.transform.localScale = Vector3.one * 10.0f;
-			quad.transform.localPosition = -plane.normal * plane.distance;
+			quad.transform.localPosition = Vector3.zero;
 			quad.transform.rotation = Quaternion.LookRotation(plane.normal);
 		}
 		{
 			var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-			quad.name = name;
-			quad.tag = "Quad";
-			quad.transform.parent = this.pointCloud.transform;
+			quad.transform.parent = container.transform;
 			quad.transform.localScale = Vector3.one * 10.0f;
-			quad.transform.localPosition = -plane.normal * plane.distance;
+			quad.transform.localPosition = Vector3.zero;
 			quad.transform.rotation = Quaternion.LookRotation(-plane.normal);
 		}
 	}
