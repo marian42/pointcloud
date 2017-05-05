@@ -19,12 +19,12 @@ public class HoughClassifier {
 		Debug.Log(Timekeeping.GetStatus());
 	}
 
-	private const int houghSpaceSize = 20;
-	private readonly int[] ranges = new int[] { houghSpaceSize, houghSpaceSize, houghSpaceSize };
-	private readonly float[] min = new float[] { -1.2f, -1.2f, -6 };
-	private readonly float[] max = new float[] { +1.2f, +1.2f, -3 };
-	private const float maxDistance = 0.3f;
-	private const float minHits = 100;
+	private const int houghSpaceSize = 40;
+	private readonly int[] ranges = new int[] { houghSpaceSize, houghSpaceSize, 100 };
+	private readonly float[] min = new float[] { -1.4f, -1.4f, -6 };
+	private readonly float[] max = new float[] { +1.4f, +1.4f, -3 };
+	private const float maxDistance = 0.2f;
+	private const float minHitsRelative = 0.02f;
 	private int[, ,] houghSpace;
 
 	private static float map(float oldLower, float oldUpper, float newLower, float newUpper, float value) {
@@ -89,7 +89,7 @@ public class HoughClassifier {
 		for (int i0 = 0; i0 < ranges[0]; i0++) {
 			for (int i1 = 0; i1 < ranges[1]; i1++) {
 				for (int i2 = 0; i2 < ranges[2]; i2++) {
-					if (houghSpace[i0, i1, i2] > minHits && this.isLocalMaximum(i0, i1, i2, 2)) {
+					if (houghSpace[i0, i1, i2] > minHitsRelative * this.pointCloud.Points.Length && this.isLocalMaximum(i0, i1, i2, 2)) {
 						Plane plane = this.getHoughPlane(i0, i1, i2);
 						this.houghPlanes.Add(new Tuple<Plane, int>(plane, houghSpace[i0, i1, i2]));
 					}
@@ -101,7 +101,7 @@ public class HoughClassifier {
 		}	
 
 		Timekeeping.CompleteTask("Find planes");
-		Debug.Log("Found " + this.houghPlanes.Count + " planes, best: " + max);
+		Debug.Log("Found " + this.houghPlanes.Count + " planes, best: " + max + " / " + this.pointCloud.Points.Length);
 	}
 
 	private void createDebugPlane(Plane plane, string name) {
