@@ -28,7 +28,8 @@ public class HoughClassifier {
 		}
 	}
 
-	private readonly int[] ranges = new int[] { 20, 20, 20 };
+	private const int houghSpaceSize = 40;
+	private readonly int[] ranges = new int[] { houghSpaceSize, houghSpaceSize, houghSpaceSize };
 	private readonly float[] min = new float[] { -1.2f, -1.2f, -6 };
 	private readonly float[] max = new float[] { +1.2f, +1.2f, -3 };
 	private const float maxDistance = 0.3f;
@@ -80,7 +81,7 @@ public class HoughClassifier {
 			for (int i1 = 0; i1 < ranges[1]; i1++) {
 				Plane plane = this.getHoughPlane(i0, i1);
 				for (int i = 0; i < this.centeredPoints.Length; i++) {
-					float distance = plane.GetDistanceToPoint(this.centeredPoints[i]);
+					float distance = -plane.GetDistanceToPoint(this.centeredPoints[i]);
 					int start = Mathf.FloorToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance - maxDistance));
 					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + maxDistance));
 					if ((start >= 0 && start < ranges[2]) || (end >= 0 && end < ranges[2])) {
