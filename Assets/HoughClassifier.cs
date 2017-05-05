@@ -6,7 +6,7 @@ using System.Linq;
 public class HoughClassifier {
 	private PointCloud pointCloud;
 	private Vector3[] centeredPoints;
-	private List<Plane> houghPlanes;
+	private List<Tuple<Plane, int>> houghPlanes;
 
 	public HoughClassifier(PointCloud pointCloud) {
 		this.pointCloud = pointCloud;
@@ -77,15 +77,14 @@ public class HoughClassifier {
 			}
 		}
 		Timekeeping.CompleteTask("Transform to Hough");
-		this.houghPlanes = new List<Plane>();
+		this.houghPlanes = new List<Tuple<Plane, int>>();
 		int max = 0;
 		for (int i0 = 0; i0 < ranges[0]; i0++) {
 			for (int i1 = 0; i1 < ranges[1]; i1++) {
 				for (int i2 = 0; i2 < ranges[2]; i2++) {
 					if (houghSpace[i0, i1, i2] > minHits && this.isLocalMaximum(i0, i1, i2, 2)) {
 						Plane plane = this.getHoughPlane(i0, i1, i2);
-						this.houghPlanes.Add(plane);
-						this.createDebugPlane(plane, "Plane: " + houghSpace[i0, i1, i2] + " points, n: " + (plane.normal / plane.normal.y) + ", d: " + plane.distance);
+						this.houghPlanes.Add(new Tuple<Plane, int>(plane, houghSpace[i0, i1, i2]));
 					}
 					if (houghSpace[i0, i1, i2] > max) {
 						max = houghSpace[i0, i1, i2];
@@ -93,6 +92,11 @@ public class HoughClassifier {
 				}
 			}
 		}
+		foreach (var tuple in this.houghPlanes.OrderBy(t => t.Value2).Take(4)) {
+			var plane = tuple.Value1;
+			this.createDebugPlane(plane, "Plane: " + tuple.Value2 + " points, n: " + (plane.normal / plane.normal.y) + ", d: " + plane.distance);		
+		}
+
 		Timekeeping.CompleteTask("Find planes");
 		Debug.Log("best: " + max);
 	}
