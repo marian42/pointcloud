@@ -8,7 +8,9 @@ using System;
 public class PointCloud : MonoBehaviour {
 	private const int pointsPerMesh = 60000;
 	[SerializeField, HideInInspector]
-	public Vector3[] Points;
+	public Vector3[] Points { get; private set; }
+	[SerializeField, HideInInspector]
+	public Vector3[] CenteredPoints { get; private set; }
 	[SerializeField, HideInInspector]
 	public Color[] Colors;
 	
@@ -16,7 +18,7 @@ public class PointCloud : MonoBehaviour {
 		this.Points = points;
 		this.moveToCenter();
 		this.ResetColors(Color.red);
-	}
+	}	
 
 	public void ResetColors(Color color) {
 		this.Colors = new Color[this.Points.Length];
@@ -44,6 +46,11 @@ public class PointCloud : MonoBehaviour {
 			if (point.x > maxZ) maxZ = point.z;
 		}
 		this.transform.position = new Vector3(Mathf.Lerp(minX, maxX, 0.5f), Mathf.Lerp(minY, maxY, 0.5f), Mathf.Lerp(minZ, maxZ, 0.5f));
+
+		this.CenteredPoints = new Vector3[this.Points.Length];
+		for (int i = 0; i < this.Points.Length; i++) {
+			this.CenteredPoints[i] = this.Points[i] - this.transform.position;
+		}
 	}
 
 	private void createMeshObject(int fromIndex, int toIndex) {

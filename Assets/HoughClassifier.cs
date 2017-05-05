@@ -5,7 +5,6 @@ using System.Linq;
 
 public class HoughClassifier {
 	private PointCloud pointCloud;
-	private Vector3[] centeredPoints;
 	private List<Tuple<Plane, int>> houghPlanes;
 
 	public HoughClassifier(PointCloud pointCloud) {
@@ -15,20 +14,12 @@ public class HoughClassifier {
 	public void Classify() {
 		Timekeeping.Reset();
 		this.deleteQuads();
-		this.centerPoints();
 		this.houghTransform();
 		this.displayPlanes();
 		Debug.Log(Timekeeping.GetStatus());
 	}
 
-	private void centerPoints() {
-		this.centeredPoints = new Vector3[pointCloud.Points.Length];
-		for (int i = 0; i < this.pointCloud.Points.Length; i++) {
-			this.centeredPoints[i] = this.pointCloud.Points[i] - this.pointCloud.transform.position;
-		}
-	}
-
-	private const int houghSpaceSize = 40;
+	private const int houghSpaceSize = 20;
 	private readonly int[] ranges = new int[] { houghSpaceSize, houghSpaceSize, houghSpaceSize };
 	private readonly float[] min = new float[] { -1.2f, -1.2f, -6 };
 	private readonly float[] max = new float[] { +1.2f, +1.2f, -3 };
@@ -75,15 +66,20 @@ public class HoughClassifier {
 	}
 
 	private void houghTransform() {
+		int logCount = 100;
 		houghSpace = new int[ranges[0], ranges[1], ranges[2]];
 		Timekeeping.CompleteTask("Init Hough Space");
 		for (int i0 = 0; i0 < ranges[0]; i0++) {
 			for (int i1 = 0; i1 < ranges[1]; i1++) {
 				Plane plane = this.getHoughPlane(i0, i1);
-				for (int i = 0; i < this.centeredPoints.Length; i++) {
-					float distance = -plane.GetDistanceToPoint(this.centeredPoints[i]);
+				for (int i = 0; i < this.pointCloud.CenteredPoints.Length; i++) {
+					float distance = -plane.GetDistanceToPoint(this.pointCloud.CenteredPoints[i]);
 					int start = Mathf.FloorToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance - maxDistance));
 					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + maxDistance));
+					if (i < 10 && logCount > 0) {
+						logCount--;
+						Debug.Log(start + " -> " + end);
+					}
 					if ((start >= 0 && start < ranges[2]) || (end >= 0 && end < ranges[2])) {
 						for (int i2 = limit(0, ranges[2] - 1, start); i2 <= limit(0, ranges[2] - 1, end); i2++) {
 							houghSpace[i0, i1, i2]++;							
