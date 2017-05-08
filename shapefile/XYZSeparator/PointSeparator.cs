@@ -11,6 +11,7 @@ namespace XYZSeparator {
 		private ShapeHashSet shapes;
 		private string polygonFolder;
 		private const int QUEUE_LENGTH = 400;
+		public int HitCount { get; private set; }
 
 		private Dictionary<ShapePolygon, List<Vector3>> currentPoints;
 		private Queue<ShapePolygon> queue;
@@ -20,6 +21,7 @@ namespace XYZSeparator {
 			this.polygonFolder = polygonFolder;
 			this.currentPoints = new Dictionary<ShapePolygon, List<Vector3>>();
 			this.queue = new Queue<ShapePolygon>();
+			this.HitCount = 0;
 		}
 
 		private void dequeueAndSave() {
@@ -28,6 +30,7 @@ namespace XYZSeparator {
 			this.currentPoints.Remove(polygon);
 			File.AppendAllLines(this.getPolygonFileName(polygon), points.Select(p => p.ToXYZLine()));
 			Console.WriteLine("Wrote " + points.Count + " points to " + polygon.GetMetadata("uuid") + ".xyz");
+			this.HitCount += points.Count;
 		}
 
 		int buildings = 0;

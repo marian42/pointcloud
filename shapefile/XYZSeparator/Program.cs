@@ -10,6 +10,7 @@ using System.Globalization;
 namespace XYZSeparator {
 	class Program {
 		public static void Main(string[] args) {
+			var startTime = DateTime.Now;
 			string pointCouldFileName = "C:/Uni/Bachelorarbeit/git/data/dom1l-fp_32391_5713_1_nw.xyz";			
 			string shapeFileName = "C:/Uni/Bachelorarbeit/git/data/Stand_Jan12_Grundrissdaten/Dortmun_24_01_12.shp";
 			var shapeHashSet = new ShapeHashSet(200);
@@ -17,6 +18,7 @@ namespace XYZSeparator {
 
 			PointSeparator separator = new PointSeparator(shapeHashSet, "C:/Uni/Bachelorarbeit/git/data/buildings/");
 			separator.ProcessXYZFile(pointCouldFileName);
+			Console.WriteLine("Found " + separator.HitCount + " points in " + (DateTime.Now - startTime).TotalSeconds + " seconds.");
 			
 			Console.ReadLine();
 		}
