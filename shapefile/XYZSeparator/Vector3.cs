@@ -7,7 +7,7 @@ using Catfood.Shapefile;
 using System.Globalization;
 
 namespace XYZSeparator {
-    public class Vector3 {
+    public struct Vector3 {
 		public readonly double x;
 		public readonly double y;
 		public readonly double z;
