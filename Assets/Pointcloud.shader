@@ -9,7 +9,7 @@ Shader "Custom/PointCloud"
 	}
 	SubShader
 	{
-		Tags { "Queue"="AlphaTest" "RenderType"="Transparent" "IgnoreProjector"="True" }
+		Tags { "Queue"="AlphaTest" "IgnoreProjector"="True" }
 		Blend One OneMinusSrcAlpha
 		AlphaToMask On
 		Cull Off
