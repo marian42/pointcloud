@@ -13,14 +13,14 @@ namespace XYZSeparator {
 		private const int QUEUE_LENGTH = 400;
 		public int HitCount { get; private set; }
 
-		private Dictionary<ShapePolygon, List<Vector3>> currentPoints;
-		private Queue<ShapePolygon> queue;
+		private Dictionary<Polygon, List<Vector3>> currentPoints;
+		private Queue<Polygon> queue;
 
 		public PointSeparator(ShapeHashSet shapes, string polygonFolder) {
 			this.shapes = shapes;
 			this.polygonFolder = polygonFolder;
-			this.currentPoints = new Dictionary<ShapePolygon, List<Vector3>>();
-			this.queue = new Queue<ShapePolygon>();
+			this.currentPoints = new Dictionary<Polygon, List<Vector3>>();
+			this.queue = new Queue<Polygon>();
 			this.HitCount = 0;
 		}
 
@@ -29,13 +29,13 @@ namespace XYZSeparator {
 			var points = this.currentPoints[polygon];
 			this.currentPoints.Remove(polygon);
 			File.AppendAllLines(this.getPolygonFileName(polygon), points.Select(p => p.ToXYZLine()));
-			Console.WriteLine("Wrote " + points.Count + " points to " + polygon.GetMetadata("uuid") + ".xyz");
+			Console.WriteLine("Wrote " + points.Count + " points to " + polygon.ShapePolygon.GetMetadata("uuid") + ".xyz");
 			this.HitCount += points.Count;
 		}
 
 		int buildings = 0;
 
-		private void addPoint(ShapePolygon polygon, Vector3 point) {
+		private void addPoint(Polygon polygon, Vector3 point) {
 			if (!this.currentPoints.ContainsKey(polygon)) {
 				this.currentPoints[polygon] = new List<Vector3>();
 				this.queue.Enqueue(polygon);
@@ -54,7 +54,7 @@ namespace XYZSeparator {
 			var lastUpdate = DateTime.Now;
 			foreach (var point in XYZLoader.LoadContinuous(filename)) {
 				foreach (var polygon in this.shapes.GetByPoint(point)) {
-					if (polygon.Parts.Any(part => this.pointInPolygon(part, point))) {
+					if (polygon.Contains(point)) {
 						this.addPoint(polygon, point);
 						hits++;
 					}
@@ -70,23 +70,8 @@ namespace XYZSeparator {
 			}
 		}
 
-		private bool pointInPolygon(PointD[] polygon, Vector3 testPoint) {
-			// http://stackoverflow.com/a/14998816/895589
-			bool result = false;
-			int j = polygon.Length - 1;
-			for (int i = 0; i < polygon.Count(); i++) {
-				if (polygon[i].Y < testPoint.z && polygon[j].Y >= testPoint.z || polygon[j].Y < testPoint.z && polygon[i].Y >= testPoint.z) {
-					if (polygon[i].X + (testPoint.z - polygon[i].Y) / (polygon[j].Y - polygon[i].Y) * (polygon[j].X - polygon[i].X) < testPoint.x) {
-						result = !result;
-					}
-				}
-				j = i;
-			}
-			return result;
-		}
-
-		private string getPolygonFileName(ShapePolygon polygon) {
-			return this.polygonFolder + polygon.GetMetadata("uuid") + ".xyz";
+		private string getPolygonFileName(Polygon polygon) {
+			return this.polygonFolder + polygon.ShapePolygon.GetMetadata("uuid") + ".xyz";
 		}
 	}
 }

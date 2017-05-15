@@ -13,7 +13,7 @@ namespace XYZSeparator {
 			var startTime = DateTime.Now;
 			string pointCouldFileName = "C:/Uni/Bachelorarbeit/git/data/dom1l-fp_32391_5713_1_nw.xyz";			
 			string shapeFileName = "C:/Uni/Bachelorarbeit/git/data/Stand_Jan12_Grundrissdaten/Dortmun_24_01_12.shp";
-			var shapeHashSet = new ShapeHashSet(10);
+			var shapeHashSet = new ShapeHashSet(100, 0);
 			shapeHashSet.Load(shapeFileName);
 
 			PointSeparator separator = new PointSeparator(shapeHashSet, "C:/Uni/Bachelorarbeit/git/data/buildings/");

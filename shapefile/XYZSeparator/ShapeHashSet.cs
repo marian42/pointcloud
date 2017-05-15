@@ -30,26 +30,28 @@ public class ShapeHashSet {
 	}
 
 	public readonly double BucketSize;
-	private readonly Dictionary<Bucket, HashSet<ShapePolygon>> data;
+	public readonly double Offset;
+	private readonly Dictionary<Bucket, HashSet<Polygon>> data;
 
-	public ShapeHashSet(double bucketSize) {
+	public ShapeHashSet(double bucketSize, double offset) {
 		this.BucketSize = bucketSize;
-		this.data = new Dictionary<Bucket, HashSet<ShapePolygon>>();
+		this.Offset = offset;
+		this.data = new Dictionary<Bucket, HashSet<Polygon>>();
 	}
 
 	private Bucket getBucket(Vector3 point) {
 		return new Bucket((int)Math.Floor(point.x / this.BucketSize), (int)Math.Floor(point.z / this.BucketSize));
 	}
 
-	private void add(ShapePolygon shape) {
-		for (int x = (int)Math.Floor(shape.BoundingBox.Left / this.BucketSize); x <= (int)Math.Floor(shape.BoundingBox.Right / this.BucketSize); x++) {
-			for (int z = (int)Math.Floor(shape.BoundingBox.Top / this.BucketSize); z <= (int)Math.Floor(shape.BoundingBox.Bottom / this.BucketSize); z++) {
+	private void add(Polygon polygon) {
+		for (int x = (int)Math.Floor(polygon.BoundingBox.Left / this.BucketSize); x <= (int)Math.Floor(polygon.BoundingBox.Right / this.BucketSize); x++) {
+			for (int z = (int)Math.Floor(polygon.BoundingBox.Top / this.BucketSize); z <= (int)Math.Floor(polygon.BoundingBox.Bottom / this.BucketSize); z++) {
 				var bucket = new Bucket(x, z);
 				if (!this.data.ContainsKey(bucket)) {
-					this.data[bucket] = new HashSet<ShapePolygon>();
+					this.data[bucket] = new HashSet<Polygon>();
 				}
-				if (!this.data[bucket].Contains(shape)) {
-					this.data[bucket].Add(shape);
+				if (!this.data[bucket].Contains(polygon)) {
+					this.data[bucket].Add(polygon);
 				}
 			}
 		}
@@ -75,16 +77,18 @@ public class ShapeHashSet {
 		Shapefile shapefile = new Shapefile(filename);
 		int count = 0;
 		foreach (var shape in shapefile.OfType<ShapePolygon>()) {
-			this.add(shape);
-			count++;
+			foreach (var polygon in Polygon.ReadShapePolygon(shape, this.Offset)) {
+				this.add(polygon);
+				count++;
+			}
 		}
-		Console.WriteLine("Loaded " + count + " shapes in " + this.data.Keys.Count + " buckets.");
+		Console.WriteLine("Loaded " + count + " polygons in " + this.data.Keys.Count + " buckets.");
 	}
 
-	public IEnumerable<ShapePolygon> GetByPoint(Vector3 point) {
+	public IEnumerable<Polygon> GetByPoint(Vector3 point) {
 		var bucket = this.getBucket(point);
 		if (!this.data.ContainsKey(bucket)) {
-			return Enumerable.Empty<ShapePolygon>();
+			return Enumerable.Empty<Polygon>();
 		}
 		return this.data[bucket];
 	}
