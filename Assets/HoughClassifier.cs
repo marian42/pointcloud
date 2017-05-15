@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
+[System.Serializable]
 public class HoughClassifier {
+	[SerializeField, HideInInspector]
 	private PointCloud pointCloud;
 	private List<Tuple<Plane, int>> houghPlanes;
 
@@ -19,7 +21,7 @@ public class HoughClassifier {
 		Debug.Log(Timekeeping.GetStatus());
 	}
 
-	private const int houghSpaceSize = 40;
+	private const int houghSpaceSize = 20;
 	private readonly int[] ranges = new int[] { houghSpaceSize, houghSpaceSize, 100 };
 	private readonly float[] min = new float[] { -1.4f, -1.4f, -6 };
 	private readonly float[] max = new float[] { +1.4f, +1.4f, -3 };
@@ -77,7 +79,7 @@ public class HoughClassifier {
 					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + HoughClassifier.MaxDistance));
 					if ((start >= 0 && start < ranges[2]) || (end >= 0 && end < ranges[2])) {
 						for (int i2 = limit(0, ranges[2] - 1, start); i2 <= limit(0, ranges[2] - 1, end); i2++) {
-							houghSpace[i0, i1, i2]++;							
+							houghSpace[i0, i1, i2]++;
 						}
 					}
 				}
@@ -104,12 +106,12 @@ public class HoughClassifier {
 		Debug.Log("Found " + this.houghPlanes.Count + " planes, best: " + max + " / " + this.pointCloud.Points.Length);
 	}
 
-	private void createDebugPlane(Plane plane, string name) {
+	private void createDebugPlane(Plane plane) {
 		GameObject planeGameObject = new GameObject();
-		planeGameObject.name = name;
 		var planeBehaviour = planeGameObject.AddComponent<PlaneBehaviour>();
 		planeBehaviour.Plane = plane;
 		planeBehaviour.PointCloud = this.pointCloud;
+		planeBehaviour.Classifier = this;
 		planeGameObject.transform.parent = this.pointCloud.transform;
 	}
 
@@ -128,7 +130,11 @@ public class HoughClassifier {
 	private void displayPlanes() {
 		foreach (var tuple in this.houghPlanes.OrderByDescending(t => t.Value2).Take(4)) {
 			var plane = tuple.Value1;
-			this.createDebugPlane(plane, "Plane: " + tuple.Value2 + " points, n: " + (plane.normal / plane.normal.y) + ", d: " + plane.distance);
+			this.createDebugPlane(plane);
 		}
+	}
+
+	public int GetScore(Plane plane, Vector3 point) {
+		return Mathf.Abs(plane.GetDistanceToPoint(point)) < HoughClassifier.MaxDistance ? 1 : 0;
 	}
 }

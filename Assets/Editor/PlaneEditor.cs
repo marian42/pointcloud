@@ -14,7 +14,10 @@ public class PlaneEditor : Editor {
 		var planeBehaviour = this.target as PlaneBehaviour;
 
 		if (GUILayout.Button("Show")) {
-			planeBehaviour.ColorPoints(HoughClassifier.MaxDistance);
+			planeBehaviour.ColorPoints();
+		}
+		if (GUILayout.Button("From Transform")) {
+			planeBehaviour.ReadFromTransform();
 		}
 	}
 }
