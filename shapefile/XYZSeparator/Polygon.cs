@@ -14,8 +14,8 @@ public class Polygon {
 
 	public RectangleD BoundingBox;
 
-	private Polygon(ShapePolygon shapePolygon, PointD[] part, double offset) {
-		this.Points = part;// Polygon.GetEnlargedPolygon(part.ToList(), offset).ToArray();
+	public Polygon(ShapePolygon shapePolygon, PointD[] part, double offset) {
+		this.Points = Polygon.GetEnlargedPolygon(part.ToList(), offset).ToArray();
 		this.ShapePolygon = shapePolygon;
 		this.createBoundingBox();
 	}
@@ -65,11 +65,8 @@ public class Polygon {
 			// Move the points by the offset.
 			PointD v1 = new PointD(
 				old_points[j].X - old_points[i].X,
-				old_points[j].Y - old_points[i].Y);
-			v1.Normalize();
-			v1.Multiply(offset);
+				old_points[j].Y - old_points[i].Y).Normalized().Multiply(offset);
 			PointD n1 = new PointD(-v1.Y, v1.X);
-
 			PointD pij1 = new PointD(
 				(float)(old_points[i].X + n1.X),
 				(float)(old_points[i].Y + n1.Y));
@@ -79,9 +76,7 @@ public class Polygon {
 
 			PointD v2 = new PointD(
 				old_points[k].X - old_points[j].X,
-				old_points[k].Y - old_points[j].Y);
-			v2.Normalize();
-			v2.Multiply(offset);
+				old_points[k].Y - old_points[j].Y).Normalized().Multiply(offset);
 			PointD n2 = new PointD(-v2.Y, v2.X);
 
 			PointD pjk1 = new PointD(
@@ -181,17 +176,22 @@ public class Polygon {
 		}
 		return result;
 	}
+
+	public override string ToString() {
+		return this.Points.Aggregate("", (s, p) => s + string.Format(CultureInfo.InvariantCulture, "({0:0.00} {1:0.00}), ", p.X, p.Y)).Trim();
+	}
 }
 
 public static class Extension {
-	public static void Normalize(this PointD point) {
-		double length = Math.Sqrt(Math.Pow(point.X, 2.0d) + Math.Pow(point.Y, 2.0d));
-		point.X /= length;
-		point.Y /= length;
+	public static double GetLength(this PointD point) {
+		return Math.Sqrt(Math.Pow(point.X, 2.0d) + Math.Pow(point.Y, 2.0d));
 	}
 
-	public static void Multiply(this PointD point, double factor) {
-		point.X *= factor;
-		point.Y *= factor;
+	public static PointD Normalized(this PointD point) {
+		return point.Multiply(1.0 / point.GetLength());
+	}
+
+	public static PointD Multiply(this PointD point, double factor) {
+		return new PointD(point.X * factor, point.Y * factor);
 	}
 }
