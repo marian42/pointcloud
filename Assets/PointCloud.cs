@@ -8,9 +8,9 @@ using System;
 public class PointCloud : MonoBehaviour {
 	private const int pointsPerMesh = 60000;
 	[SerializeField, HideInInspector]
-	public Vector3[] Points { get; private set; }
+	public Vector3[] Points;
 	[SerializeField, HideInInspector]
-	public Vector3[] CenteredPoints { get; private set; }
+	public Vector3[] CenteredPoints;
 	[SerializeField, HideInInspector]
 	public Color[] Colors;
 	
