@@ -23,8 +23,8 @@ public class HoughClassifier {
 	private readonly int[] ranges = new int[] { houghSpaceSize, houghSpaceSize, 100 };
 	private readonly float[] min = new float[] { -1.4f, -1.4f, -6 };
 	private readonly float[] max = new float[] { +1.4f, +1.4f, -3 };
-	private const float maxDistance = 0.2f;
-	private const float minHitsRelative = 0.02f;
+	public const float MaxDistance = 0.5f;
+	private const float minHitsRelative = 0.0f;
 	private int[, ,] houghSpace;
 
 	private static float map(float oldLower, float oldUpper, float newLower, float newUpper, float value) {
@@ -73,8 +73,8 @@ public class HoughClassifier {
 				Plane plane = this.getHoughPlane(i0, i1);
 				for (int i = 0; i < this.pointCloud.CenteredPoints.Length; i++) {
 					float distance = -plane.GetDistanceToPoint(this.pointCloud.CenteredPoints[i]);
-					int start = Mathf.FloorToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance - maxDistance));
-					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + maxDistance));
+					int start = Mathf.FloorToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance - HoughClassifier.MaxDistance));
+					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + HoughClassifier.MaxDistance));
 					if ((start >= 0 && start < ranges[2]) || (end >= 0 && end < ranges[2])) {
 						for (int i2 = limit(0, ranges[2] - 1, start); i2 <= limit(0, ranges[2] - 1, end); i2++) {
 							houghSpace[i0, i1, i2]++;							
