@@ -13,11 +13,11 @@ public class PlaneBehaviour : MonoBehaviour {
 	public void ColorPoints() {
 		int hits = 0;
 		for (int i = 0; i < this.PointCloud.CenteredPoints.Length; i++) {
-			float distance = this.Plane.GetDistanceToPoint(this.PointCloud.CenteredPoints[i]);
-			if (Mathf.Abs(distance) > HoughClassifier.MaxDistance) {
+			float score = this.Classifier.GetScore(this.Plane, this.PointCloud.CenteredPoints[i]);
+			if (score == 0) {
 				this.PointCloud.Colors[i] = Color.blue;
 			} else {
-				this.PointCloud.Colors[i] = Color.Lerp(Color.green, Color.red, Mathf.Abs(distance) / HoughClassifier.MaxDistance);
+				this.PointCloud.Colors[i] = Color.Lerp(Color.red, Color.green, score);
 				hits++;
 			}			
 		}
@@ -67,8 +67,8 @@ public class PlaneBehaviour : MonoBehaviour {
 	}
 
 	public void UpdateName() {
-		int score = this.PointCloud.CenteredPoints.Sum(p => this.Classifier.GetScore(this.Plane, p));
-		this.gameObject.name = "Plane: " + score + " points, n: " + this.Plane.normal + ", d: " + this.Plane.distance;
+		float score = this.PointCloud.CenteredPoints.Sum(p => this.Classifier.GetScore(this.Plane, p));
+		this.gameObject.name = "Plane: " + score + " score, n: " + (this.Plane.normal / this.Plane.normal.y) + ", d: " + this.Plane.distance;
 	}
 
 	public void Display() {
