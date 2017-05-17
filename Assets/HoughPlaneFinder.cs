@@ -4,12 +4,12 @@ using UnityEngine;
 using System.Linq;
 
 [System.Serializable]
-public class HoughClassifier {
+public class HoughPlaneFinder {
 	[SerializeField, HideInInspector]
 	private PointCloud pointCloud;
 	private List<Tuple<Plane, float>> houghPlanes;
 
-	public HoughClassifier(PointCloud pointCloud) {
+	public HoughPlaneFinder(PointCloud pointCloud) {
 		this.pointCloud = pointCloud;
 	}
 
@@ -83,11 +83,11 @@ public class HoughClassifier {
 				Plane plane = this.getHoughPlane(i0, i1);
 				for (int i = 0; i < this.pointCloud.CenteredPoints.Length; i++) {
 					float distance = -plane.GetDistanceToPoint(this.pointCloud.CenteredPoints[i]);
-					int start = Mathf.FloorToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance - HoughClassifier.MaxDistance));
-					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + HoughClassifier.MaxDistance));
+					int start = Mathf.FloorToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance - HoughPlaneFinder.MaxDistance));
+					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + HoughPlaneFinder.MaxDistance));
 					if ((start >= 0 && start < ranges[2]) || (end >= 0 && end < ranges[2])) {
 						for (int i2 = limit(0, ranges[2] - 1, start); i2 <= limit(0, ranges[2] - 1, end); i2++) {
-							float relativeDistance = Mathf.Abs(map(0, ranges[2], min[2], max[2], i2) - distance) / HoughClassifier.MaxDistance;
+							float relativeDistance = Mathf.Abs(map(0, ranges[2], min[2], max[2], i2) - distance) / HoughPlaneFinder.MaxDistance;
 							houghSpace[i0, i1, i2] += this.getScore(relativeDistance);
 						}
 					}
@@ -145,7 +145,7 @@ public class HoughClassifier {
 	}
 
 	public float GetScore(Plane plane, Vector3 point) {
-		float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / HoughClassifier.MaxDistance;
+		float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / HoughPlaneFinder.MaxDistance;
 		if (distance > 1.0f) {
 			return 0;
 		}

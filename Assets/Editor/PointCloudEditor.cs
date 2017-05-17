@@ -62,8 +62,8 @@ public class PointCloudEditor : Editor {
 			roofClassifier.Classify();
 			pointCloud.Show();
 		}
-		if (GUILayout.Button("Classify using Hough transform")) {
-			var roofClassifier = new HoughClassifier(pointCloud);
+		if (GUILayout.Button("Find planes with Hough transform")) {
+			var roofClassifier = new HoughPlaneFinder(pointCloud);
 			roofClassifier.Classify();
 		}
 	}

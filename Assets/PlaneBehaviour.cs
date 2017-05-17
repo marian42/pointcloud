@@ -8,7 +8,7 @@ public class PlaneBehaviour : MonoBehaviour {
 
 	public Plane Plane;
 	public PointCloud PointCloud;
-	public HoughClassifier Classifier;
+	public HoughPlaneFinder Classifier;
 
 	public void ColorPoints() {
 		int hits = 0;
