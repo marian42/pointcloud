@@ -68,7 +68,7 @@ public class PlaneBehaviour : MonoBehaviour {
 
 	public void UpdateName() {
 		int score = this.PointCloud.CenteredPoints.Sum(p => this.Classifier.GetScore(this.Plane, p));
-		this.gameObject.name = "Plane: " + score + " point, n: " + this.Plane.normal + ", d: " + this.Plane.distance;
+		this.gameObject.name = "Plane: " + score + " points, n: " + this.Plane.normal + ", d: " + this.Plane.distance;
 	}
 
 	public void Display() {

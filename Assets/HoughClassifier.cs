@@ -21,11 +21,11 @@ public class HoughClassifier {
 		Debug.Log(Timekeeping.GetStatus());
 	}
 
-	private const int houghSpaceSize = 20;
+	private const int houghSpaceSize = 30;
 	private readonly int[] ranges = new int[] { houghSpaceSize, houghSpaceSize, 100 };
 	private readonly float[] min = new float[] { -1.4f, -1.4f, -6 };
-	private readonly float[] max = new float[] { +1.4f, +1.4f, -3 };
-	public const float MaxDistance = 0.5f;
+	private readonly float[] max = new float[] { +1.4f, +1.4f, 0 };
+	public const float MaxDistance = 0.4f;
 	private const float minHitsRelative = 0.0f;
 	private int[, ,] houghSpace;
 
@@ -91,7 +91,7 @@ public class HoughClassifier {
 		for (int i0 = 0; i0 < ranges[0]; i0++) {
 			for (int i1 = 0; i1 < ranges[1]; i1++) {
 				for (int i2 = 0; i2 < ranges[2]; i2++) {
-					if (houghSpace[i0, i1, i2] > minHitsRelative * this.pointCloud.Points.Length && this.isLocalMaximum(i0, i1, i2, 2)) {
+					if (houghSpace[i0, i1, i2] > minHitsRelative * this.pointCloud.Points.Length && this.isLocalMaximum(i0, i1, i2, 4)) {
 						Plane plane = this.getHoughPlane(i0, i1, i2);
 						this.houghPlanes.Add(new Tuple<Plane, int>(plane, houghSpace[i0, i1, i2]));
 					}
