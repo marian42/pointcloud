@@ -158,6 +158,6 @@ public class HoughClassifier {
 
 	public float GetScore(Plane plane) {
 		var houghParams = this.getPlaneParameters(plane);
-		return this.houghSpace[houghParams[0], houghParams[1], houghParams[2]];
+		return this.getHoughScoreSafely(houghParams[0], houghParams[1], houghParams[2]);
 	}
 }
