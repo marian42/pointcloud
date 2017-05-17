@@ -45,6 +45,14 @@ public class HoughClassifier {
 		return new Plane(new Vector3(map(0, ranges[0], min[0], max[0], i0), 1.0f, map(0, ranges[1], min[1], max[1], i1)), 0);
 	}
 
+	private int[] getPlaneParameters(Plane plane) {
+		var normal = plane.normal / plane.normal.y;
+		int i = Mathf.RoundToInt(map(min[0], max[0], 0, ranges[0], normal.x));
+		int j = Mathf.RoundToInt(map(min[1], max[1], 0, ranges[1], normal.z));
+		int k = Mathf.RoundToInt(map(min[2], max[2], 0, ranges[2], plane.distance));
+		return new int[] { i, j, k };
+	}
+
 	private float getHoughScoreSafely(int i0, int i1, int i2) {
 		if (i0 < 0 || i1 < 0 || i2 < 0 || i0 >= ranges[0] || i1 >= ranges[1] || i2 >= ranges[2]) {
 			return 0;
@@ -145,6 +153,11 @@ public class HoughClassifier {
 	}
 
 	private float getScore(float relativeDistance) {
-		return 1.0f -relativeDistance;
+		return 1.0f - relativeDistance;
+	}
+
+	public float GetScore(Plane plane) {
+		var houghParams = this.getPlaneParameters(plane);
+		return this.houghSpace[houghParams[0], houghParams[1], houghParams[2]];
 	}
 }
