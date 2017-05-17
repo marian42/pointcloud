@@ -63,7 +63,13 @@ public class PointCloudEditor : Editor {
 			pointCloud.Show();
 		}
 		if (GUILayout.Button("Find planes with Hough transform")) {
+			PlaneBehaviour.DeletePlanesIn(pointCloud.transform);
 			var roofClassifier = new HoughPlaneFinder(pointCloud);
+			roofClassifier.Classify();
+		}
+		if (GUILayout.Button("Find planes with RANSAC")) {
+			PlaneBehaviour.DeletePlanesIn(pointCloud.transform);
+			var roofClassifier = new RansacPlaneFinder(pointCloud);
 			roofClassifier.Classify();
 		}
 	}

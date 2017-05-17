@@ -15,7 +15,6 @@ public class HoughPlaneFinder {
 
 	public void Classify() {
 		Timekeeping.Reset();
-		this.deleteQuads();
 		this.houghTransform();
 		this.displayPlanes();
 		Debug.Log(Timekeeping.GetStatus());
@@ -88,7 +87,7 @@ public class HoughPlaneFinder {
 					if ((start >= 0 && start < ranges[2]) || (end >= 0 && end < ranges[2])) {
 						for (int i2 = limit(0, ranges[2] - 1, start); i2 <= limit(0, ranges[2] - 1, end); i2++) {
 							float relativeDistance = Mathf.Abs(map(0, ranges[2], min[2], max[2], i2) - distance) / HoughPlaneFinder.MaxDistance;
-							houghSpace[i0, i1, i2] += this.getScore(relativeDistance);
+							houghSpace[i0, i1, i2] += HoughPlaneFinder.getScore(relativeDistance);
 						}
 					}
 				}
@@ -115,49 +114,22 @@ public class HoughPlaneFinder {
 		Debug.Log("Found " + this.houghPlanes.Count + " planes, best: " + maxScore + " / " + this.pointCloud.Points.Length);
 	}
 
-	private void createDebugPlane(Plane plane) {
-		GameObject planeGameObject = new GameObject();
-		var planeBehaviour = planeGameObject.AddComponent<PlaneBehaviour>();
-		planeBehaviour.Plane = plane;
-		planeBehaviour.PointCloud = this.pointCloud;
-		planeBehaviour.Classifier = this;
-		planeGameObject.transform.parent = this.pointCloud.transform;
-		planeBehaviour.Initialize();
-	}
-
-	private void deleteQuads() {
-		var existingQuads = new List<GameObject>();
-		foreach (var child in this.pointCloud.transform) {
-			if ((child as Transform).tag == "Quad") {
-				existingQuads.Add((child as Transform).gameObject);
-			}
-		}
-		foreach (var existingQuad in existingQuads) {
-			GameObject.DestroyImmediate(existingQuad);
-		}
-	}
-
 	private void displayPlanes() {
 		foreach (var tuple in this.houghPlanes.OrderByDescending(t => t.Value2).Take(5)) {
 			var plane = tuple.Value1;
-			this.createDebugPlane(plane);
+			PlaneBehaviour.DisplayPlane(plane, this.pointCloud);
 		}
 	}
 
-	public float GetScore(Plane plane, Vector3 point) {
+	public static float GetScore(Plane plane, Vector3 point) {
 		float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / HoughPlaneFinder.MaxDistance;
 		if (distance > 1.0f) {
 			return 0;
 		}
-		return this.getScore(distance);
+		return HoughPlaneFinder.getScore(distance);
 	}
 
-	private float getScore(float relativeDistance) {
+	private static float getScore(float relativeDistance) {
 		return 1.0f - relativeDistance;
-	}
-
-	public float GetScore(Plane plane) {
-		var houghParams = this.getPlaneParameters(plane);
-		return this.getHoughScoreSafely(houghParams[0], houghParams[1], houghParams[2]);
 	}
 }

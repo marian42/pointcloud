@@ -3,23 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-[ExecuteInEditMode]
+[ExecuteInEditMode, SelectionBase]
 public class PlaneBehaviour : MonoBehaviour {
 
 	public Plane Plane;
 	public PointCloud PointCloud;
-	public HoughPlaneFinder Classifier;
 
 	public void ColorPoints() {
 		int hits = 0;
 		for (int i = 0; i < this.PointCloud.CenteredPoints.Length; i++) {
-			float score = this.Classifier.GetScore(this.Plane, this.PointCloud.CenteredPoints[i]);
+			float score = HoughPlaneFinder.GetScore(this.Plane, this.PointCloud.CenteredPoints[i]);
 			if (score == 0) {
 				this.PointCloud.Colors[i] = Color.blue;
 			} else {
 				this.PointCloud.Colors[i] = Color.Lerp(Color.red, Color.green, score);
 				hits++;
-			}			
+			}
 		}
 		this.PointCloud.Show();
 	}
@@ -66,13 +65,34 @@ public class PlaneBehaviour : MonoBehaviour {
 	}
 
 	public void UpdateName() {
-		float score = this.PointCloud.CenteredPoints.Sum(p => this.Classifier.GetScore(this.Plane, p));
-		this.gameObject.name = "Plane, score: " + score + " (" + this.Classifier.GetScore(this.Plane) + "), n: " + (this.Plane.normal / this.Plane.normal.y) + ", d: " + this.Plane.distance;
+		float score = this.PointCloud.CenteredPoints.Sum(p => HoughPlaneFinder.GetScore(this.Plane, p));
+		this.gameObject.name = "Plane, score: " + score + ", n: " + (this.Plane.normal / this.Plane.normal.y) + ", d: " + this.Plane.distance;
 	}
 
 	public void Display() {
 		this.UpdateTransform();
 		this.UpdateColor();
 		this.UpdateName();
+	}
+
+	public static void DisplayPlane(Plane plane, PointCloud pointCloud) {
+		GameObject planeGameObject = new GameObject();
+		var planeBehaviour = planeGameObject.AddComponent<PlaneBehaviour>();
+		planeBehaviour.Plane = plane;
+		planeBehaviour.PointCloud = pointCloud;
+		planeGameObject.transform.parent = pointCloud.transform;
+		planeBehaviour.Initialize();
+	}
+
+	public static void DeletePlanesIn(Transform transform) {
+		var existingQuads = new List<GameObject>();
+		foreach (var child in transform) {
+			if ((child as Transform).tag == "Quad") {
+				existingQuads.Add((child as Transform).gameObject);
+			}
+		}
+		foreach (var existingQuad in existingQuads) {
+			GameObject.DestroyImmediate(existingQuad);
+		}
 	}
 }
