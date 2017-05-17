@@ -78,8 +78,8 @@ public class HoughClassifier {
 					int start = Mathf.FloorToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance - HoughClassifier.MaxDistance));
 					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + HoughClassifier.MaxDistance));
 					if ((start >= 0 && start < ranges[2]) || (end >= 0 && end < ranges[2])) {
-						float relativeDistance = Mathf.Abs(distance) / HoughClassifier.MaxDistance;
 						for (int i2 = limit(0, ranges[2] - 1, start); i2 <= limit(0, ranges[2] - 1, end); i2++) {
+							float relativeDistance = Mathf.Abs(map(0, ranges[2], min[2], max[2], i2) - distance) / HoughClassifier.MaxDistance;
 							houghSpace[i0, i1, i2] += this.getScore(relativeDistance);
 						}
 					}
