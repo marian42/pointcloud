@@ -5,6 +5,7 @@ using System.Linq;
 
 [ExecuteInEditMode, SelectionBase]
 public class PlaneBehaviour : MonoBehaviour {
+	private readonly Color orange = new Color(1f, 0.5f, 0f);
 
 	public Plane Plane;
 	public PointCloud PointCloud;
@@ -14,9 +15,9 @@ public class PlaneBehaviour : MonoBehaviour {
 		for (int i = 0; i < this.PointCloud.CenteredPoints.Length; i++) {
 			float score = HoughPlaneFinder.GetScore(this.Plane, this.PointCloud.CenteredPoints[i]);
 			if (score == 0) {
-				this.PointCloud.Colors[i] = Color.blue;
+				this.PointCloud.Colors[i] = Color.red;
 			} else {
-				this.PointCloud.Colors[i] = Color.Lerp(Color.red, Color.green, score);
+				this.PointCloud.Colors[i] = Color.Lerp(orange, Color.green, score);
 				hits++;
 			}
 		}
