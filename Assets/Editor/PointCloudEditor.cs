@@ -40,6 +40,18 @@ public class PointCloudEditor : Editor {
 
 		GUILayout.EndHorizontal();
 
+		GUILayout.BeginHorizontal();
+
+		if (GUILayout.Button("Estimate normals")) {
+			pointCloud.EstimateNormals();
+		}
+
+		if (GUILayout.Button("Show normals")) {
+			pointCloud.DisplayNormals();
+		}
+
+		GUILayout.EndHorizontal();
+
 		if (GUILayout.Button("Reset colors")) {
 			pointCloud.ResetColors(Color.red);
 			pointCloud.Show();

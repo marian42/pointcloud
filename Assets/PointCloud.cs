@@ -13,6 +13,8 @@ public class PointCloud : MonoBehaviour {
 	public Vector3[] CenteredPoints;
 	[SerializeField, HideInInspector]
 	public Color[] Colors;
+	[SerializeField, HideInInspector]
+	public Vector3[] Normals;
 	
 	public void Load(Vector3[] points) {
 		this.Points = points;
@@ -83,6 +85,43 @@ public class PointCloud : MonoBehaviour {
 		}
 		foreach (var existingQuad in existingMeshes) {
 			GameObject.DestroyImmediate(existingQuad);
+		}
+	}
+
+	public void EstimateNormals() {
+		var pointHashSet = new PointHashSet(2.0f, this.CenteredPoints);
+		this.Normals = new Vector3[this.Points.Length];
+
+		const float neighbourRange = 2.0f;
+		const int neighbourCount = 2;
+
+		for (int i = 0; i < this.Points.Length; i++) {
+			var point = this.CenteredPoints[i];
+			var neighbours = pointHashSet.GetPointsInRange(point, neighbourRange, true)
+				.OrderBy(p => (point - p).magnitude)
+				.SkipWhile(p => p == point)
+				.Take(neighbourCount)
+				.ToArray();
+			if (neighbours.Length == 2) {
+				this.Normals[i] = Vector3.Cross(neighbours[0] - point, neighbours[1] - point).normalized;
+				if (this.Normals[i].y < 0) {
+					this.Normals[i] = this.Normals[i] * -1.0f;
+				}
+			}			
+		}
+	}
+
+	public void DisplayNormals() {
+		if (this.Normals == null) {
+			Debug.LogError("No normals found.");
+			return;
+		}
+		for (int i = 0; i < this.Normals.Length; i++) {
+			if (i < 10) {
+				Debug.Log(this.Normals[i]);
+			}
+			var start = this.Points[i];
+			Debug.DrawLine(start, start + this.Normals[i], Color.blue, 10.0f);
 		}
 	}
 }
