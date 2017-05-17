@@ -93,7 +93,7 @@ public class PointCloud : MonoBehaviour {
 		this.Normals = new Vector3[this.Points.Length];
 
 		const float neighbourRange = 2.0f;
-		const int neighbourCount = 2;
+		const int neighbourCount = 6;
 
 		for (int i = 0; i < this.Points.Length; i++) {
 			var point = this.CenteredPoints[i];
@@ -102,12 +102,48 @@ public class PointCloud : MonoBehaviour {
 				.SkipWhile(p => p == point)
 				.Take(neighbourCount)
 				.ToArray();
-			if (neighbours.Length == 2) {
-				this.Normals[i] = Vector3.Cross(neighbours[0] - point, neighbours[1] - point).normalized;
-				if (this.Normals[i].y < 0) {
-					this.Normals[i] = this.Normals[i] * -1.0f;
-				}
-			}			
+
+			this.Normals[i] = this.getPlaneNormal(neighbours).normalized;
+
+			if (this.Normals[i].y < 0) {
+				this.Normals[i] = this.Normals[i] * -1.0f;
+			}
+		}
+	}
+
+	private Vector3 getPlaneNormal(Vector3[] points) {
+		// http://www.ilikebigbits.com/blog/2015/3/2/plane-from-points
+		var centroid = points.Aggregate(Vector3.zero, (a, b) => a + b) / points.Length;
+
+		float xx = 0, xy = 0, xz = 0, yy = 0, yz = 0, zz = 0;
+
+		foreach (var point in points) {
+			var relative = point - centroid;
+			xx += relative.x * relative.y;
+			xy += relative.x * relative.y;
+			xz += relative.x * relative.z;
+			yy += relative.y * relative.y;
+			yz += relative.y * relative.z;
+			zz += relative.z * relative.z;
+		}
+
+		float detX = yy * zz - yz * yz;
+		float detY = xx * zz - xz * xz;
+		float detZ = xx * yy - xy * xy;
+		float detMax = Mathf.Max(detX, Mathf.Max(detY, detZ));
+
+		if (detMax == detX) {
+			float a = (xz * yz - xy * zz) / detX;
+			float b = (xy * yz - xz * yy) / detX;
+			return new Vector3(1, a, b);
+		} else if (detMax == detY) {
+			float a = (yz * xz - xy * zz) / detY;
+			float b = (xy * xz - yz * xx) / detY;
+			return new Vector3(a, 1, b);
+		} else {
+			float a = (yz * xy - xz * yy) / detZ;
+			float b = (xz * xy - yz * xx) / detZ;
+			return new Vector3(a, b, 1);
 		}
 	}
 
@@ -117,9 +153,6 @@ public class PointCloud : MonoBehaviour {
 			return;
 		}
 		for (int i = 0; i < this.Normals.Length; i++) {
-			if (i < 10) {
-				Debug.Log(this.Normals[i]);
-			}
 			var start = this.Points[i];
 			Debug.DrawLine(start, start + this.Normals[i], Color.blue, 10.0f);
 		}
