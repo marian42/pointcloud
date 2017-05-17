@@ -22,7 +22,6 @@ public class PlaneBehaviour : MonoBehaviour {
 			}			
 		}
 		this.PointCloud.Show();
-		Debug.Log(hits + " / " + this.PointCloud.Points.Length);
 	}
 
 	public void UpdateTransform() {
@@ -42,19 +41,19 @@ public class PlaneBehaviour : MonoBehaviour {
 		}
 	}
 
-	public void Start() {
+	public void Initialize() {
 		this.gameObject.tag = "Quad";
 		
 		{
 			var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
 			quad.transform.parent = this.transform;
-			quad.transform.localScale = Vector3.one * 10.0f;
+			quad.transform.localScale = Vector3.one * 4.0f;
 			quad.transform.localPosition = Vector3.zero;
 		}
 		{
 			var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
 			quad.transform.parent = this.transform;
-			quad.transform.localScale = Vector3.one * 10.0f;
+			quad.transform.localScale = Vector3.one * 4.0f;
 			quad.transform.localPosition = Vector3.zero;
 			quad.transform.rotation = Quaternion.Euler(Vector3.right * 180.0f);
 		}

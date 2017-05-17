@@ -122,6 +122,7 @@ public class HoughClassifier {
 		planeBehaviour.PointCloud = this.pointCloud;
 		planeBehaviour.Classifier = this;
 		planeGameObject.transform.parent = this.pointCloud.transform;
+		planeBehaviour.Initialize();
 	}
 
 	private void deleteQuads() {
