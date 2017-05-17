@@ -63,7 +63,7 @@ Shader "Custom/PointCloud"
 				float3 tangent = normalize(cross(float3(0,1,0), pIn.normal));
 				float3 up = normalize(cross(tangent, pIn.normal));
 
-				pIn.vertex = mul(UNITY_MATRIX_VP, vertex + float4(tangent * -_Size / 1.5, 0));
+				pIn.vertex = mul(UNITY_MATRIX_VP, vertex + float4(up * -0.5 * _Size + tangent * -0.866 * _Size, 0));
 				pIn.texcoord = float2(-0.5,0);
 				triStream.Append(pIn);
 
@@ -71,7 +71,7 @@ Shader "Custom/PointCloud"
 				pIn.texcoord = float2(0.5,1.5);
 				triStream.Append(pIn);
 
-				pIn.vertex = mul(UNITY_MATRIX_VP, vertex + float4(tangent * _Size / 1.5, 0));
+				pIn.vertex = mul(UNITY_MATRIX_VP, vertex + float4(up * -0.5 * _Size + tangent *  0.866 * _Size, 0));
 				pIn.texcoord = float2(1.5,0);
 				triStream.Append(pIn);
 			}
