@@ -4,29 +4,22 @@ using UnityEngine;
 using System.Linq;
 
 [System.Serializable]
-public class HoughPlaneFinder {
-	[SerializeField, HideInInspector]
-	private PointCloud pointCloud;
-	private List<Tuple<Plane, float>> houghPlanes;
-
-	public HoughPlaneFinder(PointCloud pointCloud) {
-		this.pointCloud = pointCloud;
-	}
-
-	public void Classify() {
-		Timekeeping.Reset();
-		this.houghTransform();
-		this.displayPlanes();
-		Debug.Log(Timekeeping.GetStatus());
-	}
+public class HoughPlaneFinder : PlaneClassifier {
 
 	private const int houghSpaceSize = 20;
 	private readonly int[] ranges = new int[] { houghSpaceSize, houghSpaceSize, 200 };
 	private readonly float[] min = new float[] { -1.4f, -1.4f, -6 };
 	private readonly float[] max = new float[] { +1.4f, +1.4f, 4 };
-	public const float MaxDistance = 0.4f;
 	private const float minScoreRelative = 0.05f;
 	private float[, ,] houghSpace;
+
+	public HoughPlaneFinder(PointCloud pointCloud) : base(pointCloud) { }
+
+	public override void Classify() {
+		Timekeeping.Reset();
+		this.houghTransform();
+		Debug.Log(Timekeeping.GetStatus() + " found " + this.PlanesWithScore.Count + " planes out of " + this.PointCloud.Points.Length + ".");
+	}
 
 	private static float map(float oldLower, float oldUpper, float newLower, float newUpper, float value) {
 		return Mathf.LerpUnclamped(newLower, newUpper, (value - oldLower) / (oldUpper - oldLower));
@@ -80,8 +73,8 @@ public class HoughPlaneFinder {
 		for (int i0 = 0; i0 < ranges[0]; i0++) {
 			for (int i1 = 0; i1 < ranges[1]; i1++) {
 				Plane plane = this.getHoughPlane(i0, i1);
-				for (int i = 0; i < this.pointCloud.CenteredPoints.Length; i++) {
-					float distance = -plane.GetDistanceToPoint(this.pointCloud.CenteredPoints[i]);
+				for (int i = 0; i < this.PointCloud.CenteredPoints.Length; i++) {
+					float distance = -plane.GetDistanceToPoint(this.PointCloud.CenteredPoints[i]);
 					int start = Mathf.FloorToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance - HoughPlaneFinder.MaxDistance));
 					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + HoughPlaneFinder.MaxDistance));
 					if ((start >= 0 && start < ranges[2]) || (end >= 0 && end < ranges[2])) {
@@ -94,14 +87,14 @@ public class HoughPlaneFinder {
 			}
 		}
 		Timekeeping.CompleteTask("Transform to Hough");
-		this.houghPlanes = new List<Tuple<Plane, float>>();
+		this.PlanesWithScore = new List<Tuple<Plane, float>>();
 		float maxScore = 0;
 		for (int i0 = 0; i0 < ranges[0]; i0++) {
 			for (int i1 = 0; i1 < ranges[1]; i1++) {
 				for (int i2 = 0; i2 < ranges[2]; i2++) {
-					if (houghSpace[i0, i1, i2] > minScoreRelative * this.pointCloud.Points.Length && this.isLocalMaximum(i0, i1, i2, 3)) {
+					if (houghSpace[i0, i1, i2] > minScoreRelative * this.PointCloud.Points.Length && this.isLocalMaximum(i0, i1, i2, 3)) {
 						Plane plane = this.getHoughPlane(i0, i1, i2);
-						this.houghPlanes.Add(new Tuple<Plane, float>(plane, houghSpace[i0, i1, i2]));
+						this.PlanesWithScore.Add(new Tuple<Plane, float>(plane, houghSpace[i0, i1, i2]));
 					}
 					if (houghSpace[i0, i1, i2] > maxScore) {
 						maxScore = houghSpace[i0, i1, i2];
@@ -111,25 +104,5 @@ public class HoughPlaneFinder {
 		}
 
 		Timekeeping.CompleteTask("Find planes");
-		Debug.Log("Found " + this.houghPlanes.Count + " planes, best: " + maxScore + " / " + this.pointCloud.Points.Length);
-	}
-
-	private void displayPlanes() {
-		foreach (var tuple in this.houghPlanes.OrderByDescending(t => t.Value2).Take(5)) {
-			var plane = tuple.Value1;
-			PlaneBehaviour.DisplayPlane(plane, this.pointCloud);
-		}
-	}
-
-	public static float GetScore(Plane plane, Vector3 point) {
-		float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / HoughPlaneFinder.MaxDistance;
-		if (distance > 1.0f) {
-			return 0;
-		}
-		return HoughPlaneFinder.getScore(distance);
-	}
-
-	private static float getScore(float relativeDistance) {
-		return 1.0f - relativeDistance;
-	}
+	}	
 }

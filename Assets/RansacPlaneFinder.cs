@@ -3,44 +3,37 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class RansacPlaneFinder {
-	[SerializeField, HideInInspector]
-	private PointCloud pointCloud;
-
+public class RansacPlaneFinder : PlaneClassifier {
 	private const int randomSampleCount = 1000;
 
-	public RansacPlaneFinder(PointCloud pointCloud) {
-		this.pointCloud = pointCloud;
-	}
+	public RansacPlaneFinder(PointCloud pointCloud) : base(pointCloud) { }
 
-	public void Classify() {
+	public override void Classify() {
 		Timekeeping.Reset();
 
-		this.pointCloud.EstimateNormals();
+		this.PointCloud.EstimateNormals();
 		Timekeeping.CompleteTask("Estimate normals");
 
 
-		var indices = Enumerable.Range(0, this.pointCloud.Points.Length).ToList();
+		var indices = Enumerable.Range(0, this.PointCloud.Points.Length).ToList();
 		
 		while (indices.Count() > RansacPlaneFinder.randomSampleCount) {
 			indices.RemoveAt(Random.Range(0, indices.Count));
 		}
 
-		var planes = indices.Select(i => new Plane(this.pointCloud.Normals[i], this.pointCloud.CenteredPoints[i])).ToList();
+		var planes = indices.Select(i => new Plane(this.PointCloud.Normals[i], this.PointCloud.CenteredPoints[i])).ToList();
 		Timekeeping.CompleteTask("Choose samples");
 
-		planes = planes.Select(plane => new Tuple<Plane, float>(plane, this.getScore(plane)))
-			.OrderByDescending(tuple => tuple.Value2)
-			.Select(tuple => tuple.Value1)
-			.ToList();
+		this.PlanesWithScore = planes.Select(plane => new Tuple<Plane, float>(plane, this.getScore(plane)))
+			.OrderByDescending(tuple => tuple.Value2).ToList();
 
 		Timekeeping.CompleteTask("Score");
 
-		for (int i = 0; i < planes.Count; i++) {
-			var plane = planes.ElementAt(i);
-			for (int j = i + 1; j < planes.Count; j++) {
-				if (this.similar(plane, planes[j])) {
-					planes.RemoveAt(j);
+		for (int i = 0; i < this.PlanesWithScore.Count; i++) {
+			var plane = this.PlanesWithScore.ElementAt(i).Value1;
+			for (int j = i + 1; j < this.PlanesWithScore.Count; j++) {
+				if (this.similar(plane, this.PlanesWithScore[j].Value1)) {
+					this.PlanesWithScore.RemoveAt(j);
 					j--;
 				}
 			}
@@ -48,18 +41,14 @@ public class RansacPlaneFinder {
 
 		Timekeeping.CompleteTask("Remove duplicates");
 
-		foreach (var plane in planes.Take(6)) {
-			PlaneBehaviour.DisplayPlane(plane, this.pointCloud);
-		}
-
-		Debug.Log(Timekeeping.GetStatus() + " -> " + planes.Count() + " planes out of " + this.pointCloud.Points.Length + " points.");
+		Debug.Log(Timekeeping.GetStatus() + " -> " + planes.Count() + " planes out of " + this.PointCloud.Points.Length + " points.");
 	}
 
 	private float getScore(Plane plane) {
 		const float maxDistance = HoughPlaneFinder.MaxDistance;
 		float result = 0;
 
-		foreach (var point in this.pointCloud.CenteredPoints) {
+		foreach (var point in this.PointCloud.CenteredPoints) {
 			float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / maxDistance;
 			if (distance > 1) {
 				continue;

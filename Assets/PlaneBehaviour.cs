@@ -67,7 +67,7 @@ public class PlaneBehaviour : MonoBehaviour {
 
 	public void UpdateName() {
 		float score = this.PointCloud.CenteredPoints.Sum(p => HoughPlaneFinder.GetScore(this.Plane, p));
-		this.gameObject.name = "Plane, score: " + score + ", n: " + (this.Plane.normal / this.Plane.normal.y) + ", d: " + this.Plane.distance;
+		this.gameObject.name = "Plane, score: " + string.Format("{0:0.0}", score) + ", n: " + (this.Plane.normal / this.Plane.normal.y) + ", d: " + this.Plane.distance;
 	}
 
 	public void Display() {

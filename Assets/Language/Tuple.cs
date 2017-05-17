@@ -1,4 +1,7 @@
-﻿public class Tuple<T1, T2> {
+﻿using System;
+
+[Serializable]
+public class Tuple<T1, T2> {
 	public readonly T1 Value1;
 	public readonly T2 Value2;
 
