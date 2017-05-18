@@ -79,7 +79,7 @@ public class PointCloudEditor : Editor {
 				this.findPlanes(otherPointCloud, classifierType);
 			}
 			var time = DateTime.Now - start;
-			Debug.Log("Classified all planes in " + time.TotalMinutes + ":" + time.Seconds.ToString().PadLeft(2, '0'));
+			Debug.Log("Classified all planes in " + (int)System.Math.Floor(time.TotalMinutes) + ":" + time.Seconds.ToString().PadLeft(2, '0'));
 		}
 
 		GUILayout.EndHorizontal();
