@@ -9,6 +9,8 @@ using System;
 
 [CustomEditor(typeof(PointCloud))]
 public class PointCloudEditor : Editor {
+	private static PlaneClassifier.Type classifierType = PlaneClassifier.Type.Ransac;
+
 	public override void OnInspectorGUI() {
 		base.OnInspectorGUI();
 
@@ -62,18 +64,25 @@ public class PointCloudEditor : Editor {
 			roofClassifier.Classify();
 			pointCloud.Show();
 		}
-		if (GUILayout.Button("Find planes with Hough transform")) {
-			PlaneBehaviour.DeletePlanesIn(pointCloud.transform);
-			var roofClassifier = new HoughPlaneFinder(pointCloud);
-			roofClassifier.Classify();
-			roofClassifier.DisplayPlanes(6);
+
+		GUILayout.BeginHorizontal();
+
+		classifierType = (PlaneClassifier.Type)(EditorGUILayout.EnumPopup(classifierType));
+
+		if (GUILayout.Button("Find Planes")) {
+			this.findPlanes(pointCloud, classifierType);
 		}
-		if (GUILayout.Button("Find planes with RANSAC")) {
-			PlaneBehaviour.DeletePlanesIn(pointCloud.transform);
-			var roofClassifier = new RansacPlaneFinder(pointCloud);
-			roofClassifier.Classify();
-			roofClassifier.DisplayPlanes(6);
+
+		if (GUILayout.Button("Find all")) {
+			DateTime start = DateTime.Now;
+			foreach (var otherPointCloud in GameObject.FindObjectsOfType<PointCloud>()) {
+				this.findPlanes(otherPointCloud, classifierType);
+			}
+			var time = DateTime.Now - start;
+			Debug.Log("Classified all planes in " + time.TotalMinutes + ":" + time.Seconds.ToString().PadLeft(2, '0'));
 		}
+
+		GUILayout.EndHorizontal();
 	}
 
 	private void hideSelectionHighlight() {
@@ -84,5 +93,12 @@ public class PointCloudEditor : Editor {
 
 	public void OnSceneGUI() {
 		hideSelectionHighlight();
+	}
+
+	private void findPlanes(PointCloud pointCloud, PlaneClassifier.Type type) {
+		PlaneBehaviour.DeletePlanesIn(pointCloud.transform);
+		var planeClassifier = PlaneClassifier.Instantiate(type, pointCloud);
+		planeClassifier.Classify();
+		planeClassifier.DisplayPlanes(6);
 	}
 }

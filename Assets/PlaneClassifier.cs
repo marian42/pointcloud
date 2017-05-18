@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System;
 
 public abstract class PlaneClassifier {
 	public const float MaxDistance = 0.4f;
@@ -37,5 +38,18 @@ public abstract class PlaneClassifier {
 
 	protected static float getScore(float relativeDistance) {
 		return 1.0f - relativeDistance;
+	}
+
+	public enum Type {
+		Hough,
+		Ransac
+	}
+
+	public static PlaneClassifier Instantiate(Type type, PointCloud pointCloud) {
+		switch (type) {
+			case Type.Hough: return new HoughPlaneFinder(pointCloud);
+			case Type.Ransac: return new RansacPlaneFinder(pointCloud);
+			default: throw new NotImplementedException();
+		}
 	}
 }

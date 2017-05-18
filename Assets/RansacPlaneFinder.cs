@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Linq;
 
 public class RansacPlaneFinder : PlaneClassifier {
-	private const int randomSampleCount = 1000;
+	private const int randomSampleCount = 200;
 
 	public RansacPlaneFinder(PointCloud pointCloud) : base(pointCloud) { }
 
