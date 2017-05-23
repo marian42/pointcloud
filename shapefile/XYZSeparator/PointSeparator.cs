@@ -28,7 +28,8 @@ namespace XYZSeparator {
 			var polygon = this.queue.Dequeue();
 			var points = this.currentPoints[polygon];
 			this.currentPoints.Remove(polygon);
-			File.AppendAllLines(this.getPolygonFileName(polygon), points.Select(p => p.ToXYZLine()));
+			File.AppendAllLines(this.polygonFolder + polygon.GetXYZFilename(), points.Select(p => p.ToXYZLine()));
+			polygon.SavePolygon(this.polygonFolder);
 			Console.WriteLine("Wrote " + points.Count + " points to " + polygon.ShapePolygon.GetMetadata("uuid") + ".xyz");
 			this.HitCount += points.Count;
 		}
@@ -68,10 +69,6 @@ namespace XYZSeparator {
 			while (this.queue.Any()) {
 				this.dequeueAndSave();
 			}
-		}
-
-		private string getPolygonFileName(Polygon polygon) {
-			return this.polygonFolder + polygon.ShapePolygon.GetMetadata("uuid") + ".xyz";
 		}
 	}
 }

@@ -6,44 +6,52 @@ using System.Threading.Tasks;
 using Catfood.Shapefile;
 using XYZSeparator;
 using System.Globalization;
+using System.IO;
 
 public class Polygon {
+	public readonly PointD[] OffsetPoints;
 	public readonly PointD[] Points;
 
 	public readonly ShapePolygon ShapePolygon;
 
 	public RectangleD BoundingBox;
 
-	public Polygon(ShapePolygon shapePolygon, PointD[] part, double offset) {
-		this.Points = Polygon.GetEnlargedPolygon(part.ToList(), offset).ToArray();
+	private readonly int partIndex;
+
+	public Polygon(ShapePolygon shapePolygon, int partIndex, double offset) {
+		this.Points = shapePolygon.Parts[partIndex];
+		this.OffsetPoints = Polygon.GetEnlargedPolygon(this.Points.ToList(), offset).ToArray();
 		this.ShapePolygon = shapePolygon;
 		this.createBoundingBox();
+		this.partIndex = partIndex;
 	}
 
 	private void createBoundingBox() {
-		double minX = this.Points[0].X;
-		double maxX = this.Points[0].X;
-		double minY = this.Points[0].Y;
-		double maxY = this.Points[0].Y;
-		for (int i = 0; i < this.Points.Length; i++) {
-			if (this.Points[i].X < minX) {
-				minX = this.Points[i].X;
+		double minX = this.OffsetPoints[0].X;
+		double maxX = this.OffsetPoints[0].X;
+		double minY = this.OffsetPoints[0].Y;
+		double maxY = this.OffsetPoints[0].Y;
+		for (int i = 0; i < this.OffsetPoints.Length; i++) {
+			if (this.OffsetPoints[i].X < minX) {
+				minX = this.OffsetPoints[i].X;
 			}
-			if (this.Points[i].Y < minY) {
-				minY = this.Points[i].Y;
+			if (this.OffsetPoints[i].Y < minY) {
+				minY = this.OffsetPoints[i].Y;
 			}
-			if (this.Points[i].X > maxX) {
-				minX = this.Points[i].X;
+			if (this.OffsetPoints[i].X > maxX) {
+				minX = this.OffsetPoints[i].X;
 			}
-			if (this.Points[i].Y > maxY) {
-				minY = this.Points[i].Y;
+			if (this.OffsetPoints[i].Y > maxY) {
+				minY = this.OffsetPoints[i].Y;
 			}
 		}
 		this.BoundingBox = new RectangleD(minX, minY, maxX, maxY);
 	}
 
 	public static IEnumerable<Polygon> ReadShapePolygon(ShapePolygon shapePolygon, double offset) {
-		return shapePolygon.Parts.Select(part => new Polygon(shapePolygon, part, offset));
+		for (int i = 0; i < shapePolygon.Parts.Count; i++) {
+			yield return new Polygon(shapePolygon, i, offset);
+		}
 	}
 
 	// http://csharphelper.com/blog/2016/01/enlarge-a-polygon-in-c/
@@ -165,10 +173,10 @@ public class Polygon {
 	public bool Contains(Vector3 testPoint) {
 		// http://stackoverflow.com/a/14998816/895589
 		bool result = false;
-		int j = this.Points.Length - 1;
-		for (int i = 0; i < this.Points.Count(); i++) {
-			if (this.Points[i].Y < testPoint.z && this.Points[j].Y >= testPoint.z || this.Points[j].Y < testPoint.z && this.Points[i].Y >= testPoint.z) {
-				if (this.Points[i].X + (testPoint.z - this.Points[i].Y) / (this.Points[j].Y - this.Points[i].Y) * (this.Points[j].X - this.Points[i].X) < testPoint.x) {
+		int j = this.OffsetPoints.Length - 1;
+		for (int i = 0; i < this.OffsetPoints.Count(); i++) {
+			if (this.OffsetPoints[i].Y < testPoint.z && this.OffsetPoints[j].Y >= testPoint.z || this.OffsetPoints[j].Y < testPoint.z && this.OffsetPoints[i].Y >= testPoint.z) {
+				if (this.OffsetPoints[i].X + (testPoint.z - this.OffsetPoints[i].Y) / (this.OffsetPoints[j].Y - this.OffsetPoints[i].Y) * (this.OffsetPoints[j].X - this.OffsetPoints[i].X) < testPoint.x) {
 					result = !result;
 				}
 			}
@@ -178,7 +186,18 @@ public class Polygon {
 	}
 
 	public override string ToString() {
-		return this.Points.Aggregate("", (s, p) => s + string.Format(CultureInfo.InvariantCulture, "({0:0.00} {1:0.00}), ", p.X, p.Y)).Trim();
+		return this.OffsetPoints.Aggregate("", (s, p) => s + string.Format(CultureInfo.InvariantCulture, "({0:0.00} {1:0.00}), ", p.X, p.Y)).Trim();
+	}
+
+	public string GetXYZFilename() {
+		var index = this.partIndex == 0 ? "" : "-" + "abcdefghijklmnoprstuvqxyz".ElementAt(this.partIndex);
+		return this.ShapePolygon.GetMetadata("uuid") + index + ".xyz";
+	}
+
+	public void SavePolygon(string folder) {
+		var index = this.partIndex == 0 ? "" : "-" + "abcdefghijklmnoprstuvqxyz".ElementAt(this.partIndex);
+		string filename = folder + this.ShapePolygon.GetMetadata("uuid") + index + ".xyzshape";
+		File.WriteAllLines(filename, this.Points.Select(p => new Vector3(p.X, 0, p.Y)).Select(p => p.ToXYZLine()));
 	}
 }
 
