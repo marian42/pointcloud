@@ -16,7 +16,7 @@ public class XYZLoader {
 
 	private static Vector3 parseLine(string line) {
 		try {
-			var points = line.Split(' ').Where(s => s.Any()).Select(s => double.Parse(s)).ToArray();
+			var points = line.Replace(',', ' ').Split(' ').Where(s => s.Any()).Select(s => double.Parse(s)).ToArray();
 			return new Vector3((float)(points[0] - XYZLoader.ReferenceX), (float)(points[2] - XYZLoader.ReferenceZ), (float)(points[1] - XYZLoader.ReferenceY));
 		}
 		catch (FormatException) {
