@@ -99,6 +99,7 @@ public class PointCloudEditor : Editor {
 		PlaneBehaviour.DeletePlanesIn(pointCloud.transform);
 		var planeClassifier = PlaneClassifier.Instantiate(type, pointCloud);
 		planeClassifier.Classify();
+		planeClassifier.RemoveGroundPlanes();
 		planeClassifier.DisplayPlanes(6);
 	}
 }

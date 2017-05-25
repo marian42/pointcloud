@@ -15,6 +15,8 @@ public abstract class PlaneClassifier {
 	
 	public List<Tuple<Plane, float>> PlanesWithScore;
 
+	private Vector3 groundPoint;
+
 	public PlaneClassifier(PointCloud pointCloud) {
 		this.PointCloud = pointCloud;
 	}
@@ -51,5 +53,15 @@ public abstract class PlaneClassifier {
 			case Type.Ransac: return new RansacPlaneFinder(pointCloud);
 			default: throw new NotImplementedException();
 		}
+	}
+
+	private bool isNonGroundPlane(Plane plane) {
+		return Mathf.Abs(plane.GetDistanceToPoint(this.groundPoint)) > 2.0f
+ 			|| Vector3.Angle(Vector3.up, plane.normal) > 10.0f;
+	}
+
+	public void RemoveGroundPlanes() {
+		this.groundPoint = this.PointCloud.CenteredPoints.OrderBy(p => p.y).Skip(20).FirstOrDefault();
+		this.PlanesWithScore = this.PlanesWithScore.Where(tuple => this.isNonGroundPlane(tuple.Value1)).ToList();
 	}
 }
