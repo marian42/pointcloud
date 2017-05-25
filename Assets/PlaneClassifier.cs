@@ -32,10 +32,7 @@ public abstract class PlaneClassifier {
 
 	public static float GetScore(Plane plane, Vector3 point) {
 		float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / HoughPlaneFinder.MaxDistance;
-		if (distance > 1.0f) {
-			return 0;
-		}
-		return HoughPlaneFinder.getScore(distance);
+		return Mathf.Max(0.0f, 1.0f - distance);
 	}
 
 	protected static float getScore(float relativeDistance) {

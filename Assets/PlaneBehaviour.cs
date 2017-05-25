@@ -11,14 +11,12 @@ public class PlaneBehaviour : MonoBehaviour {
 	public PointCloud PointCloud;
 
 	public void ColorPoints() {
-		int hits = 0;
 		for (int i = 0; i < this.PointCloud.CenteredPoints.Length; i++) {
 			float score = HoughPlaneFinder.GetScore(this.Plane, this.PointCloud.CenteredPoints[i]);
 			if (score == 0) {
 				this.PointCloud.Colors[i] = Color.red;
 			} else {
 				this.PointCloud.Colors[i] = Color.Lerp(orange, Color.green, score);
-				hits++;
 			}
 		}
 		this.PointCloud.Show();
