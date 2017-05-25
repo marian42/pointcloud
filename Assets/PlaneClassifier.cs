@@ -9,7 +9,7 @@ public abstract class PlaneClassifier {
 
 	[SerializeField, HideInInspector]
 	
-	protected PointCloud PointCloud;
+	public readonly PointCloud PointCloud;
 
 	[SerializeField, HideInInspector]
 	

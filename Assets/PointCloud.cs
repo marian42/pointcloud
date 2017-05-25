@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System;
+using System.IO;
 
 [SelectionBase]
 public class PointCloud : MonoBehaviour {
@@ -16,11 +17,18 @@ public class PointCloud : MonoBehaviour {
 	[SerializeField, HideInInspector]
 	public Vector3[] Normals;
 	
-	public void Load(Vector3[] points) {
-		this.Points = points;
+	public string Name;
+
+	public Vector3 Center;
+	
+	public void Load(string xyzFilename) {
+		this.Points = XYZLoader.LoadFile(xyzFilename);
 		this.moveToCenter();
 		this.ResetColors(Color.red);
-	}	
+		FileInfo fileInfo = new FileInfo(xyzFilename);
+		this.Name = fileInfo.Name.Substring(0, fileInfo.Name.IndexOf('.'));
+		Debug.Log(this.name);
+	}
 
 	public void ResetColors(Color color) {
 		this.Colors = new Color[this.Points.Length];
@@ -47,11 +55,12 @@ public class PointCloud : MonoBehaviour {
 			if (point.y > maxY) maxY = point.y;
 			if (point.x > maxZ) maxZ = point.z;
 		}
-		this.transform.position = new Vector3(Mathf.Lerp(minX, maxX, 0.5f), Mathf.Lerp(minY, maxY, 0.5f), Mathf.Lerp(minZ, maxZ, 0.5f));
+		this.Center = new Vector3(Mathf.Lerp(minX, maxX, 0.5f), Mathf.Lerp(minY, maxY, 0.5f), Mathf.Lerp(minZ, maxZ, 0.5f));
+		this.transform.position = this.Center;
 
 		this.CenteredPoints = new Vector3[this.Points.Length];
 		for (int i = 0; i < this.Points.Length; i++) {
-			this.CenteredPoints[i] = this.Points[i] - this.transform.position;
+			this.CenteredPoints[i] = this.Points[i] - this.Center;
 		}
 	}
 
@@ -156,5 +165,13 @@ public class PointCloud : MonoBehaviour {
 			var start = this.Points[i];
 			Debug.DrawLine(start, start + this.Normals[i], Color.blue, 10.0f);
 		}
+	}
+
+	public Vector2[] GetShape() {
+		return XYZLoader.LoadFile(PointCloud.GetDataPath() + this.Name + ".xyzshape").Select(v => new Vector2(v.x - this.Center.x, v.z - this.Center.z)).ToArray();
+	}
+
+	public static string GetDataPath() {
+		return Application.dataPath + "/data/buildings/";
 	}
 }

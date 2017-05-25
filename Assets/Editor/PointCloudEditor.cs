@@ -21,13 +21,13 @@ public class PointCloudEditor : Editor {
 		if (GUILayout.Button("Load...")) {
 			string selected = EditorUtility.OpenFilePanel("Load file", Application.dataPath, "xyz");
 			if (selected.Any() && File.Exists(selected)) {
-				pointCloud.Load(XYZLoader.LoadFile(selected));
+				pointCloud.Load(selected);
 				pointCloud.Show();
 			}
 		}
 
 		if (GUILayout.Button("Load folder...")) {
-			var folder = new DirectoryInfo(Application.dataPath + "/data/buildings/");
+			var folder = new DirectoryInfo(PointCloud.GetDataPath());
 			foreach (var xyzFile in folder.GetFiles()) {
 				if (xyzFile.Extension.ToLower() != ".xyz") {
 					continue;
@@ -35,7 +35,7 @@ public class PointCloudEditor : Editor {
 				GameObject go = new GameObject();
 				go.name = xyzFile.Name.Substring(0, xyzFile.Name.Length - xyzFile.Extension.Length);
 				var newPointCloud = go.AddComponent<PointCloud>();
-				newPointCloud.Load(XYZLoader.LoadFile(xyzFile.FullName));
+				newPointCloud.Load(xyzFile.FullName);
 				newPointCloud.Show();
 			}
 		}
@@ -97,9 +97,26 @@ public class PointCloudEditor : Editor {
 
 	private void findPlanes(PointCloud pointCloud, PlaneClassifier.Type type) {
 		PlaneBehaviour.DeletePlanesIn(pointCloud.transform);
+		PointCloudEditor.DeleteMeshesIn(pointCloud.transform);
 		var planeClassifier = PlaneClassifier.Instantiate(type, pointCloud);
 		planeClassifier.Classify();
 		planeClassifier.RemoveGroundPlanes();
 		planeClassifier.DisplayPlanes(6);
+
+		var meshCreator = new MeshCreator(planeClassifier);
+		meshCreator.CreateMesh();
+		meshCreator.DisplayMesh();
+	}
+
+	public static void DeleteMeshesIn(Transform transform) {
+		var existingMeshes = new List<GameObject>();
+		foreach (var child in transform) {
+			if ((child as Transform).tag == "RoofMesh") {
+				existingMeshes.Add((child as Transform).gameObject);
+			}
+		}
+		foreach (var existingMesh in existingMeshes) {
+			GameObject.DestroyImmediate(existingMesh);
+		}
 	}
 }
