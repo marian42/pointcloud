@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class MeshCreator {
 	private readonly PlaneClassifier planeClassifier;
@@ -17,11 +18,10 @@ public class MeshCreator {
 		this.pointCloud = planeClassifier.PointCloud;
 	}
 
-	public void CreateMesh() {
+	private void createLayoutMesh() {
 		var verts = new List<Vector3>();
 		var triangles = new List<int>();
 
-		this.shape = this.pointCloud.GetShape();
 		for (int i = 0; i < this.shape.Length; i++) {
 			var v1 = this.shape[i];
 			var v2 = this.shape[(i + 1) % this.shape.Length];
@@ -45,6 +45,32 @@ public class MeshCreator {
 		this.Mesh.vertices = verts.ToArray();
 		this.Mesh.triangles = triangles.ToArray();
 		this.Mesh.RecalculateNormals();
+	}
+
+	private Mesh createMeshFromPolygon(Plane plane, Vector2[] shape) {
+		Triangulator tr = new Triangulator(shape);
+		int[] indices = tr.Triangulate();
+
+		Vector3[] vertices = new Vector3[shape.Length];
+		for (int i = 0; i < vertices.Length; i++) {
+			var ray = new Ray(new Vector3(shape[i].x, 0, shape[i].y), Vector3.up);
+			float hit;
+			var point = plane.Raycast(ray, out hit);
+			vertices[i] = ray.GetPoint(hit);
+		}
+
+		Mesh result = new Mesh();
+		result.vertices = vertices;
+		result.triangles = indices;
+		result.RecalculateNormals();
+		result.RecalculateBounds();
+
+		return result;
+	}
+
+	public void CreateMesh() {
+		this.shape = this.pointCloud.GetShape();
+		this.Mesh = this.createMeshFromPolygon(this.planeClassifier.PlanesWithScore.First().Value1, this.shape);
 	}
 
 	public void DisplayMesh() {
