@@ -48,15 +48,14 @@ public class MeshCreator {
 	}
 
 	private Mesh createMeshFromPolygon(Plane plane, Vector2[] shape) {
-		Triangulator tr = new Triangulator(shape);
-		int[] indices = tr.Triangulate().Reverse().ToArray();
+		int[] indices = HullMesher.TriangulateHull(shape);
 
 		Vector3[] vertices = new Vector3[shape.Length];
 		for (int i = 0; i < vertices.Length; i++) {
-			var ray = new Ray(new Vector3(shape[i].x, 0, shape[i].y), Vector3.up);
+			var ray = new Ray(new Vector3(shape[i].x, -1000, shape[i].y), Vector3.up);
 			float hit;
 			if (!plane.Raycast(ray, out hit)) {
-				Debug.LogError("Ray didn't hit plane.");
+				Debug.LogError("Ray didn't hit plane. " + ray.origin + " -> " + ray.direction);
 			}
 			vertices[i] = ray.GetPoint(hit);
 		}
