@@ -47,31 +47,30 @@ public class MeshCreator {
 		this.Mesh.RecalculateNormals();
 	}
 
-	private Mesh createMeshFromPolygon(Plane plane, Vector2[] shape) {
-		int[] indices = HullMesher.TriangulateHull(shape);
-
-		Vector3[] vertices = new Vector3[shape.Length];
+	private Vector3[] projectToPlane(Vector2[] vertices, Plane plane) {
+		Vector3[] result = new Vector3[vertices.Length];
 		for (int i = 0; i < vertices.Length; i++) {
-			var ray = new Ray(new Vector3(shape[i].x, -1000, shape[i].y), Vector3.up);
+			var ray = new Ray(new Vector3(vertices[i].x, -1000, vertices[i].y), Vector3.up);
 			float hit;
 			if (!plane.Raycast(ray, out hit)) {
 				Debug.LogError("Ray didn't hit plane. " + ray.origin + " -> " + ray.direction);
 			}
-			vertices[i] = ray.GetPoint(hit);
+			result[i] = ray.GetPoint(hit);
 		}
-
-		Mesh result = new Mesh();
-		result.vertices = vertices;
-		result.triangles = indices;
-		result.RecalculateNormals();
-		result.RecalculateBounds();
-
 		return result;
+	}
+
+	private IEnumerable<Triangle> createMeshFromPolygon(Plane plane, Vector2[] shape) {
+		var vertices = projectToPlane(shape, plane);
+		var triangles = HullMesher.TriangulateHull(shape);
+
+		return Triangle.GetTriangles(vertices, triangles);
 	}
 
 	public void CreateMesh() {
 		this.shape = this.pointCloud.GetShape();
-		this.Mesh = this.createMeshFromPolygon(this.planeClassifier.PlanesWithScore.First().Value1, this.shape);
+		var triangles = this.createMeshFromPolygon(this.planeClassifier.PlanesWithScore.First().Value1, this.shape);
+		this.Mesh = Triangle.CreateMesh(triangles);
 	}
 
 	public void DisplayMesh() {
