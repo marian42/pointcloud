@@ -49,13 +49,15 @@ public class MeshCreator {
 
 	private Mesh createMeshFromPolygon(Plane plane, Vector2[] shape) {
 		Triangulator tr = new Triangulator(shape);
-		int[] indices = tr.Triangulate();
+		int[] indices = tr.Triangulate().Reverse().ToArray();
 
 		Vector3[] vertices = new Vector3[shape.Length];
 		for (int i = 0; i < vertices.Length; i++) {
 			var ray = new Ray(new Vector3(shape[i].x, 0, shape[i].y), Vector3.up);
 			float hit;
-			var point = plane.Raycast(ray, out hit);
+			if (!plane.Raycast(ray, out hit)) {
+				Debug.LogError("Ray didn't hit plane.");
+			}
 			vertices[i] = ray.GetPoint(hit);
 		}
 
@@ -80,7 +82,7 @@ public class MeshCreator {
 		gameObject.tag = "RoofMesh";
 		gameObject.AddComponent<MeshFilter>().sharedMesh = this.Mesh;
 		gameObject.AddComponent<MeshRenderer>().material = material;
-		gameObject.transform.localPosition = Vector3.down * this.pointCloud.Center.y;
+		gameObject.transform.localPosition = Vector3.zero;
 		gameObject.name = "Shape";
 	}
 }
