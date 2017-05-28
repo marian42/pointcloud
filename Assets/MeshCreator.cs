@@ -51,7 +51,9 @@ public class MeshCreator {
 
 	private IEnumerable<Triangle> createMeshFromPolygon(Plane plane, Vector2[] shape) {
 		var vertices = projectToPlane(shape, plane);
-		var triangles = HullMesher.TriangulateHull(shape);
+
+		var triangulator = new Triangulator(shape);
+		var triangles = triangulator.Triangulate();
 
 		return Triangle.GetTriangles(vertices, triangles);
 	}
