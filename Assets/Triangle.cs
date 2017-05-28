@@ -68,8 +68,6 @@ public class Triangle {
 		int abovePlane = distance.Count(d => d > 0);
 		int belowPlane = distance.Count(d => d < 0);
 
-		Debug.Log("on: " + onPlane + ", above: " + abovePlane + ", below: " + belowPlane);
-
 		if (belowPlane == 0) {
 			return new Tuple<IEnumerable<Triangle>,IEnumerable<Triangle>>(this.Yield(), Enumerable.Empty<Triangle>());
 		}
@@ -109,7 +107,6 @@ public class Triangle {
 			float dst;
 			plane.Raycast(ray, out dst);
 			var intersect = ray.GetPoint(dst);
-			Debug.LogError("Vertex is on plane.");
 
 			return new Tuple<IEnumerable<Triangle>,IEnumerable<Triangle>>(new Triangle(vertexBelow, vertexOn, intersect).Yield(), new Triangle(vertexAbove, vertexOn, intersect).Yield());
 		}
