@@ -118,8 +118,8 @@ public class Triangle {
 		return new Tuple<IEnumerable<Triangle>, IEnumerable<Triangle>>(tuples.SelectMany(t => t.Value1).NonNull(), tuples.SelectMany(t => t.Value2).NonNull());
 	}
 
-	public static IEnumerable<Triangle> CutMesh(IEnumerable<Triangle> triangles, Plane plane, bool above) {
-		return triangles.SelectMany(t => above ? t.Split(plane).Value1 : t.Split(plane).Value2).NonNull();
+	public static IEnumerable<Triangle> CutMesh(IEnumerable<Triangle> triangles, Plane plane, bool keepAbove) {
+		return triangles.SelectMany(t => keepAbove ? t.Split(plane).Value1 : t.Split(plane).Value2).NonNull();
 	}
 
 	public override string ToString() {
