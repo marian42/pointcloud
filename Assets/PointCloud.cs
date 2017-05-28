@@ -5,6 +5,21 @@ using System.Linq;
 using System;
 using System.IO;
 
+[Serializable]
+public class PlaneParameters {
+	public Vector3 Normal;
+	public float Distance;
+
+	public PlaneParameters(Plane plane) {
+		this.Normal = plane.normal;
+		this.Distance = plane.distance;
+	
+	}
+	public Plane GetPlane() {
+		return new Plane(this.Normal, this.Distance);
+	}
+}
+
 [SelectionBase]
 public class PointCloud : MonoBehaviour {
 	private const int pointsPerMesh = 60000;
@@ -20,6 +35,17 @@ public class PointCloud : MonoBehaviour {
 	public string Name;
 
 	public Vector3 Center;
+
+	[SerializeField, HideInInspector]
+	private PlaneParameters[] serializedPlanes;
+	public IEnumerable<Plane> Planes {
+		get {
+			return this.serializedPlanes.Select(pp => pp.GetPlane());
+		}
+		set {
+			this.serializedPlanes = value.Select(plane => new PlaneParameters(plane)).ToArray();
+		}
+	}
 	
 	public void Load(string xyzFilename) {
 		this.Points = XYZLoader.LoadFile(xyzFilename);

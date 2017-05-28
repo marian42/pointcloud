@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Linq;
 
 public class MeshCreator {
-	private readonly PlaneClassifier planeClassifier;
+	private readonly List<Plane> planes;
 	private readonly PointCloud pointCloud;
 	private Vector2[] shape;
 
@@ -13,9 +13,9 @@ public class MeshCreator {
 		private set;
 	}
 
-	public MeshCreator(PlaneClassifier planeClassifier) {
-		this.planeClassifier = planeClassifier;
-		this.pointCloud = planeClassifier.PointCloud;
+	public MeshCreator(PointCloud pointCloud) {
+		this.planes = pointCloud.Planes.ToList();
+		this.pointCloud = pointCloud;
 	}
 
 	private void createLayoutMesh() {
@@ -69,8 +69,8 @@ public class MeshCreator {
 
 	public void CreateMesh() {
 		this.shape = this.pointCloud.GetShape();
-		var triangles = this.createMeshFromPolygon(this.planeClassifier.PlanesWithScore.First().Value1, this.shape);
-		this.Mesh = Triangle.CreateMesh(triangles);
+		var triangles = this.createMeshFromPolygon(this.planes.First(), this.shape);
+		this.Mesh = Triangle.CreateMesh(triangles, true);
 	}
 
 	public void DisplayMesh() {

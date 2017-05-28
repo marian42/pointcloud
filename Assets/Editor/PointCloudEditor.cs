@@ -83,6 +83,13 @@ public class PointCloudEditor : Editor {
 		}
 
 		GUILayout.EndHorizontal();
+
+		if (GUILayout.Button("Create mesh")) {
+			PointCloudEditor.DeleteMeshesIn(pointCloud.transform);
+			var meshCreator = new MeshCreator(pointCloud);
+			meshCreator.CreateMesh();
+			meshCreator.DisplayMesh();
+		}
 	}
 
 	private void hideSelectionHighlight() {
@@ -102,10 +109,7 @@ public class PointCloudEditor : Editor {
 		planeClassifier.Classify();
 		planeClassifier.RemoveGroundPlanes();
 		planeClassifier.DisplayPlanes(6);
-
-		var meshCreator = new MeshCreator(planeClassifier);
-		meshCreator.CreateMesh();
-		meshCreator.DisplayMesh();
+		pointCloud.Planes = planeClassifier.PlanesWithScore.OrderByDescending(t => t.Value2).Take(10).Select(t => t.Value1).ToList();
 	}
 
 	public static void DeleteMeshesIn(Transform transform) {
