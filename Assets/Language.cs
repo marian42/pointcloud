@@ -18,4 +18,12 @@ public static class TransformExtension {
 		}
 		return list.ElementAt(Random.Range(0, list.Count()));
 	}
+
+	public static IEnumerable<T> Yield<T>(this T item) {
+		yield return item;
+	}
+
+	public static IEnumerable<T> NonNull<T>(this IEnumerable<T> collection) {
+		return collection.Where(item => item != null);
+	}
 }

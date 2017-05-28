@@ -69,8 +69,18 @@ public class MeshCreator {
 
 	public void CreateMesh() {
 		this.shape = this.pointCloud.GetShape();
-		var triangles = this.createMeshFromPolygon(this.planes.First(), this.shape);
-		this.Mesh = Triangle.CreateMesh(triangles, true);
+		if (this.shape.First() == this.shape.Last()) {
+			this.shape = this.shape.Skip(1).ToArray();
+		}
+
+		var plane1 = this.planes.First();
+		var plane2 = this.planes.ElementAt(1);
+		var triangles1 = this.createMeshFromPolygon(plane1, this.shape);
+		triangles1 = Triangle.CutMesh(triangles1, plane2, false);
+		var triangles2 = this.createMeshFromPolygon(plane2, this.shape);
+		triangles2 = Triangle.CutMesh(triangles2, plane1, false);
+
+		this.Mesh = Triangle.CreateMesh(triangles1.Concat(triangles2), true);
 	}
 
 	public void DisplayMesh() {
