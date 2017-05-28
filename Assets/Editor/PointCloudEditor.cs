@@ -90,6 +90,13 @@ public class PointCloudEditor : Editor {
 			meshCreator.CreateMesh();
 			meshCreator.DisplayMesh();
 		}
+
+		if (GUILayout.Button("Show Layout")) {
+			PointCloudEditor.DeleteMeshesIn(pointCloud.transform);
+			var meshCreator = new MeshCreator(pointCloud);
+			meshCreator.CreateLayoutMesh();
+			meshCreator.DisplayMesh();
+		}
 	}
 
 	private void hideSelectionHighlight() {

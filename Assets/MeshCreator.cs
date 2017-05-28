@@ -16,35 +16,24 @@ public class MeshCreator {
 	public MeshCreator(PointCloud pointCloud) {
 		this.planes = pointCloud.Planes.ToList();
 		this.pointCloud = pointCloud;
+		this.shape = this.pointCloud.GetShape();
+		if (this.shape.First() == this.shape.Last()) {
+			this.shape = this.shape.Skip(1).ToArray();
+		}
 	}
 
-	private void createLayoutMesh() {
-		var verts = new List<Vector3>();
-		var triangles = new List<int>();
+	public void CreateLayoutMesh() {
+		var triangles = new List<Triangle>();
 
 		for (int i = 0; i < this.shape.Length; i++) {
 			var v1 = this.shape[i];
 			var v2 = this.shape[(i + 1) % this.shape.Length];
 
-			verts.Add(new Vector3(v1.x, 0, v1.y));
-			verts.Add(new Vector3(v2.x, 0, v2.y));
-			verts.Add(new Vector3(v2.x, 5, v2.y));
-			verts.Add(new Vector3(v1.x, 5, v1.y));
-			verts.Add(new Vector3(v1.x, 0, v1.y));
-			verts.Add(new Vector3(v2.x, 0, v2.y));
-			verts.Add(new Vector3(v2.x, 5, v2.y));
-			verts.Add(new Vector3(v1.x, 5, v1.y));
-			int p = i * 8;
-			triangles.AddRange(new int[] { p + 0, p + 1, p + 2 });
-			triangles.AddRange(new int[] { p + 0, p + 2, p + 3 });
-			triangles.AddRange(new int[] { p + 6, p + 5, p + 4 });
-			triangles.AddRange(new int[] { p + 7, p + 6, p + 4 });
+			triangles.Add(new Triangle(new Vector3(v1.x, 0, v1.y), new Vector3(v2.x, 0, v2.y), new Vector3(v2.x, 5, v2.y)));
+			triangles.Add(new Triangle(new Vector3(v1.x, 0, v1.y), new Vector3(v2.x, 5, v2.y), new Vector3(v1.x, 5, v1.y)));
 		}
 
-		this.Mesh = new Mesh();
-		this.Mesh.vertices = verts.ToArray();
-		this.Mesh.triangles = triangles.ToArray();
-		this.Mesh.RecalculateNormals();
+		this.Mesh = Triangle.CreateMesh(triangles, true);
 	}
 
 	private Vector3[] projectToPlane(Vector2[] vertices, Plane plane) {
@@ -68,11 +57,6 @@ public class MeshCreator {
 	}
 
 	public void CreateMesh() {
-		this.shape = this.pointCloud.GetShape();
-		if (this.shape.First() == this.shape.Last()) {
-			this.shape = this.shape.Skip(1).ToArray();
-		}
-
 		var plane1 = this.planes.First();
 		var plane2 = this.planes.ElementAt(1);
 		var triangles1 = this.createMeshFromPolygon(plane1, this.shape);
