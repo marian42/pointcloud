@@ -58,7 +58,7 @@ public class MeshCreator {
 		return Triangle.GetTriangles(vertices, triangles);
 	}
 
-	private IEnumerable<Triangle> createFromPLanes(IEnumerable<Plane> planes) {
+	private IEnumerable<Triangle> createFromPlanes(IEnumerable<Plane> planes) {
 		var result = new List<Triangle>();
 		foreach (var startingPlane in planes) {
 			var mesh = this.createMeshFromPolygon(startingPlane, this.shape);
@@ -79,10 +79,25 @@ public class MeshCreator {
 		return result;
 	}
 
-	public void CreateMesh() {
-		var triangles = this.createFromPLanes(this.planes.Take(3));
+	private float getScore(IEnumerable<Triangle> mesh) {
+		return mesh.Sum(triangle => triangle.GetScore(this.pointCloud.CenteredPoints));
+	}
 
-		this.Mesh = Triangle.CreateMesh(triangles, true);
+	public void CreateMesh() {
+		float bestScore = -1.0f;
+		IEnumerable<Triangle> bestMesh = null;
+
+		foreach (var selectedPlanes in this.planes.Take(5).Subsets()) {
+			var currentMesh = this.createFromPlanes(selectedPlanes);
+			var currentScore = this.getScore(currentMesh);
+
+			if (currentScore > bestScore) {
+				bestScore = currentScore;
+				bestMesh = currentMesh;
+			}
+		}
+
+		this.Mesh = Triangle.CreateMesh(bestMesh, true);
 	}
 
 	public void DisplayMesh() {

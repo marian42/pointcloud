@@ -9,10 +9,28 @@ public class Triangle {
 	public readonly Vector3 V2;
 	public readonly Vector3 V3;
 
+	public Vector3 Normal {
+		get {
+			return Vector3.Cross(this.V2 - this.V1, this.V3 - this.V1);
+		}
+	}
+
+	public Plane Plane {
+		get {
+			return new Plane(this.Normal.normalized, this.V1);
+		}
+	}
+
 	public Triangle(Vector3 v1, Vector3 v2, Vector3 v3) {
-		this.V1 = v1;
-		this.V2 = v2;
-		this.V3 = v3;
+		if (Vector3.Cross(v2 - v1, v3 - v1).y > 0) {
+			this.V1 = v1;
+			this.V2 = v2;
+			this.V3 = v3;
+		} else {
+			this.V1 = v3;
+			this.V2 = v2;
+			this.V3 = v1;
+		}		
 	}
 
 	public IEnumerable<Vector3> ToEnumerable() {
@@ -88,7 +106,7 @@ public class Triangle {
 			var ray2 = new Ray(single, double2 - single);
 			float dst2;
 			if (!plane.Raycast(ray2, out dst2)) {
-					throw new Exception("Ray didn't hit plane");
+				throw new Exception("Ray didn't hit plane");
 			}
 			var intersect2 = ray2.GetPoint(dst2);
 
@@ -124,5 +142,42 @@ public class Triangle {
 
 	public override string ToString() {
 		return "Triangle: " + this.V1 + ", " + this.V2 + ", " + this.V3;
+	}
+
+	public bool ContainsXZ(Vector3 point) {
+		float ax, az, bx, bz, cx, cz, apx, apz, bpx, bpz, cpx, cpz;
+		float cCROSSap, bCROSScp, aCROSSbp;
+
+		ax = this.V1.x - this.V2.x; az = this.V1.z - this.V2.z;
+		bx = this.V3.x - this.V1.x; bz = this.V3.z - this.V1.z;
+		cx = this.V2.x - this.V3.x; cz = this.V2.z - this.V3.z;
+		apx = point.x - this.V3.x; apz = point.z - this.V3.z;
+		bpx = point.x - this.V2.x; bpz = point.z - this.V2.z;
+		cpx = point.x - this.V1.x; cpz = point.z - this.V1.z;
+
+		aCROSSbp = ax * bpz - az * bpx;
+		cCROSSap = cx * apz - cz * apx;
+		bCROSScp = bx * cpz - bz * cpx;
+
+		return ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
+	}
+
+	public float GetScore(Vector3[] points) {
+		float result = 0;
+
+		var plane = this.Plane;
+
+		foreach (var point in points) {
+			if (!this.ContainsXZ(point)) {
+				continue;
+			}
+
+			float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / HoughPlaneFinder.MaxDistance;
+			if (distance < 1.0f) {
+				result += 1.0f - distance;
+			}
+		}
+
+		return result;
 	}
 }
