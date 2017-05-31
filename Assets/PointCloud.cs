@@ -96,6 +96,7 @@ public class PointCloud : MonoBehaviour {
 		var gameObject = GameObject.Instantiate(prefab) as GameObject;
 		gameObject.layer = 8;
 		gameObject.transform.parent = this.transform;
+		gameObject.transform.localPosition = Vector3.zero;
 		var mesh = new Mesh();
 		gameObject.GetComponent<MeshFilter>().mesh = mesh;
 
@@ -104,7 +105,7 @@ public class PointCloud : MonoBehaviour {
 		Color[] meshColors = new Color[toIndex - fromIndex];
 		for (int i = fromIndex; i < toIndex; ++i) {
 			indecies[i - fromIndex] = i - fromIndex;
-			meshPoints[i - fromIndex] = this.Points[i];
+			meshPoints[i - fromIndex] = this.CenteredPoints[i];
 			meshColors[i - fromIndex] = this.Colors[i];
 		}
 

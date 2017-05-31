@@ -135,16 +135,16 @@ public class MeshCreator {
  
         sb.Append("g ").Append(this.pointCloud.Name).Append("\n");
         foreach(Vector3 v in this.Mesh.vertices) {
-            sb.Append(string.Format("v {0} {1} {2}\n",v.x,v.y,v.z));
+			sb.Append(string.Format("v {0} {1} {2}\n", v.x + XYZLoader.ReferenceX, v.z + XYZLoader.ReferenceY, v.y +XYZLoader.ReferenceZ));
         }
         sb.Append("\n");
         foreach(Vector3 v in this.Mesh.normals) {
-            sb.Append(string.Format("vn {0} {1} {2}\n",v.x,v.y,v.z));
+			sb.Append(string.Format("vn {0} {1} {2}\n", v.x, v.y, v.z));
         }
 		sb.Append("\n");
         for (int i=0;i<this.Mesh.triangles.Length;i+=3) {
-            sb.Append(string.Format("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}\n", 
-                this.Mesh.triangles[i]+1, this.Mesh.triangles[i+1]+1, this.Mesh.triangles[i+2]+1));
+			sb.Append(string.Format("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}\n",
+				this.Mesh.triangles[i] + 1, this.Mesh.triangles[i + 1] + 1, this.Mesh.triangles[i + 2] + 1));
         }
 		System.IO.File.WriteAllText(PointCloud.GetDataPath() + this.pointCloud.Name + ".obj", sb.ToString());
 	}
