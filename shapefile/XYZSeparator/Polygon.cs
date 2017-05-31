@@ -100,9 +100,7 @@ public class Polygon {
 			findIntersection(pij1, pij2, pjk1, pjk2,
 				out lines_intersect, out segments_intersect,
 				out poi, out close1, out close2);
-			if (!lines_intersect) {
-				enlarged_points.Add(old_points[j]);
-			} else {
+			if (lines_intersect && !double.IsNaN(poi.X) && !double.IsNaN(poi.Y)) {
 				enlarged_points.Add(poi);
 			}			
 		}
