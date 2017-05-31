@@ -19,32 +19,6 @@ public class PointCloudEditor : Editor {
 
 		GUILayout.BeginHorizontal();
 
-		if (GUILayout.Button("Load...")) {
-			string selected = EditorUtility.OpenFilePanel("Load file", Application.dataPath, "xyz");
-			if (selected.Any() && File.Exists(selected)) {
-				pointCloud.Load(selected);
-				pointCloud.Show();
-			}
-		}
-
-		if (GUILayout.Button("Load folder")) {
-			var folder = new DirectoryInfo(PointCloud.GetDataPath());
-			foreach (var xyzFile in folder.GetFiles()) {
-				if (xyzFile.Extension.ToLower() != ".xyz") {
-					continue;
-				}
-				GameObject go = new GameObject();
-				go.name = xyzFile.Name.Substring(0, xyzFile.Name.Length - xyzFile.Extension.Length);
-				var newPointCloud = go.AddComponent<PointCloud>();
-				newPointCloud.Load(xyzFile.FullName);
-				newPointCloud.Show();
-			}
-		}
-
-		GUILayout.EndHorizontal();
-
-		GUILayout.BeginHorizontal();
-
 		if (GUILayout.Button("Estimate normals")) {
 			pointCloud.EstimateNormals();
 		}

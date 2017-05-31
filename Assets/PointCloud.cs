@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Linq;
 using System;
 using System.IO;
+using UnityEditor;
 
 [Serializable]
 public class PlaneParameters {
@@ -53,6 +54,7 @@ public class PointCloud : MonoBehaviour {
 		this.ResetColors(Color.red);
 		FileInfo fileInfo = new FileInfo(xyzFilename);
 		this.Name = fileInfo.Name.Substring(0, fileInfo.Name.IndexOf('.'));
+		this.gameObject.name = this.Name;
 	}
 
 	public void ResetColors(Color color) {
@@ -226,5 +228,30 @@ public class PointCloud : MonoBehaviour {
 			result += this.GetScore(i, plane);
 		}
 		return result;
+	}
+
+	[MenuItem("File/Load pointcloud...")]
+	public static void LoadSingle() {
+		string selected = EditorUtility.OpenFilePanel("Load file", Application.dataPath, "xyz");
+		if (selected.Any() && File.Exists(selected)) {
+			GameObject gameObject = new GameObject();
+			var pointCloud = gameObject.AddComponent<PointCloud>();
+			pointCloud.Load(selected);
+			pointCloud.Show();
+		}
+	}
+
+	[MenuItem("File/Load all pointclouds")]
+	public static void LoadFolder() {
+		var folder = new DirectoryInfo(PointCloud.GetDataPath());
+		foreach (var xyzFile in folder.GetFiles()) {
+			if (xyzFile.Extension.ToLower() != ".xyz") {
+				continue;
+			}
+			GameObject gameObject = new GameObject();
+			var newPointCloud = gameObject.AddComponent<PointCloud>();
+			newPointCloud.Load(xyzFile.FullName);
+			newPointCloud.Show();
+		}
 	}
 }
