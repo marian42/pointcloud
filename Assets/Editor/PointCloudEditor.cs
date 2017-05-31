@@ -10,6 +10,7 @@ using System;
 [CustomEditor(typeof(PointCloud))]
 public class PointCloudEditor : Editor {
 	private static PlaneClassifier.Type classifierType = PlaneClassifier.Type.Ransac;
+	private static MeshCreator.Type meshCreatorType = MeshCreator.Type.Cutoff;
 
 	public override void OnInspectorGUI() {
 		base.OnInspectorGUI();
@@ -69,7 +70,7 @@ public class PointCloudEditor : Editor {
 
 		classifierType = (PlaneClassifier.Type)(EditorGUILayout.EnumPopup(classifierType));
 
-		if (GUILayout.Button("Find Planes")) {
+		if (GUILayout.Button("Find planes")) {
 			this.findPlanes(pointCloud, classifierType);
 		}
 
@@ -84,19 +85,24 @@ public class PointCloudEditor : Editor {
 
 		GUILayout.EndHorizontal();
 
+		GUILayout.BeginHorizontal();
+
+		meshCreatorType = (MeshCreator.Type)(EditorGUILayout.EnumPopup(meshCreatorType));
+
 		if (GUILayout.Button("Create mesh")) {
-			PointCloudEditor.DeleteMeshesIn(pointCloud.transform);
-			var meshCreator = new MeshCreator(pointCloud);
-			meshCreator.CreateMesh();
-			meshCreator.DisplayMesh();
+			this.createMesh(pointCloud, meshCreatorType);
 		}
 
-		if (GUILayout.Button("Show Layout")) {
-			PointCloudEditor.DeleteMeshesIn(pointCloud.transform);
-			var meshCreator = new MeshCreator(pointCloud);
-			meshCreator.CreateLayoutMesh();
-			meshCreator.DisplayMesh();
+		if (GUILayout.Button("Create all")) {
+			DateTime start = DateTime.Now;
+			foreach (var otherPointCloud in GameObject.FindObjectsOfType<PointCloud>()) {
+				this.createMesh(otherPointCloud, meshCreatorType);
+			}
+			var time = DateTime.Now - start;
+			Debug.Log("Created all meshes in " + (int)System.Math.Floor(time.TotalMinutes) + ":" + time.Seconds.ToString().PadLeft(2, '0'));
 		}
+
+		GUILayout.EndHorizontal();
 	}
 
 	private void hideSelectionHighlight() {
@@ -117,6 +123,13 @@ public class PointCloudEditor : Editor {
 		planeClassifier.RemoveGroundPlanes();
 		planeClassifier.DisplayPlanes(6);
 		pointCloud.Planes = planeClassifier.PlanesWithScore.OrderByDescending(t => t.Value2).Take(10).Select(t => t.Value1).ToList();
+	}
+
+	private void createMesh(PointCloud pointCloud, MeshCreator.Type type) {
+		PointCloudEditor.DeleteMeshesIn(pointCloud.transform);
+		var meshCreator = new MeshCreator(pointCloud);
+		meshCreator.CreateMesh(type);
+		meshCreator.DisplayMesh();
 	}
 
 	public static void DeleteMeshesIn(Transform transform) {

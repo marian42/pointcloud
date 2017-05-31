@@ -4,6 +4,11 @@ using UnityEngine;
 using System.Linq;
 
 public class MeshCreator {
+	public enum Type {
+		Cutoff,
+		Layout
+	}
+
 	private readonly List<Plane> planes;
 	private readonly PointCloud pointCloud;
 	private Vector2[] shape;
@@ -22,7 +27,7 @@ public class MeshCreator {
 		}
 	}
 
-	public void CreateLayoutMesh() {
+	public void createLayoutMesh() {
 		var triangles = new List<Triangle>();
 
 		for (int i = 0; i < this.shape.Length; i++) {
@@ -83,7 +88,7 @@ public class MeshCreator {
 		return mesh.Sum(triangle => triangle.GetScore(this.pointCloud.CenteredPoints));
 	}
 
-	public void CreateMesh() {
+	public void createMeshCutoff() {
 		float bestScore = -1.0f;
 		IEnumerable<Triangle> bestMesh = null;
 
@@ -98,6 +103,18 @@ public class MeshCreator {
 		}
 
 		this.Mesh = Triangle.CreateMesh(bestMesh, true);
+	}
+
+	public void CreateMesh(Type type) {
+		switch (type) {
+			case Type.Cutoff:
+				this.createMeshCutoff();
+				return;			
+			case Type.Layout:
+				this.createLayoutMesh();
+				return;
+			default: throw new System.NotImplementedException();
+		}
 	}
 
 	public void DisplayMesh() {
