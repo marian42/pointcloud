@@ -47,6 +47,7 @@ public class PlaneBehaviour : MonoBehaviour {
 			quad.transform.parent = this.transform;
 			quad.transform.localScale = Vector3.one * 4.0f;
 			quad.transform.localPosition = Vector3.zero;
+			quad.gameObject.layer = 9;
 		}
 		{
 			var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -54,6 +55,7 @@ public class PlaneBehaviour : MonoBehaviour {
 			quad.transform.localScale = Vector3.one * 4.0f;
 			quad.transform.localPosition = Vector3.zero;
 			quad.transform.rotation = Quaternion.Euler(Vector3.right * 180.0f);
+			quad.gameObject.layer = 9;
 		}
 		this.Display();
 	}
@@ -81,6 +83,7 @@ public class PlaneBehaviour : MonoBehaviour {
 		planeBehaviour.PointCloud = pointCloud;
 		planeGameObject.transform.parent = pointCloud.transform;
 		planeBehaviour.Initialize();
+		planeBehaviour.gameObject.layer = 9;
 	}
 
 	public static void DeletePlanesIn(Transform transform) {

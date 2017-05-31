@@ -126,5 +126,6 @@ public class MeshCreator {
 		gameObject.AddComponent<MeshRenderer>().material = material;
 		gameObject.transform.localPosition = Vector3.zero;
 		gameObject.name = "Shape";
+		gameObject.layer = 10;
 	}
 }

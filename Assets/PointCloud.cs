@@ -53,7 +53,6 @@ public class PointCloud : MonoBehaviour {
 		this.ResetColors(Color.red);
 		FileInfo fileInfo = new FileInfo(xyzFilename);
 		this.Name = fileInfo.Name.Substring(0, fileInfo.Name.IndexOf('.'));
-		Debug.Log(this.name);
 	}
 
 	public void ResetColors(Color color) {
@@ -93,6 +92,7 @@ public class PointCloud : MonoBehaviour {
 	private void createMeshObject(int fromIndex, int toIndex) {
 		var prefab = Resources.Load("PointMesh") as GameObject;
 		var gameObject = GameObject.Instantiate(prefab) as GameObject;
+		gameObject.layer = 8;
 		gameObject.transform.parent = this.transform;
 		var mesh = new Mesh();
 		gameObject.GetComponent<MeshFilter>().mesh = mesh;
@@ -108,7 +108,7 @@ public class PointCloud : MonoBehaviour {
 
 		mesh.vertices = meshPoints;
 		mesh.colors = meshColors;
-		mesh.SetIndices(indecies, MeshTopology.Points, 0);		
+		mesh.SetIndices(indecies, MeshTopology.Points, 0);
 	}
 
 	private void deleteMeshes() {

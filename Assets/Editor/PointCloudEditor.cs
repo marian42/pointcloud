@@ -27,7 +27,7 @@ public class PointCloudEditor : Editor {
 			}
 		}
 
-		if (GUILayout.Button("Load folder...")) {
+		if (GUILayout.Button("Load folder")) {
 			var folder = new DirectoryInfo(PointCloud.GetDataPath());
 			foreach (var xyzFile in folder.GetFiles()) {
 				if (xyzFile.Extension.ToLower() != ".xyz") {
