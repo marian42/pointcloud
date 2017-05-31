@@ -12,18 +12,20 @@ public class Polygon {
 	public readonly PointD[] OffsetPoints;
 	public readonly PointD[] Points;
 
-	public readonly ShapePolygon ShapePolygon;
-
 	public RectangleD BoundingBox;
+	
+	public readonly string Name;
+	private readonly int id;
 
-	private readonly int partIndex;
+	private static int globalId;
 
 	public Polygon(ShapePolygon shapePolygon, int partIndex, double offset) {
 		this.Points = shapePolygon.Parts[partIndex];
 		this.OffsetPoints = Polygon.GetEnlargedPolygon(this.Points.ToList(), offset).ToArray();
-		this.ShapePolygon = shapePolygon;
 		this.createBoundingBox();
-		this.partIndex = partIndex;
+		this.id = Polygon.globalId;
+		Polygon.globalId++;
+		this.Name = this.id.ToString().PadLeft(5, '0') + "-" + shapePolygon.GetMetadata("uuid");
 	}
 
 	private void createBoundingBox() {
@@ -188,13 +190,11 @@ public class Polygon {
 	}
 
 	public string GetXYZFilename() {
-		var index = this.partIndex == 0 ? "" : "-" + "abcdefghijklmnoprstuvqxyz".ElementAt(this.partIndex);
-		return this.ShapePolygon.GetMetadata("uuid") + index + ".xyz";
+		return this.Name + ".xyz";
 	}
 
 	public void SavePolygon(string folder) {
-		var index = this.partIndex == 0 ? "" : "-" + "abcdefghijklmnoprstuvqxyz".ElementAt(this.partIndex);
-		string filename = folder + this.ShapePolygon.GetMetadata("uuid") + index + ".xyzshape";
+		string filename = folder + this.Name + ".xyzshape";
 		File.WriteAllLines(filename, this.Points.Select(p => new Vector3(p.X, 0, p.Y)).Select(p => p.ToXYZLine()));
 	}
 }

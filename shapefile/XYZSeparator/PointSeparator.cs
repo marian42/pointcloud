@@ -30,7 +30,7 @@ namespace XYZSeparator {
 			this.currentPoints.Remove(polygon);
 			File.AppendAllLines(this.polygonFolder + polygon.GetXYZFilename(), points.Select(p => p.ToXYZLine()));
 			polygon.SavePolygon(this.polygonFolder);
-			Console.WriteLine("Wrote " + points.Count + " points to " + polygon.ShapePolygon.GetMetadata("uuid") + ".xyz");
+			Console.WriteLine("Wrote " + points.Count + " points to " + polygon.Name + ".xyz");
 			this.HitCount += points.Count;
 		}
 
