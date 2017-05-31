@@ -52,13 +52,18 @@ public abstract class PlaneClassifier {
 		}
 	}
 
-	private bool isNonGroundPlane(Plane plane) {
-		return Mathf.Abs(plane.GetDistanceToPoint(this.groundPoint)) > 2.0f
- 			|| Vector3.Angle(Vector3.up, plane.normal) > 10.0f;
+	private bool isGroundPlane(Plane plane) {
+		return Mathf.Abs(plane.GetDistanceToPoint(this.groundPoint)) < 2.0f
+ 			&& Vector3.Angle(Vector3.up, plane.normal) < 10.0f;
 	}
 
-	public void RemoveGroundPlanes() {
+	private bool isVerticalPlane(Plane plane) {
+		var horizontalNormal = new Vector3(plane.normal.x, 0, plane.normal.z).normalized;
+		return Vector3.Angle(horizontalNormal, plane.normal) < 10.0f;
+	}	
+
+	public void RemoveGroundPlanesAndVerticalPlanes() {
 		this.groundPoint = this.PointCloud.CenteredPoints.OrderBy(p => p.y).Skip(20).FirstOrDefault();
-		this.PlanesWithScore = this.PlanesWithScore.Where(tuple => this.isNonGroundPlane(tuple.Value1)).ToList();
+		this.PlanesWithScore = this.PlanesWithScore.Where(tuple => !this.isGroundPlane(tuple.Value1) && !this.isVerticalPlane(tuple.Value1)).ToList();
 	}
 }

@@ -120,7 +120,7 @@ public class PointCloudEditor : Editor {
 		PointCloudEditor.DeleteMeshesIn(pointCloud.transform);
 		var planeClassifier = PlaneClassifier.Instantiate(type, pointCloud);
 		planeClassifier.Classify();
-		planeClassifier.RemoveGroundPlanes();
+		planeClassifier.RemoveGroundPlanesAndVerticalPlanes();
 		planeClassifier.DisplayPlanes(6);
 		pointCloud.Planes = planeClassifier.PlanesWithScore.OrderByDescending(t => t.Value2).Take(10).Select(t => t.Value1).ToList();
 	}
