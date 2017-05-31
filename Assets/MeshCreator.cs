@@ -47,7 +47,7 @@ public class MeshCreator {
 			var ray = new Ray(new Vector3(vertices[i].x, -1000, vertices[i].y), Vector3.up);
 			float hit;
 			if (!plane.Raycast(ray, out hit)) {
-				Debug.LogError("Ray didn't hit plane. " + ray.origin + " -> " + ray.direction);
+				Debug.LogError("Ray didn't hit plane. " + ray.origin + " -> " + plane.normal);
 			}
 			result[i] = ray.GetPoint(hit);
 		}
@@ -85,7 +85,7 @@ public class MeshCreator {
 	}
 
 	private float getScore(IEnumerable<Triangle> mesh) {
-		return mesh.Sum(triangle => triangle.GetScore(this.pointCloud.CenteredPoints));
+		return mesh.Sum(triangle => triangle.GetScore(this.pointCloud));
 	}
 
 	public void createMeshCutoff() {

@@ -104,5 +104,12 @@ public class HoughPlaneFinder : PlaneClassifier {
 		}
 
 		Timekeeping.CompleteTask("Find planes");
-	}	
+	}
+
+	private static float getScore(float relativeDistance) {
+		if (relativeDistance > 1.0f) {
+			return 0;
+		}
+		return 1.0f - relativeDistance;
+	}
 }

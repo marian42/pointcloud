@@ -12,7 +12,7 @@ public class PlaneBehaviour : MonoBehaviour {
 
 	public void ColorPoints() {
 		for (int i = 0; i < this.PointCloud.CenteredPoints.Length; i++) {
-			float score = HoughPlaneFinder.GetScore(this.Plane, this.PointCloud.CenteredPoints[i]);
+			float score = this.PointCloud.GetScore(i, this.Plane);
 			if (score == 0) {
 				this.PointCloud.Colors[i] = Color.red;
 			} else {
@@ -66,7 +66,7 @@ public class PlaneBehaviour : MonoBehaviour {
 	}
 
 	public void UpdateName() {
-		float score = this.PointCloud.CenteredPoints.Sum(p => HoughPlaneFinder.GetScore(this.Plane, p));
+		float score = this.PointCloud.GetScore(this.Plane);
 		this.gameObject.name = "Plane, score: " + string.Format("{0:0.0}", score) + ", n: " + (this.Plane.normal / this.Plane.normal.y) + ", d: " + this.Plane.distance;
 	}
 

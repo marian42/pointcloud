@@ -200,4 +200,31 @@ public class PointCloud : MonoBehaviour {
 	public static string GetDataPath() {
 		return Application.dataPath + "/data/buildings/";
 	}
+
+	public float GetScore(int index, Plane plane) {
+		var point = this.CenteredPoints[index];
+		float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / HoughPlaneFinder.MaxDistance;
+		if (distance > 1) {
+			return 0;
+		}
+		float result = 1.0f - distance;
+
+		var normal = this.Normals[index];
+		
+		const float maxAngle = 60.0f;
+		float angle = Vector3.Angle(plane.normal, normal) / maxAngle;
+		if (angle > 1.0f) {
+			return 0;
+		} else {
+			return result * (1.0f - angle);
+		}
+	}
+
+	public float GetScore(Plane plane) {
+		float result = 0;
+		for (int i = 0; i < this.CenteredPoints.Length; i++) {
+			result += this.GetScore(i, plane);
+		}
+		return result;
+	}
 }

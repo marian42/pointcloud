@@ -24,7 +24,7 @@ public class RansacPlaneFinder : PlaneClassifier {
 		var planes = indices.Select(i => new Plane(this.PointCloud.Normals[i], this.PointCloud.CenteredPoints[i])).ToList();
 		Timekeeping.CompleteTask("Choose samples");
 
-		this.PlanesWithScore = planes.Select(plane => new Tuple<Plane, float>(plane, this.getScore(plane)))
+		this.PlanesWithScore = planes.Select(plane => new Tuple<Plane, float>(plane, this.PointCloud.GetScore(plane)))
 			.OrderByDescending(tuple => tuple.Value2).ToList();
 
 		Timekeeping.CompleteTask("Score");
@@ -44,19 +44,7 @@ public class RansacPlaneFinder : PlaneClassifier {
 		Debug.Log(Timekeeping.GetStatus() + " -> " + planes.Count() + " planes out of " + this.PointCloud.Points.Length + " points.");
 	}
 
-	private float getScore(Plane plane) {
-		const float maxDistance = HoughPlaneFinder.MaxDistance;
-		float result = 0;
-
-		foreach (var point in this.PointCloud.CenteredPoints) {
-			float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / maxDistance;
-			if (distance > 1) {
-				continue;
-			}
-			result += 1.0f - distance;
-		}
-		return result;
-	}
+	
 
 	private bool similar(Plane plane1, Plane plane2) {
 		return Vector3.Angle(plane1.normal, plane2.normal) < 20.0f

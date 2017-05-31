@@ -30,15 +30,6 @@ public abstract class PlaneClassifier {
 		}
 	}
 
-	public static float GetScore(Plane plane, Vector3 point) {
-		float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / HoughPlaneFinder.MaxDistance;
-		return Mathf.Max(0.0f, 1.0f - distance);
-	}
-
-	protected static float getScore(float relativeDistance) {
-		return 1.0f - relativeDistance;
-	}
-
 	public enum Type {
 		Hough,
 		Ransac

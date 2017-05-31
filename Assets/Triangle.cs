@@ -162,20 +162,16 @@ public class Triangle {
 		return ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
 	}
 
-	public float GetScore(Vector3[] points) {
+	public float GetScore(PointCloud pointCloud) {
 		float result = 0;
 
 		var plane = this.Plane;
 
-		foreach (var point in points) {
-			if (!this.ContainsXZ(point)) {
+		for (int i = 0; i < pointCloud.CenteredPoints.Length; i++) {
+			if (!this.ContainsXZ(pointCloud.CenteredPoints[i])) {
 				continue;
 			}
-
-			float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / HoughPlaneFinder.MaxDistance;
-			if (distance < 1.0f) {
-				result += 1.0f - distance;
-			}
+			result += pointCloud.GetScore(i, plane);
 		}
 
 		return result;
