@@ -7,6 +7,7 @@ using System.Text;
 public class MeshCreator {
 	public enum Type {
 		Cutoff,
+		Permutations,
 		Layout
 	}
 
@@ -89,7 +90,7 @@ public class MeshCreator {
 		return mesh.Sum(triangle => triangle.GetScore(this.pointCloud));
 	}
 
-	public void createMeshCutoff() {
+	private void createMeshCutoff() {
 		float bestScore = -1.0f;
 		IEnumerable<Triangle> bestMesh = null;
 
@@ -106,11 +107,106 @@ public class MeshCreator {
 		this.Mesh = Triangle.CreateMesh(bestMesh, true);
 	}
 
+	private Vector3 intersectPlane(Plane plane, Vector3 pointOnLine, Vector3 lineDirection) {
+		Ray ray1 = new Ray(pointOnLine, lineDirection);
+		float ray1hit;
+		if (plane.Raycast(ray1, out ray1hit)) {
+			return ray1.GetPoint(ray1hit);
+		}
+		Ray ray2 = new Ray(pointOnLine, -lineDirection);
+		float ray2hit;
+		if (plane.Raycast(ray2, out ray2hit)) {
+			return ray2.GetPoint(ray1hit);
+		}
+		throw new System.InvalidOperationException("Plane and line are coindident.");
+	}
+
+	private Plane getGroundSeparatingPlane(Plane a, Plane b) {
+		var intersectingLineDirection = Vector3.Cross(a.normal, b.normal).normalized;
+		var pointOnA = this.intersectPlane(a, Vector3.zero, Vector3.up);
+		var pointOnBoth = this.intersectPlane(b, pointOnA, Vector3.Cross(a.normal, intersectingLineDirection));
+
+		// TODO why the * -1 ???
+		var result = new Plane(Vector3.Cross(Vector3.up, intersectingLineDirection) * -1.0f, pointOnBoth);
+		return result;
+	}
+
+	private IEnumerable<Plane> getAllGroundSeparatingPlanes(IEnumerable<Plane> planes) {
+		var planeArray = planes.ToArray();
+		var groundMesh = this.createMeshFromPolygon(new Plane(Vector3.up, 0), this.shape);
+
+		for (int i = 1; i < planeArray.Length; i++) {
+			for (int j = 0; j < i; j++) {
+				var plane = this.getGroundSeparatingPlane(planeArray[i], planeArray[j]);
+
+				var splitGroundMesh = Triangle.SplitMesh(groundMesh, plane);
+				if (splitGroundMesh.Value1.Any() && splitGroundMesh.Value2.Any()) {
+					yield return plane;
+				}
+			}
+		}
+	}
+
+	private IEnumerable<Triangle> displayVerticalPlane(Plane plane) {
+		var vectorLeft = Vector3.Cross(plane.normal, Vector3.up);
+		var pointOnPlane = this.intersectPlane(plane, Vector3.zero, plane.normal);
+		pointOnPlane -= Vector3.up * pointOnPlane.y;
+
+		float scale = 10.0f * 0.5f;
+
+		var topLeft = pointOnPlane + (vectorLeft + Vector3.up) * scale;
+		var downLeft = pointOnPlane + (vectorLeft + Vector3.down) * scale;
+
+		var topRight = pointOnPlane + (-vectorLeft + Vector3.up) * scale;
+		var downRight = pointOnPlane + (-vectorLeft + Vector3.down) * scale;
+
+
+		yield return new Triangle(topLeft, downLeft, downRight);
+		yield return new Triangle(topLeft, topRight, downRight);
+	}
+
+	private void createMeshWithPermutations() {
+		const int planeCount = 5;
+		var result = new List<Triangle>();
+
+		var groundPlanes = this.getAllGroundSeparatingPlanes(this.planes.Take(planeCount)).ToList();
+
+		for (int permutation = 0; permutation < Mathf.Pow(2.0f, groundPlanes.Count); permutation++) {
+			var meshes = new List<IEnumerable<Triangle>>();
+			foreach (var basePlane in this.planes.Take(planeCount)) {
+				var mesh = this.createMeshFromPolygon(basePlane, this.shape);
+
+				for (int i = 0; i < groundPlanes.Count; i++) {
+					mesh = Triangle.CutMesh(mesh, groundPlanes[i], (1 << i & permutation) == 0);
+					if (!mesh.Any()) {
+						break;
+					}
+				}
+				if (mesh.Any()) {
+					meshes.Add(mesh);
+				}
+			}
+			var bestMesh = meshes.Select(mesh => new Tuple<IEnumerable<Triangle>, float>(mesh, this.getScore(mesh)))
+				.OrderByDescending(tuple => tuple.Value2)
+				.Select(tuple => tuple.Value1)
+				.FirstOrDefault();
+
+			if (bestMesh != null) {
+				result.AddRange(bestMesh);
+			}
+		}
+		
+		this.Mesh = Triangle.CreateMesh(result, true);
+	}
+
 	public void CreateMesh(Type type) {
 		switch (type) {
 			case Type.Cutoff:
 				this.createMeshCutoff();
-				return;			
+				return;
+			case Type.Permutations:
+				this.createMeshWithPermutations();
+				return;
 			case Type.Layout:
 				this.createLayoutMesh();
 				return;
