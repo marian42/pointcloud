@@ -39,14 +39,32 @@ public class Triangle {
 		yield return this.V3;
 	}
 
+	public IEnumerable<Vector2> GetUV() {
+		var up = Vector3.Cross(this.Normal, this.Normal - Vector3.up * this.Normal.y).normalized;
+		if (up.y < 0) {
+			up = up * -1;
+		}
+		var right = Vector3.Cross(this.Normal, up).normalized;
+
+		var pivot = this.V1;
+
+		var uvs = this.ToEnumerable().Select(v => v - pivot).Select(v => new Vector2(Vector3.Dot(up, v), Vector3.Dot(right, v)));
+		var center = uvs.Aggregate(Vector2.zero, (a, b) => a + b) / 3.0f;
+		const float scale = 5f;
+		return uvs.Select(uv => (uv - center) / scale);
+	}
+
 	public static Mesh CreateMesh(IEnumerable<Triangle> triangles, bool twoSided = false) {
 		var vertices = new List<Vector3>();
 		var indices = new List<int>();
+		var uvs = new List<Vector2>();
 
 		int count = 0;
 		foreach (var triangle in triangles) {
 			vertices.AddRange(triangle.ToEnumerable());
 			indices.AddRange(new[] { count, count + 1, count + 2 });
+			uvs.AddRange(triangle.GetUV());
+
 			count += 3;
 		}
 
@@ -54,6 +72,7 @@ public class Triangle {
 			foreach (var triangle in triangles) {
 				vertices.AddRange(triangle.ToEnumerable());
 				indices.AddRange(new[] { count + 2, count + 1, count });
+				uvs.AddRange(triangle.GetUV());
 				count += 3;
 			}
 		}
@@ -61,6 +80,8 @@ public class Triangle {
 		Mesh result = new Mesh();
 		result.vertices = vertices.ToArray();
 		result.triangles = indices.ToArray();
+
+		result.uv = uvs.ToArray();
 		result.RecalculateNormals();
 		result.RecalculateBounds();
 		return result;
