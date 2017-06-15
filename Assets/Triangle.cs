@@ -213,6 +213,14 @@ public class Triangle {
 		return result;
 	}
 
+	public bool Contains(Vector3 point) {
+		if (!this.ContainsXZ(point)) {
+			return false;
+		}
+
+		return Mathf.Abs(this.Plane.GetDistanceToPoint(point)) < HoughPlaneFinder.MaxDistance;
+	}
+
 	public int GetPointCount(PointCloud pointCloud, IEnumerable<int> indices) {
 		int result = 0;
 		var plane = this.Plane;

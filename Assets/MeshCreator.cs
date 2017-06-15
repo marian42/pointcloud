@@ -134,37 +134,43 @@ public class MeshCreator {
 				}
 			}
 
-			planeFinder.Classify(indices);
-			planeFinder.RemoveGroundPlanesAndVerticalPlanes();
-			var outsidePlanes = planeFinder.PlanesWithScore.Where(tuple => tuple.Value2 > 5.0f).Select(tuple => tuple.Value1).Where(newPlane => !RansacPlaneFinder.Similar(plane, newPlane));
-			outsidePlanes.Select(p => this.checkForSimilarPlanes(p, usedPlanes));
+			while (true) {
+				planeFinder.Classify(indices);
+				planeFinder.RemoveGroundPlanesAndVerticalPlanes();
+				var outsidePlanes = planeFinder.PlanesWithScore.Where(tuple => tuple.Value2 > 5.0f).Select(tuple => tuple.Value1).Where(newPlane => !RansacPlaneFinder.Similar(plane, newPlane));
+				outsidePlanes.Select(p => this.checkForSimilarPlanes(p, usedPlanes));
 
-			if (outsidePlanes.Count() == 0) {
-				continue;
-			}
-
-			bestScore = 0.0f;
-			IEnumerable<Plane> planesInAttachment = null;
-			foreach (var selectedPlanes in outsidePlanes.Take(5).Subsets()) {
-				var currentMesh = this.createFromPlanes(selectedPlanes);
-				currentMesh = Triangle.CutMesh(currentMesh, plane, true);
-				float pointDensity = currentMesh.Sum(t => t.GetPointCount(this.pointCloud, indices)) / currentMesh.Sum(t => t.GetArea());
-				if (pointDensity < 4.0f) {
-					continue;
+				if (outsidePlanes.Count() == 0) {
+					break;
 				}
-				var currentScore = currentMesh.Sum(triangle => triangle.GetScore(this.pointCloud, indices));
 
-				if (currentScore > bestScore) {
-					bestScore = currentScore;
-					bestMesh = currentMesh;
-					planesInAttachment = selectedPlanes;
+				bestScore = 0.0f;
+				IEnumerable<Plane> planesInAttachment = null;
+				foreach (var selectedPlanes in outsidePlanes.Take(5).Subsets()) {
+					var currentMesh = this.createFromPlanes(selectedPlanes);
+					currentMesh = Triangle.CutMesh(currentMesh, plane, true);
+					float pointDensity = currentMesh.Sum(t => t.GetPointCount(this.pointCloud, indices)) / currentMesh.Sum(t => t.GetArea());
+					if (pointDensity < 4.0f) {
+						continue;
+					}
+					var currentScore = currentMesh.Sum(triangle => triangle.GetScore(this.pointCloud, indices));
+
+					if (currentScore > bestScore) {
+						bestScore = currentScore;
+						bestMesh = currentMesh;
+						planesInAttachment = selectedPlanes;
+					}
 				}
-			}
 
-			if (bestScore > 2.0f) {
-				resultMesh.AddRange(bestMesh);
-				Debug.Log("Attachment score: " + bestScore + ", pointdensity: " + bestMesh.Sum(t => (t.GetPointCount(this.pointCloud, indices))) / bestMesh.Sum(t => t.GetArea()) + ", area: " + bestMesh.Sum(t => t.GetArea()) + ", created from " + outsidePlanes.Count() + " planes");
-				usedPlanes = usedPlanes.Union(planesInAttachment).ToList();
+				if (bestScore > 2.0f) {
+					resultMesh.AddRange(bestMesh);
+					Debug.Log("Attachment score: " + bestScore + ", pointdensity: " + bestMesh.Sum(t => (t.GetPointCount(this.pointCloud, indices))) / bestMesh.Sum(t => t.GetArea()) + ", area: " + bestMesh.Sum(t => t.GetArea()) + ", created from " + outsidePlanes.Count() + " planes");
+					usedPlanes = usedPlanes.Union(planesInAttachment).ToList();
+				} else {
+					break;
+				}
+
+				indices = indices.Where(i => !bestMesh.Any(triangle => triangle.Contains(this.pointCloud.CenteredPoints[i]))).ToList();
 			}
 		}
 
