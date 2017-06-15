@@ -91,6 +91,15 @@ public class MeshCreator {
 		return mesh.Sum(triangle => triangle.GetScore(this.pointCloud));
 	}
 
+	private Plane checkForSimilarPlanes(Plane current, IEnumerable<Plane> usedPlanes) {
+		var similarPlanes = usedPlanes.Where(plane => RansacPlaneFinder.Similar(plane, current));
+		if (similarPlanes.Any()) {
+			return similarPlanes.First();
+		} else {
+			return current;
+		}
+	}
+
 	private void createMeshCutoff(bool createAttachments) {
 		float bestScore = -1.0f;
 		IEnumerable<Triangle> bestMesh = null;
@@ -108,6 +117,7 @@ public class MeshCreator {
 		}
 
 		var resultMesh = bestMesh.ToList();
+		var usedPlanes = bestPlanes.ToList();
 
 		if (!createAttachments) {
 			this.Mesh = Triangle.CreateMesh(resultMesh, true);
@@ -127,14 +137,15 @@ public class MeshCreator {
 			planeFinder.Classify(indices);
 			planeFinder.RemoveGroundPlanesAndVerticalPlanes();
 			var outsidePlanes = planeFinder.PlanesWithScore.Where(tuple => tuple.Value2 > 5.0f).Select(tuple => tuple.Value1).Where(newPlane => !RansacPlaneFinder.Similar(plane, newPlane));
+			outsidePlanes.Select(p => this.checkForSimilarPlanes(p, usedPlanes));
 
 			if (outsidePlanes.Count() == 0) {
 				continue;
 			}
 
 			bestScore = 0.0f;
+			IEnumerable<Plane> planesInAttachment = null;
 			foreach (var selectedPlanes in outsidePlanes.Take(5).Subsets()) {
-
 				var currentMesh = this.createFromPlanes(selectedPlanes);
 				currentMesh = Triangle.CutMesh(currentMesh, plane, true);
 				float pointDensity = currentMesh.Sum(t => t.GetPointCount(this.pointCloud, indices)) / currentMesh.Sum(t => t.GetArea());
@@ -146,12 +157,14 @@ public class MeshCreator {
 				if (currentScore > bestScore) {
 					bestScore = currentScore;
 					bestMesh = currentMesh;
+					planesInAttachment = selectedPlanes;
 				}
 			}
 
 			if (bestScore > 2.0f) {
 				resultMesh.AddRange(bestMesh);
 				Debug.Log("Attachment score: " + bestScore + ", pointdensity: " + bestMesh.Sum(t => (t.GetPointCount(this.pointCloud, indices))) / bestMesh.Sum(t => t.GetArea()) + ", area: " + bestMesh.Sum(t => t.GetArea()) + ", created from " + outsidePlanes.Count() + " planes");
+				usedPlanes = usedPlanes.Union(planesInAttachment).ToList();
 			}
 		}
 
