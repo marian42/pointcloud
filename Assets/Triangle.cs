@@ -197,4 +197,39 @@ public class Triangle {
 
 		return result;
 	}
+
+	public float GetScore(PointCloud pointCloud, IEnumerable<int> indices) {
+		float result = 0;
+
+		var plane = this.Plane;
+
+		foreach (int i in indices) {
+			if (!this.ContainsXZ(pointCloud.CenteredPoints[i])) {
+				continue;
+			}
+			result += pointCloud.GetScore(i, plane);
+		}
+
+		return result;
+	}
+
+	public int GetPointCount(PointCloud pointCloud, IEnumerable<int> indices) {
+		int result = 0;
+		var plane = this.Plane;
+
+		foreach (int i in indices) {
+			if (!this.ContainsXZ(pointCloud.CenteredPoints[i])) {
+				continue;
+			}
+			if (Mathf.Abs(plane.GetDistanceToPoint(pointCloud.CenteredPoints[i])) < HoughPlaneFinder.MaxDistance) {
+				result++;
+			}
+		}
+
+		return result;
+	}
+
+	public float GetArea() {
+		return Vector3.Cross(this.V2 - this.V1, this.V3 - this.V1).magnitude / 2.0f;
+	}
 }

@@ -7,6 +7,7 @@ using System.Text;
 public class MeshCreator {
 	public enum Type {
 		Cutoff,
+		CutoffWithAttachments,
 		Permutations,
 		Layout
 	}
@@ -90,9 +91,10 @@ public class MeshCreator {
 		return mesh.Sum(triangle => triangle.GetScore(this.pointCloud));
 	}
 
-	private void createMeshCutoff() {
+	private void createMeshCutoff(bool createAttachments) {
 		float bestScore = -1.0f;
 		IEnumerable<Triangle> bestMesh = null;
+		IEnumerable<Plane> bestPlanes = null;
 
 		foreach (var selectedPlanes in this.planes.Take(5).Subsets()) {
 			var currentMesh = this.createFromPlanes(selectedPlanes);
@@ -101,10 +103,59 @@ public class MeshCreator {
 			if (currentScore > bestScore) {
 				bestScore = currentScore;
 				bestMesh = currentMesh;
+				bestPlanes = selectedPlanes;
 			}
 		}
 
-		this.Mesh = Triangle.CreateMesh(bestMesh, true);
+		var resultMesh = bestMesh.ToList();
+
+		if (!createAttachments) {
+			this.Mesh = Triangle.CreateMesh(resultMesh, true);
+			return;
+		}
+
+		var planeFinder = new RansacPlaneFinder(this.pointCloud);
+
+		foreach (var plane in bestPlanes) {
+			var indices = new List<int>();
+			for (int i = 0; i < this.pointCloud.Points.Length; i++) {
+				if (plane.GetDistanceToPoint(this.pointCloud.CenteredPoints[i]) > HoughPlaneFinder.MaxDistance * 0.5f) {
+					indices.Add(i);
+				}
+			}
+
+			planeFinder.Classify(indices);
+			planeFinder.RemoveGroundPlanesAndVerticalPlanes();
+			var outsidePlanes = planeFinder.PlanesWithScore.Where(tuple => tuple.Value2 > 5.0f).Select(tuple => tuple.Value1).Where(newPlane => !RansacPlaneFinder.Similar(plane, newPlane));
+
+			if (outsidePlanes.Count() == 0) {
+				continue;
+			}
+
+			bestScore = 0.0f;
+			foreach (var selectedPlanes in outsidePlanes.Take(5).Subsets()) {
+
+				var currentMesh = this.createFromPlanes(selectedPlanes);
+				currentMesh = Triangle.CutMesh(currentMesh, plane, true);
+				float pointDensity = currentMesh.Sum(t => t.GetPointCount(this.pointCloud, indices)) / currentMesh.Sum(t => t.GetArea());
+				if (pointDensity < 4.0f) {
+					continue;
+				}
+				var currentScore = currentMesh.Sum(triangle => triangle.GetScore(this.pointCloud, indices));
+
+				if (currentScore > bestScore) {
+					bestScore = currentScore;
+					bestMesh = currentMesh;
+				}
+			}
+
+			if (bestScore > 2.0f) {
+				resultMesh.AddRange(bestMesh);
+				Debug.Log("Attachment score: " + bestScore + ", pointdensity: " + bestMesh.Sum(t => (t.GetPointCount(this.pointCloud, indices))) / bestMesh.Sum(t => t.GetArea()) + ", area: " + bestMesh.Sum(t => t.GetArea()) + ", created from " + outsidePlanes.Count() + " planes");
+			}
+		}
+
+		this.Mesh = Triangle.CreateMesh(resultMesh, true);
 	}
 
 	private Vector3 intersectPlane(Plane plane, Vector3 pointOnLine, Vector3 lineDirection) {
@@ -202,7 +253,10 @@ public class MeshCreator {
 	public void CreateMesh(Type type) {
 		switch (type) {
 			case Type.Cutoff:
-				this.createMeshCutoff();
+				this.createMeshCutoff(false);
+				return;
+			case Type.CutoffWithAttachments:
+				this.createMeshCutoff(true);
 				return;
 			case Type.Permutations:
 				this.createMeshWithPermutations();

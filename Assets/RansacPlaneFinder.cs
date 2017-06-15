@@ -8,14 +8,25 @@ public class RansacPlaneFinder : PlaneClassifier {
 
 	public RansacPlaneFinder(PointCloud pointCloud) : base(pointCloud) { }
 
+
 	public override void Classify() {
+		this.Classify(null);	
+	}
+
+	public void Classify(IEnumerable<int> indicesParam) {
 		Timekeeping.Reset();
 
-		this.PointCloud.EstimateNormals();
-		Timekeeping.CompleteTask("Estimate normals");
+		if (this.PointCloud.Normals == null) {
+			this.PointCloud.EstimateNormals();
+			Timekeeping.CompleteTask("Estimate normals");
+		}
 
-
-		var indices = Enumerable.Range(0, this.PointCloud.Points.Length).ToList();
+		List<int> indices;
+		if (indicesParam == null) {
+			indices = Enumerable.Range(0, this.PointCloud.Points.Length).ToList();
+		} else {
+			indices = indicesParam.ToList();
+		} 			
 		
 		while (indices.Count() > RansacPlaneFinder.randomSampleCount) {
 			indices.RemoveAt(Random.Range(0, indices.Count));
@@ -32,7 +43,7 @@ public class RansacPlaneFinder : PlaneClassifier {
 		for (int i = 0; i < this.PlanesWithScore.Count; i++) {
 			var plane = this.PlanesWithScore.ElementAt(i).Value1;
 			for (int j = i + 1; j < this.PlanesWithScore.Count; j++) {
-				if (this.similar(plane, this.PlanesWithScore[j].Value1)) {
+				if (RansacPlaneFinder.Similar(plane, this.PlanesWithScore[j].Value1)) {
 					this.PlanesWithScore.RemoveAt(j);
 					j--;
 				}
@@ -44,7 +55,7 @@ public class RansacPlaneFinder : PlaneClassifier {
 
 	
 
-	private bool similar(Plane plane1, Plane plane2) {
+	public static bool Similar(Plane plane1, Plane plane2) {
 		return Vector3.Angle(plane1.normal, plane2.normal) < 20.0f
 			&& Mathf.Abs(plane1.distance - plane2.distance) < 2.0f;
 	}

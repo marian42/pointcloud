@@ -10,7 +10,7 @@ using System;
 [CustomEditor(typeof(PointCloud))]
 public class PointCloudEditor : Editor {
 	private static PlaneClassifier.Type classifierType = PlaneClassifier.Type.Ransac;
-	private static MeshCreator.Type meshCreatorType = MeshCreator.Type.Cutoff;
+	private static MeshCreator.Type meshCreatorType = MeshCreator.Type.CutoffWithAttachments;
 
 	public override void OnInspectorGUI() {
 		base.OnInspectorGUI();
