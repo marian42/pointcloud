@@ -18,7 +18,6 @@ public class HoughPlaneFinder : PlaneClassifier {
 	public override void Classify() {
 		Timekeeping.Reset();
 		this.houghTransform();
-		Debug.Log(Timekeeping.GetStatus() + " found " + this.PlanesWithScore.Count + " planes out of " + this.PointCloud.Points.Length + ".");
 	}
 
 	private static float map(float oldLower, float oldUpper, float newLower, float newUpper, float value) {

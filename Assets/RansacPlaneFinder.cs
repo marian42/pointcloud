@@ -40,8 +40,6 @@ public class RansacPlaneFinder : PlaneClassifier {
 		}
 
 		Timekeeping.CompleteTask("Remove duplicates");
-
-		Debug.Log(Timekeeping.GetStatus() + " -> " + planes.Count() + " planes out of " + this.PointCloud.Points.Length + " points.");
 	}
 
 	

@@ -97,6 +97,7 @@ public class PointCloudEditor : Editor {
 		planeClassifier.RemoveGroundPlanesAndVerticalPlanes();
 		planeClassifier.DisplayPlanes(6);
 		pointCloud.Planes = planeClassifier.PlanesWithScore.OrderByDescending(t => t.Value2).Take(10).Select(t => t.Value1).ToList();
+		Debug.Log(Timekeeping.GetStatus() + " -> " + planeClassifier.PlanesWithScore.Count() + " planes out of " + pointCloud.Points.Length + " points.");
 	}
 
 	private void createMesh(PointCloud pointCloud, MeshCreator.Type type) {
