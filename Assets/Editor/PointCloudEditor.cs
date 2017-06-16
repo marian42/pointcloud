@@ -11,6 +11,7 @@ using System;
 public class PointCloudEditor : Editor {
 	private static PlaneClassifier.Type classifierType = PlaneClassifier.Type.Ransac;
 	private static MeshCreator.Type meshCreatorType = MeshCreator.Type.CutoffWithAttachments;
+	private static bool showPlanes = false;
 
 	public override void OnInspectorGUI() {
 		base.OnInspectorGUI();
@@ -39,6 +40,8 @@ public class PointCloudEditor : Editor {
 			roofClassifier.Classify();
 			pointCloud.Show();
 		}
+
+		PointCloudEditor.showPlanes = EditorGUILayout.Toggle("Display planes", PointCloudEditor.showPlanes);
 
 		GUILayout.BeginHorizontal();
 
@@ -95,7 +98,9 @@ public class PointCloudEditor : Editor {
 		var planeClassifier = PlaneClassifier.Instantiate(type, pointCloud);
 		planeClassifier.Classify();
 		planeClassifier.RemoveGroundPlanesAndVerticalPlanes();
-		planeClassifier.DisplayPlanes(6);
+		if (PointCloudEditor.showPlanes) {
+			planeClassifier.DisplayPlanes(6);
+		}
 		pointCloud.Planes = planeClassifier.PlanesWithScore.OrderByDescending(t => t.Value2).Take(10).Select(t => t.Value1).ToList();
 		Debug.Log(Timekeeping.GetStatus() + " -> " + planeClassifier.PlanesWithScore.Count() + " planes out of " + pointCloud.Points.Length + " points.");
 	}
