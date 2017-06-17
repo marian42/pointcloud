@@ -53,7 +53,11 @@ public abstract class MeshCreator {
 					creator.CreateLayoutMesh();
 					return creator;
 				}
-			
+			case Type.FromPoints: {
+					var creator = new PointMeshCreator(pointCloud);
+					creator.CreateMesh();
+					return creator;
+				}
 			default: throw new System.NotImplementedException();
 		}
 	}
