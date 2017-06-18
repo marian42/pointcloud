@@ -121,13 +121,65 @@ public class PointMeshCreator : MeshCreator {
 				}
 
 				if (polygonIndices.Count > 10) {
-					var polygon = this.simplifyPolygon(polygonIndices.Select(i => planePoints[i]), 2.0f, 20.0f, 160.0f, 5);
+					IEnumerable<Vector2> polygon = this.simplifyPolygon(polygonIndices.Select(i => planePoints[i]), 2.0f, 20.0f, 160.0f, 5);
+					polygon = this.snapPoints(polygon, planeCoordinates, resultPoints, 2f);
+					resultPoints.AddRange(polygon.Select(p => planeCoordinates.ToWorld(p)));
 					result.AddRange(this.polygonToTriangle(polygon, planeCoordinates));
 				}
 			}
 			Timekeeping.CompleteTask("Find polygons");
 		}
 		this.Mesh = Triangle.CreateMesh(result, true);
+	}
+
+	private IEnumerable<Vector2> snapPoints(IEnumerable<Vector2> points, PlaneCoordinates planeCoordinates, IEnumerable<Vector3> previousPoints, float snapDistance) {
+		var snapPoints2D = previousPoints.Where(p => Mathf.Abs(planeCoordinates.Plane.GetDistanceToPoint(p)) < snapDistance).Select(p => planeCoordinates.ToPlane(p)).ToList();
+		var otherPlanes = new List<Ray2D>();
+		foreach (var plane in this.PointCloud.Planes.Take(8)) {
+			if (plane.Equals(planeCoordinates.Plane)) {
+				continue;
+			}
+
+			var intersect = Math3d.PlanePlaneIntersection(plane, planeCoordinates.Plane);
+			if (intersect.HasValue) {
+				var p1 = planeCoordinates.ToPlane(intersect.Value.origin);
+				var p2 = planeCoordinates.ToPlane(intersect.Value.origin + intersect.Value.direction);
+				otherPlanes.Add(new Ray2D(p1, p2 - p1));
+			}
+		}
+
+		foreach (var ray1 in otherPlanes) {
+			foreach (var ray2 in otherPlanes) {
+				if (ray1.Equals(ray2)) {
+					continue;
+				}
+				snapPoints2D.Add(Math3d.LineLineIntersection2D(ray1, ray2));
+			}
+		}
+
+		foreach (var point in points) {
+			var snapToPoint = snapPoints2D
+				.Where(p => (point - p).magnitude < snapDistance)
+				.Select(p => new Tuple<Vector2, float>(p, (point - p).magnitude))
+				.OrderBy(tuple => tuple.Value2)
+				.FirstOrDefault();
+			if (snapToPoint != null) {
+				yield return snapToPoint.Value1;
+			} else {
+				var snapToPlane = otherPlanes
+					.Select(ray => Math3d.ProjectTo2DRay(point, ray))
+					.Select(p => new Tuple<Vector2, float>(p, (point - p).magnitude))
+					.Where(tuple => tuple.Value2 < snapDistance)
+					.OrderBy(tuple => tuple.Value2)
+					.FirstOrDefault();
+				if (snapToPlane != null) {
+					Debug.Log("snaptoplane");
+					yield return snapToPlane.Value1;
+				} else {
+					yield return point;
+				}
+			}
+		}
 	}
 
 	private List<Vector2> simplifyPolygon(IEnumerable<Vector2> points, float minDistanceBetweetnPoints, float minAngle, float maxAngle, int runs) {
@@ -143,7 +195,6 @@ public class PointMeshCreator : MeshCreator {
 					continue;
 				}
 				float angle = Vector2.Angle(result[prev] - result[i], result[next] - result[i]);
-				Debug.Log(angle);
 				if (angle < minAngle || angle > maxAngle) {
 					result.RemoveAt(i);
 					i--;
