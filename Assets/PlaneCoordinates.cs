@@ -21,11 +21,11 @@ public class PlaneCoordinates {
 
 	private Vector3 projectToPlane(Vector3 point) {
 		float distance = this.Plane.GetDistanceToPoint(point);
-		return point + this.Plane.normal * distance;
+		return point - this.Plane.normal * distance;
 	}
 
 	public Vector2 ToPlane(Vector3 point) {
-		var local = point - this.Pivot;
+		var local = this.projectToPlane(point) - this.Pivot;
 		return new Vector2(Vector3.Dot(this.Up, local), Vector3.Dot(this.Right, local));
 	}
 

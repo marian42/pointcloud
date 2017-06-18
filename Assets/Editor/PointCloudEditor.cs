@@ -110,6 +110,7 @@ public class PointCloudEditor : Editor {
 		var meshCreator = MeshCreator.CreateMesh(pointCloud, type);
 		meshCreator.DisplayMesh();
 		meshCreator.SaveMesh();
+		Debug.Log(Timekeeping.GetStatus());
 	}
 
 	public static void DeleteMeshesIn(Transform transform) {
