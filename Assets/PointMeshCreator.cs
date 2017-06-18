@@ -11,6 +11,7 @@ public class PointMeshCreator : MeshCreator {
 	public void CreateMesh() {
 		Timekeeping.Reset();
 		var result = new List<Triangle>();
+		var remainingPointIndices = Enumerable.Range(0, this.PointCloud.Points.Length).ToList();
 		foreach (var plane in this.Planes.Take(8)) {
 			var onPlane = this.PointCloud.CenteredPoints.Where(p => Mathf.Abs(plane.GetDistanceToPoint(p)) < HoughPlaneFinder.MaxDistance);
 			Timekeeping.CompleteTask("Select points");
@@ -124,7 +125,14 @@ public class PointMeshCreator : MeshCreator {
 					IEnumerable<Vector2> polygon = this.simplifyPolygon(polygonIndices.Select(i => planePoints[i]), 2.0f, 20.0f, 160.0f, 5);
 					polygon = this.snapPoints(polygon, planeCoordinates, resultPoints, 2f);
 					resultPoints.AddRange(polygon.Select(p => planeCoordinates.ToWorld(p)));
-					result.AddRange(this.polygonToTriangle(polygon, planeCoordinates));
+					var meshTriangles = this.polygonToTriangle(polygon, planeCoordinates);
+
+					var score = meshTriangles.Sum(triangle => triangle.GetPointCount(this.PointCloud, remainingPointIndices));
+					Debug.Log(score);
+					if (score > 60) {
+						result.AddRange(meshTriangles);
+						remainingPointIndices = remainingPointIndices.Where(i => !meshTriangles.Any(triangle => triangle.Contains(this.PointCloud.CenteredPoints[i]))).ToList();
+					}
 				}
 			}
 			Timekeeping.CompleteTask("Find polygons");
@@ -173,7 +181,6 @@ public class PointMeshCreator : MeshCreator {
 					.OrderBy(tuple => tuple.Value2)
 					.FirstOrDefault();
 				if (snapToPlane != null) {
-					Debug.Log("snaptoplane");
 					yield return snapToPlane.Value1;
 				} else {
 					yield return point;
