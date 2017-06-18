@@ -11,7 +11,7 @@ public class PointMeshCreator : MeshCreator {
 	public void CreateMesh() {
 		Timekeeping.Reset();
 		var result = new List<Triangle>();
-		foreach (var plane in this.Planes.Take(1)) {
+		foreach (var plane in this.Planes.Take(8)) {
 			var onPlane = this.PointCloud.CenteredPoints.Where(p => Mathf.Abs(plane.GetDistanceToPoint(p)) < HoughPlaneFinder.MaxDistance);
 			Timekeeping.CompleteTask("Select points");
 
@@ -32,7 +32,6 @@ public class PointMeshCreator : MeshCreator {
 					edges.Add(new Tuple<int,int>(triangles[i], triangles[i + 1]));
 					edges.Add(new Tuple<int,int>(triangles[i + 1], triangles[i + 2]));
 					edges.Add(new Tuple<int,int>(triangles[i + 2], triangles[i]));
-					//result.Add(new Triangle(planeCoordinates.ToWorld(planePoints[triangles[i]]), planeCoordinates.ToWorld(planePoints[triangles[i + 1]]), planeCoordinates.ToWorld(planePoints[triangles[i + 2]])));
 				}
 			}
 			Timekeeping.CompleteTask("Discard bad triangles");
@@ -96,15 +95,15 @@ public class PointMeshCreator : MeshCreator {
 			}
 
 			var visitedEdges = new HashSet<Tuple<int, int>>();
-			var polygons = new List<List<int>>();
-
+			var resultPoints = new List<Vector3>();
+			
 			foreach (var edge in outsideEdges) {
 				if (visitedEdges.Contains(edge)) {
 					continue;
 				}
-				var polygon = new List<int>();
+				var polygonIndices = new List<int>();
 				var currentPoint = edge.Value1;
-				polygon.Add(currentPoint);
+				polygonIndices.Add(currentPoint);
 				visitedEdges.Add(edge);
 				
 				while (true) {
@@ -118,18 +117,42 @@ public class PointMeshCreator : MeshCreator {
 					} else {
 						currentPoint = nextEdge.Value1;
 					}
-					polygon.Add(currentPoint);
+					polygonIndices.Add(currentPoint);
 				}
 
-				if (polygon.Count > 10) {
-					polygons.Add(polygon);
-					result.AddRange(this.polygonToTriangle(polygon.Select(i => planePoints[i]).ToList(), planeCoordinates));
+				if (polygonIndices.Count > 10) {
+					var polygon = this.simplifyPolygon(polygonIndices.Select(i => planePoints[i]), 2.0f, 20.0f, 160.0f, 5);
+					result.AddRange(this.polygonToTriangle(polygon, planeCoordinates));
 				}
 			}
 			Timekeeping.CompleteTask("Find polygons");
-			Debug.Log(polygons.Count());
 		}
 		this.Mesh = Triangle.CreateMesh(result, true);
+	}
+
+	private List<Vector2> simplifyPolygon(IEnumerable<Vector2> points, float minDistanceBetweetnPoints, float minAngle, float maxAngle, int runs) {
+		var result = points.ToList();
+
+		for (int run = 0; run < runs; run++) {
+			for (int i = 0; i < result.Count; i++) {
+				int prev = (i - 1 + result.Count) % result.Count;
+				int next = (i + 1 + result.Count) % result.Count;
+				if ((result[i] - result[prev]).magnitude < minDistanceBetweetnPoints) {
+					result.RemoveAt(i);
+					i--;
+					continue;
+				}
+				float angle = Vector2.Angle(result[prev] - result[i], result[next] - result[i]);
+				Debug.Log(angle);
+				if (angle < minAngle || angle > maxAngle) {
+					result.RemoveAt(i);
+					i--;
+					continue;
+				}
+			}
+		}			
+
+		return result;
 	}
 
 	private IEnumerable<Triangle> polygonToTriangle(IEnumerable<Vector2> points, PlaneCoordinates planeCoordinates) {
