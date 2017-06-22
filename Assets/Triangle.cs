@@ -11,7 +11,12 @@ public class Triangle {
 
 	public Vector3 Normal {
 		get {
-			return Vector3.Cross(this.V2 - this.V1, this.V3 - this.V1);
+			var normal = Vector3.Cross(this.V2 - this.V1, this.V3 - this.V1);
+			if (normal.y < 0) {
+				return normal * -1f;
+			} else {
+				return normal;
+			}
 		}
 	}
 
