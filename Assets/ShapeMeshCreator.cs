@@ -117,7 +117,7 @@ public class ShapeMeshCreator : MeshCreator {
 				planeFinder.Classify(indices);
 				planeFinder.RemoveGroundPlanesAndVerticalPlanes();
 				var outsidePlanes = planeFinder.PlanesWithScore.Where(tuple => tuple.Value2 > 5.0f).Select(tuple => tuple.Value1).Where(newPlane => !RansacPlaneFinder.Similar(plane, newPlane));
-				outsidePlanes.Select(p => this.checkForSimilarPlanes(p, usedPlanes));
+				outsidePlanes = outsidePlanes.Select(p => this.checkForSimilarPlanes(p, usedPlanes));
 
 				if (outsidePlanes.Count() == 0) {
 					break;
