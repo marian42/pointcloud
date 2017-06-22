@@ -46,12 +46,11 @@ public class Triangle {
 		}
 		var right = Vector3.Cross(this.Normal, up).normalized;
 
-		var pivot = this.V1;
+		var planeCoordinates = new PlaneCoordinates(this.Plane);
 
-		var uvs = this.ToEnumerable().Select(v => v - pivot).Select(v => new Vector2(Vector3.Dot(up, v), Vector3.Dot(right, v)));
-		var center = uvs.Aggregate(Vector2.zero, (a, b) => a + b) / 3.0f;
+		var uvs = this.ToEnumerable().Select(v => planeCoordinates.ToPlane(v));
 		const float scale = 5f;
-		return uvs.Select(uv => (uv - center) / scale);
+		return uvs.Select(uv => uv / scale);
 	}
 
 	public static Mesh CreateMesh(IEnumerable<Triangle> triangles, bool twoSided = false) {

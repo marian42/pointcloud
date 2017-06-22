@@ -16,7 +16,7 @@ public class PointMeshCreator : MeshCreator {
 			var onPlane = this.PointCloud.CenteredPoints.Where(p => Mathf.Abs(plane.GetDistanceToPoint(p)) < HoughPlaneFinder.MaxDistance);
 			Timekeeping.CompleteTask("Select points");
 
-			var planeCoordinates = new PlaneCoordinates(plane, onPlane.First());
+			var planeCoordinates = new PlaneCoordinates(plane);
 			var planePoints = onPlane.Select(p => planeCoordinates.ToPlane(p)).ToList();
 
 			var triangles = this.triangluate(planePoints).ToArray();

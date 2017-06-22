@@ -8,9 +8,9 @@ public class PlaneCoordinates {
 	public readonly Vector3 Up;
 	public readonly Vector3 Right;
 
-	public PlaneCoordinates(Plane plane, Vector3 pivot) {
+	public PlaneCoordinates(Plane plane) {
 		this.Plane = plane;
-		this.Pivot = this.projectToPlane(pivot);
+		this.Pivot = Math3d.PointOnPlane(plane);
 
 		this.Up = Vector3.Cross(this.Plane.normal, this.Plane.normal - Vector3.up * this.Plane.normal.y).normalized;
 		if (this.Up.y < 0) {
