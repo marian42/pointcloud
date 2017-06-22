@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Linq;
 using UnityEditor;
 
-public class PointMeshCreator : MeshCreator {
+public class PointMeshCreator : AbstractMeshCreator {
 	public PointMeshCreator(PointCloud pointCloud) : base(pointCloud) {
 	}
 

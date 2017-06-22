@@ -153,7 +153,7 @@ public class RidgeFirstClassifier {
 		mesh.vertices = verts.ToArray();
 		mesh.triangles = triangles.ToArray();
 
-		var prefab = Resources.Load("RidgeMesh") as GameObject;
+		var prefab = Resources.Load("Prefabs/RidgeMesh") as GameObject;
 		var gameObject = GameObject.Instantiate(prefab) as GameObject;
 		// gameObject.transform.parent = this.pointCloud.transform; // TODO this destroys the gameObject :(
 		gameObject.GetComponent<MeshFilter>().sharedMesh = mesh;

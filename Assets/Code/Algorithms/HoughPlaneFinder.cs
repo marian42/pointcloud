@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Linq;
 
 [System.Serializable]
-public class HoughPlaneFinder : PlaneClassifier {
+public class HoughPlaneFinder : AbstractPlaneFinder {
 
 	private const int houghSpaceSize = 20;
 	private readonly int[] ranges = new int[] { houghSpaceSize, houghSpaceSize, 200 };

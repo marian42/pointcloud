@@ -9,8 +9,8 @@ using System;
 
 [CustomEditor(typeof(PointCloud))]
 public class PointCloudEditor : Editor {
-	private static PlaneClassifier.Type classifierType = PlaneClassifier.Type.Ransac;
-	private static MeshCreator.Type meshCreatorType = MeshCreator.Type.CutoffWithAttachments;
+	private static AbstractPlaneFinder.Type classifierType = AbstractPlaneFinder.Type.Ransac;
+	private static AbstractMeshCreator.Type meshCreatorType = AbstractMeshCreator.Type.CutoffWithAttachments;
 	private static bool showPlanes = false;
 
 	public override void OnInspectorGUI() {
@@ -45,7 +45,7 @@ public class PointCloudEditor : Editor {
 
 		GUILayout.BeginHorizontal();
 
-		classifierType = (PlaneClassifier.Type)(EditorGUILayout.EnumPopup(classifierType));
+		classifierType = (AbstractPlaneFinder.Type)(EditorGUILayout.EnumPopup(classifierType));
 
 		if (GUILayout.Button("Find planes")) {
 			this.findPlanes(pointCloud, classifierType);
@@ -64,7 +64,7 @@ public class PointCloudEditor : Editor {
 
 		GUILayout.BeginHorizontal();
 
-		meshCreatorType = (MeshCreator.Type)(EditorGUILayout.EnumPopup(meshCreatorType));
+		meshCreatorType = (AbstractMeshCreator.Type)(EditorGUILayout.EnumPopup(meshCreatorType));
 
 		if (GUILayout.Button("Create mesh")) {
 			this.createMesh(pointCloud, meshCreatorType);
@@ -92,10 +92,10 @@ public class PointCloudEditor : Editor {
 		hideSelectionHighlight();
 	}
 
-	private void findPlanes(PointCloud pointCloud, PlaneClassifier.Type type) {
+	private void findPlanes(PointCloud pointCloud, AbstractPlaneFinder.Type type) {
 		PlaneBehaviour.DeletePlanesIn(pointCloud.transform);
 		PointCloudEditor.DeleteMeshesIn(pointCloud.transform);
-		var planeClassifier = PlaneClassifier.Instantiate(type, pointCloud);
+		var planeClassifier = AbstractPlaneFinder.Instantiate(type, pointCloud);
 		planeClassifier.Classify();
 		planeClassifier.RemoveGroundPlanesAndVerticalPlanes();
 		if (PointCloudEditor.showPlanes) {
@@ -105,9 +105,9 @@ public class PointCloudEditor : Editor {
 		Debug.Log(Timekeeping.GetStatus() + " -> " + planeClassifier.PlanesWithScore.Count() + " planes out of " + pointCloud.Points.Length + " points.");
 	}
 
-	private void createMesh(PointCloud pointCloud, MeshCreator.Type type) {
+	private void createMesh(PointCloud pointCloud, AbstractMeshCreator.Type type) {
 		PointCloudEditor.DeleteMeshesIn(pointCloud.transform);
-		var meshCreator = MeshCreator.CreateMesh(pointCloud, type);
+		var meshCreator = AbstractMeshCreator.CreateMesh(pointCloud, type);
 		meshCreator.DisplayMesh();
 		meshCreator.SaveMesh();
 		Debug.Log(Timekeeping.GetStatus());

@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Linq;
 using System.Text;
 
-public abstract class MeshCreator {
+public abstract class AbstractMeshCreator {
 	public enum Type {
 		Cutoff,
 		CutoffWithAttachments,
@@ -21,7 +21,7 @@ public abstract class MeshCreator {
 		protected set;
 	}
 
-	public MeshCreator(PointCloud pointCloud) {
+	public AbstractMeshCreator(PointCloud pointCloud) {
 		this.Planes = pointCloud.Planes.ToList();
 		this.PointCloud = pointCloud;
 	}	
@@ -31,7 +31,7 @@ public abstract class MeshCreator {
 	}
 
 	
-	public static MeshCreator CreateMesh(PointCloud pointCloud, Type type) {
+	public static AbstractMeshCreator CreateMesh(PointCloud pointCloud, Type type) {
 		switch (type) {
 			case Type.Cutoff: {
 					var creator = new ShapeMeshCreator(pointCloud);
@@ -63,7 +63,7 @@ public abstract class MeshCreator {
 	}
 
 	public void DisplayMesh() {
-		var material = Resources.Load("MeshMaterial", typeof(Material)) as Material;
+		var material = Resources.Load("Materials/MeshMaterial", typeof(Material)) as Material;
 		var gameObject = new GameObject();
 		gameObject.transform.parent = this.PointCloud.transform;
 		gameObject.tag = "RoofMesh";

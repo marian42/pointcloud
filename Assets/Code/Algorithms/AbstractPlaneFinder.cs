@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Linq;
 using System;
 
-public abstract class PlaneClassifier {
+public abstract class AbstractPlaneFinder {
 	public const float MaxDistance = 0.4f;
 
 	[SerializeField, HideInInspector]
@@ -17,7 +17,7 @@ public abstract class PlaneClassifier {
 
 	private Vector3 groundPoint;
 
-	public PlaneClassifier(PointCloud pointCloud) {
+	public AbstractPlaneFinder(PointCloud pointCloud) {
 		this.PointCloud = pointCloud;
 	}
 
@@ -35,7 +35,7 @@ public abstract class PlaneClassifier {
 		Ransac
 	}
 
-	public static PlaneClassifier Instantiate(Type type, PointCloud pointCloud) {
+	public static AbstractPlaneFinder Instantiate(Type type, PointCloud pointCloud) {
 		switch (type) {
 			case Type.Hough: return new HoughPlaneFinder(pointCloud);
 			case Type.Ransac: return new RansacPlaneFinder(pointCloud);

@@ -92,7 +92,7 @@ public class PointCloud : MonoBehaviour {
 	}
 
 	private void createMeshObject(int fromIndex, int toIndex) {
-		var prefab = Resources.Load("PointMesh") as GameObject;
+		var prefab = Resources.Load("Prefabs/PointMesh") as GameObject;
 		var gameObject = GameObject.Instantiate(prefab) as GameObject;
 		gameObject.layer = 8;
 		gameObject.transform.parent = this.transform;

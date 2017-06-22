@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class ShapeMeshCreator : MeshCreator {
+public class ShapeMeshCreator : AbstractMeshCreator {
 	private Vector2[] shape;
 	
 	public ShapeMeshCreator(PointCloud pointCloud) : base(pointCloud) {
