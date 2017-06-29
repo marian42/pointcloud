@@ -244,4 +244,8 @@ public class Triangle {
 	public float GetArea() {
 		return Vector3.Cross(this.V2 - this.V1, this.V3 - this.V1).magnitude / 2.0f;
 	}
+
+	public Triangle2D ProjectToGround() {
+		return new Triangle2D(new Vector2(this.V1.x, this.V1.z), new Vector2(this.V2.x, this.V2.z), new Vector2(this.V3.x, this.V3.z));
+	}
 }

@@ -161,7 +161,7 @@ public class PointMeshCreator : AbstractMeshCreator {
 				if (ray1.Equals(ray2)) {
 					continue;
 				}
-				snapPoints2D.Add(Math3d.LineLineIntersection2D(ray1, ray2));
+				snapPoints2D.Add(Math2d.LineLineIntersection2D(ray1, ray2));
 			}
 		}
 
@@ -175,7 +175,7 @@ public class PointMeshCreator : AbstractMeshCreator {
 				yield return snapToPoint.Value1;
 			} else {
 				var snapToPlane = otherPlanes
-					.Select(ray => Math3d.ProjectTo2DRay(point, ray))
+					.Select(ray => Math2d.ProjectTo2DRay(point, ray))
 					.Select(p => new Tuple<Vector2, float>(p, (point - p).magnitude))
 					.Where(tuple => tuple.Value2 < snapDistance)
 					.OrderBy(tuple => tuple.Value2)
