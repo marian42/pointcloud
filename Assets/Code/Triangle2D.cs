@@ -45,4 +45,17 @@ public class Triangle2D {
 	public Triangle ProjectFromGroundToPlane(Plane plane) {
 		return new Triangle(Math3d.ProjectFromGroundToPlane(this.V1, plane), Math3d.ProjectFromGroundToPlane(this.V2, plane), Math3d.ProjectFromGroundToPlane(this.V3, plane));
 	}
+
+	public Vector2[] ToArray() {
+		return new Vector2[] { this.V1, this.V2, this.V3 };
+	}
+
+	public IEnumerable<Triangle2D> Without(Triangle2D triangle) {
+		var arr1 = this.ToArray();
+		var arr2 = triangle.ToArray();
+
+		// TODO
+		
+		yield break;
+	}
 }

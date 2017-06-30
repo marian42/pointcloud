@@ -5,20 +5,31 @@ using UnityEngine;
 public static class Math2d {
 	// http://www.wyrmtale.com/blog/2013/115/2d-line-intersection-in-c
 	public static Vector2 LineLineIntersection2D(Ray2D ray1, Ray2D ray2) {
-		Vector2 pe1 = ray1.origin;
-		Vector2 ps1 = ray1.origin + ray1.direction;
-		Vector2 pe2 = ray2.origin;
-		Vector2 ps2 = ray2.origin + ray2.direction;
+		Vector2 line1a = ray1.origin;
+		Vector2 line1b = ray1.origin + ray1.direction;
+		Vector2 line2a = ray2.origin;
+		Vector2 line2b = ray2.origin + ray2.direction;
 
+		return Math2d.LineLineIntersection(line1a, line1b, line2a, line2b);
+	}
+
+	public static Vector2 ProjectTo2DRay(Vector2 point, Ray2D ray) {
+		Vector2 direction = ray.direction.normalized;
+		var v = point - direction;
+		var d = Vector2.Dot(v, direction);
+		return point + direction * d;
+	}
+
+	public static Vector2 LineLineIntersection(Vector2 line1a, Vector2 line1b, Vector2 line2a, Vector2 line2b) {
 		// Get A,B,C of first line - points : ps1 to pe1
-		float A1 = pe1.y - ps1.y;
-		float B1 = ps1.x - pe1.x;
-		float C1 = A1 * ps1.x + B1 * ps1.y;
+		float A1 = line1a.y - line1b.y;
+		float B1 = line1b.x - line1a.x;
+		float C1 = A1 * line1b.x + B1 * line1b.y;
 
 		// Get A,B,C of second line - points : ps2 to pe2
-		float A2 = pe2.y - ps2.y;
-		float B2 = ps2.x - pe2.x;
-		float C2 = A2 * ps2.x + B2 * ps2.y;
+		float A2 = line2a.y - line2b.y;
+		float B2 = line2b.x - line2a.x;
+		float C2 = A2 * line2b.x + B2 * line2b.y;
 
 		// Get delta and check if the lines are parallel
 		float delta = A1 * B2 - A2 * B1;
@@ -31,13 +42,6 @@ public static class Math2d {
 			(B2 * C1 - B1 * C2) / delta,
 			(A1 * C2 - A2 * C1) / delta
 		);
-	}
-
-	public static Vector2 ProjectTo2DRay(Vector2 point, Ray2D ray) {
-		Vector2 direction = ray.direction.normalized;
-		var v = point - direction;
-		var d = Vector2.Dot(v, direction);
-		return point + direction * d;
 	}
 
 	public static bool CheckLinesIntersect(Vector2 line1a, Vector2 line1b, Vector2 line2a, Vector2 line2b) {

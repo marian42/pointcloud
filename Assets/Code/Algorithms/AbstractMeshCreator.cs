@@ -92,4 +92,43 @@ public abstract class AbstractMeshCreator {
         }
 		System.IO.File.WriteAllText(PointCloud.GetDataPath() + this.PointCloud.Name + ".obj", sb.ToString());
 	}
+
+	public IEnumerable<Triangle> MakeRoofSolid(IEnumerable<Triangle> trianglesIn) {
+		var triangles = trianglesIn.ToArray();
+		var triangles2D = triangles.Select(t => t.ProjectToGround()).ToArray();
+
+		for (int i = 0; i < triangles.Length; i++) {
+			IEnumerable<Triangle> current = new Triangle[] { triangles[i] };
+			for (int j = 0; j < triangles.Length; j++) {
+				if (j == i) {
+					continue;
+				}
+				if (!triangles2D[i].Intersects(triangles2D[j])) {
+					continue;
+				}
+
+				if (RansacPlaneFinder.Similar(triangles[i].Plane, triangles[j].Plane)) {
+					if (j < i) {
+						current = current.SelectMany(t => t.ProjectToGround().Without(triangles2D[j])).Select(t => t.ProjectFromGroundToPlane(triangles[i].Plane));
+					}
+				} else {
+					var cutMesh = Triangle.SplitMesh(current, triangles[j].Plane);
+					current = cutMesh.Value1.Concat(removeGroundTriangle(cutMesh.Value2, triangles2D[j]));
+				}
+			}
+
+			foreach (var triangle in current) {
+				yield return triangle;
+			}
+		}
+	}
+
+	private IEnumerable<Triangle> removeGroundTriangle(IEnumerable<Triangle> coplanarTriangles, Triangle2D triangleToRemove) {
+		if (!coplanarTriangles.Any()) {
+			return Enumerable.Empty<Triangle>();
+		}
+
+		var plane = coplanarTriangles.First().Plane;
+		return coplanarTriangles.SelectMany(t => t.ProjectToGround().Without(triangleToRemove)).Select(t => t.ProjectFromGroundToPlane(coplanarTriangles.First().Plane));
+	}
 }
