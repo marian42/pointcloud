@@ -1009,4 +1009,13 @@ public class Math3d {
 			return new Nullable<Ray>();
 		}
 	}
+
+	public static Vector3 ProjectFromGroundToPlane(Vector2 vector, Plane plane) {
+		var ray = new Ray(new Vector3(vector.x, -1000, vector.y), Vector3.up);
+		float hit;
+		if (!plane.Raycast(ray, out hit)) {
+			Debug.LogError("Ray didn't hit plane. " + ray.origin + " -> " + plane.normal);
+		}
+		return ray.GetPoint(hit);
+	}
 }

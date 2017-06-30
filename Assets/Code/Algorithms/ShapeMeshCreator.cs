@@ -30,12 +30,7 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 	private Vector3[] projectToPlane(Vector2[] vertices, Plane plane) {
 		Vector3[] result = new Vector3[vertices.Length];
 		for (int i = 0; i < vertices.Length; i++) {
-			var ray = new Ray(new Vector3(vertices[i].x, -1000, vertices[i].y), Vector3.up);
-			float hit;
-			if (!plane.Raycast(ray, out hit)) {
-				Debug.LogError("Ray didn't hit plane. " + ray.origin + " -> " + plane.normal);
-			}
-			result[i] = ray.GetPoint(hit);
+			result[i] = Math3d.ProjectFromGroundToPlane(vertices[i], plane);
 		}
 		return result;
 	}

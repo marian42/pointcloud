@@ -41,4 +41,8 @@ public class Triangle2D {
 			|| Math2d.CheckLinesIntersect(this.V3, this.V1, otherTriangle.V2, otherTriangle.V3)
 			|| Math2d.CheckLinesIntersect(this.V3, this.V1, otherTriangle.V3, otherTriangle.V1);
 	}
+
+	public Triangle ProjectFromGroundToPlane(Plane plane) {
+		return new Triangle(Math3d.ProjectFromGroundToPlane(this.V1, plane), Math3d.ProjectFromGroundToPlane(this.V2, plane), Math3d.ProjectFromGroundToPlane(this.V3, plane));
+	}
 }
