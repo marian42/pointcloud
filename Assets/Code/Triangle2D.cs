@@ -8,7 +8,15 @@ public class Triangle2D {
 	public readonly Vector2 V3;
 
 	public Triangle2D(Vector2 v1, Vector2 v2, Vector2 v3) {
-
+		if ((v2.y - v1.y) * (v3.x - v1.x) - (v2.x - v1.x) * (v3.y - v1.y) > 0) {
+			this.V1 = v1;
+			this.V1 = v2;
+			this.V3 = v3;
+		} else {
+			this.V1 = v3;
+			this.V2 = v2;
+			this.V3 = v1;
+		}
 	}
 
 	public bool ContainsXZ(Vector2 point) {
