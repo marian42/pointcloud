@@ -35,7 +35,11 @@ public class Triangle {
 			this.V1 = v3;
 			this.V2 = v2;
 			this.V3 = v1;
-		}		
+		}
+
+		if (v1 == v2 || v2 == v3 || v3 == v1) {
+			throw new Exception("Triangle vertices must be distinct. " + this);
+		}
 	}
 
 	public IEnumerable<Vector3> ToEnumerable() {
@@ -100,6 +104,8 @@ public class Triangle {
 		}
 	}
 
+	private const float smallDistance = 0.01f;
+
 	public Tuple<IEnumerable<Triangle>, IEnumerable<Triangle>> Split(Plane plane) {
 		float[] distance = new float[] {
 			plane.GetDistanceToPoint(this.V1),
@@ -107,9 +113,9 @@ public class Triangle {
 			plane.GetDistanceToPoint(this.V3)
 		};
 
-		int onPlane = distance.Count(d => d == 0);
-		int abovePlane = distance.Count(d => d > 0);
-		int belowPlane = distance.Count(d => d < 0);
+		int onPlane = distance.Count(d => Mathf.Abs(d) <= smallDistance);
+		int abovePlane = distance.Count(d => Mathf.Abs(d) > smallDistance && d > 0);
+		int belowPlane = distance.Count(d => Mathf.Abs(d) > smallDistance && d < 0);
 
 		if (belowPlane == 0) {
 			return new Tuple<IEnumerable<Triangle>,IEnumerable<Triangle>>(this.Yield(), Enumerable.Empty<Triangle>());
@@ -122,36 +128,32 @@ public class Triangle {
 			var double1 = abovePlane == 1 ? this.ToEnumerable().First(v => plane.GetDistanceToPoint(v) < 0) : this.ToEnumerable().First(v => plane.GetDistanceToPoint(v) > 0);
 			var double2 = abovePlane == 1 ? this.ToEnumerable().Where(v => plane.GetDistanceToPoint(v) < 0).Skip(1).First() : this.ToEnumerable().Where(v => plane.GetDistanceToPoint(v) > 0).Skip(1).First();
 
-			var ray1 = new Ray(single, double1 - single);
-			float dst1;
-			if (!plane.Raycast(ray1, out dst1)) {
-				throw new Exception("Ray didn't hit plane");
-			}
-			var intersect1 = ray1.GetPoint(dst1);
-			var ray2 = new Ray(single, double2 - single);
-			float dst2;
-			if (!plane.Raycast(ray2, out dst2)) {
-				throw new Exception("Ray didn't hit plane");
-			}
-			var intersect2 = ray2.GetPoint(dst2);
+			var intersect1 = Math3d.LinePlaneIntersection(plane, single, double1);
+			var intersect2 = Math3d.LinePlaneIntersection(plane, single, double2);
 
 			if (abovePlane == 1) {
-				return new Tuple<IEnumerable<Triangle>, IEnumerable<Triangle>>(new Triangle(single, intersect1, intersect2).Yield(), new Triangle(double1, double2, intersect1).Yield().Concat(new Triangle(double2, intersect1, intersect2).Yield()));
+				return new Tuple<IEnumerable<Triangle>, IEnumerable<Triangle>>(
+					Triangle.TryCreate(single, intersect1, intersect2),
+					Triangle.TryCreate(double1, double2, intersect1)
+					.Concat(Triangle.TryCreate(double2, intersect1, intersect2)));
 			} else {
-				return new Tuple<IEnumerable<Triangle>, IEnumerable<Triangle>>(new Triangle(double1, double2, intersect1).Yield().Concat(new Triangle(double2, intersect1, intersect2).Yield()), new Triangle(single, intersect1, intersect2).Yield());
+				return new Tuple<IEnumerable<Triangle>, IEnumerable<Triangle>>(
+					Triangle.TryCreate(double1, double2, intersect1)
+					.Concat(Triangle.TryCreate(double2, intersect1, intersect2)),
+					Triangle.TryCreate(single, intersect1, intersect2));
 			}
 			
 		}
 		if (onPlane == 1) {
-			var vertexOn = this.ToEnumerable().First(v => plane.GetDistanceToPoint(v) == 0);
-			var vertexBelow = this.ToEnumerable().First(v => plane.GetDistanceToPoint(v) < 0);
-			var vertexAbove = this.ToEnumerable().First(v => plane.GetDistanceToPoint(v) > 0);
+			var vertexOn = this.ToEnumerable().First(v => Mathf.Abs(plane.GetDistanceToPoint(v)) <= smallDistance);
+			var vertexBelow = this.ToEnumerable().First(v => plane.GetDistanceToPoint(v) < 0 && Mathf.Abs(plane.GetDistanceToPoint(v)) > smallDistance);
+			var vertexAbove = this.ToEnumerable().First(v => plane.GetDistanceToPoint(v) > 0 && Mathf.Abs(plane.GetDistanceToPoint(v)) > smallDistance);
 			var ray = new Ray(vertexAbove, vertexBelow - vertexAbove);
 			float dst;
 			plane.Raycast(ray, out dst);
 			var intersect = ray.GetPoint(dst);
 
-			return new Tuple<IEnumerable<Triangle>,IEnumerable<Triangle>>(new Triangle(vertexBelow, vertexOn, intersect).Yield(), new Triangle(vertexAbove, vertexOn, intersect).Yield());
+			return new Tuple<IEnumerable<Triangle>, IEnumerable<Triangle>>(Triangle.TryCreate(vertexBelow, vertexOn, intersect), Triangle.TryCreate(vertexAbove, vertexOn, intersect));
 		}
 		return new Tuple<IEnumerable<Triangle>, IEnumerable<Triangle>>(Enumerable.Empty<Triangle>(), Enumerable.Empty<Triangle>());
 	}
@@ -247,5 +249,17 @@ public class Triangle {
 
 	public Triangle2D ProjectToGround() {
 		return new Triangle2D(new Vector2(this.V1.x, this.V1.z), new Vector2(this.V2.x, this.V2.z), new Vector2(this.V3.x, this.V3.z));
+	}
+
+	public static IEnumerable<Triangle> TryCreate(Vector3 v1, Vector3 v2, Vector3 v3) {
+		if (v1 == v2 || v2 == v3 || v3 == v1) {
+			yield break;
+		}
+
+		var result = new Triangle(v1, v2, v3);
+
+		if (result.GetArea() > 0.01f) {
+			yield return result;
+		}
 	}
 }

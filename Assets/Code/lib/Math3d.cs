@@ -1018,4 +1018,18 @@ public class Math3d {
 		}
 		return ray.GetPoint(hit);
 	}
+
+	public static Vector3 LinePlaneIntersection(Plane plane, Vector3 point1, Vector3 point2) {
+		var ray = new Ray(point1, point2 - point1);
+		float distance;
+		if (!plane.Raycast(ray, out distance)) {
+			throw new Exception("Ray didn't hit plane.");
+		}
+		return ray.GetPoint(distance);
+	}
+
+	public static bool SimilarPlanes(Plane plane1, Plane plane2) {
+		return Vector3.Angle(plane1.normal, plane2.normal) < 3.0f
+			&& Mathf.Abs(plane1.distance - plane2.distance) < 0.1f;
+	}
 }

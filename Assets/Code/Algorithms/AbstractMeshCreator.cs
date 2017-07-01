@@ -98,7 +98,7 @@ public abstract class AbstractMeshCreator {
 		var triangles2D = triangles.Select(t => t.ProjectToGround()).ToArray();
 
 		for (int i = 0; i < triangles.Length; i++) {
-			IEnumerable<Triangle> current = new Triangle[] { triangles[i] };
+			IEnumerable<Triangle> current = triangles[i].Yield();
 			for (int j = 0; j < triangles.Length; j++) {
 				if (j == i) {
 					continue;
@@ -107,13 +107,16 @@ public abstract class AbstractMeshCreator {
 					continue;
 				}
 
-				if (RansacPlaneFinder.Similar(triangles[i].Plane, triangles[j].Plane)) {
+				if (Math3d.SimilarPlanes(triangles[i].Plane, triangles[j].Plane)) {
 					if (j < i) {
-						current = current.SelectMany(t => t.ProjectToGround().Without(triangles2D[j])).Select(t => t.ProjectFromGroundToPlane(triangles[i].Plane));
+						current = current
+							.SelectMany(t => t.ProjectToGround().Without(triangles2D[j]))
+							.Select(t => t.ProjectFromGroundToPlane(triangles[i].Plane))
+							.ToList();
 					}
 				} else {
 					var cutMesh = Triangle.SplitMesh(current, triangles[j].Plane);
-					current = cutMesh.Value1.Concat(removeGroundTriangle(cutMesh.Value2, triangles2D[j]));
+					current = cutMesh.Value1.Concat(removeGroundTriangle(cutMesh.Value2, triangles2D[j])).ToList();
 				}
 			}
 

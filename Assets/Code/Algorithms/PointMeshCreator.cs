@@ -161,7 +161,7 @@ public class PointMeshCreator : AbstractMeshCreator {
 				if (ray1.Equals(ray2)) {
 					continue;
 				}
-				snapPoints2D.Add(Math2d.LineLineIntersection2D(ray1, ray2));
+				snapPoints2D.Add(Math2d.LineLineIntersection(ray1, ray2));
 			}
 		}
 
