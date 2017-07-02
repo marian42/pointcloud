@@ -30,7 +30,7 @@ sysinfo.txt
 *.apk
 *.
 
-/Assets/data.*
 /Assets/data/*
+/StreamingAssets/*
 
 /shapefile/packages/*
