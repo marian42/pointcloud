@@ -31,6 +31,5 @@ sysinfo.txt
 *.
 
 /Assets/data/*
-/StreamingAssets/*
 
 /shapefile/packages/*

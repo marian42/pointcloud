@@ -204,7 +204,7 @@ public class PointCloud : MonoBehaviour {
 	}
 
 	public static string GetDataPath() {
-		return Application.streamingAssetsPath + "buildings/";
+		return Application.dataPath + "/data/buildings/";
 	}
 
 	public float GetScore(int index, Plane plane) {
