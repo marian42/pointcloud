@@ -204,7 +204,7 @@ public class PointCloud : MonoBehaviour {
 	}
 
 	public static string GetDataPath() {
-		return Application.dataPath + "/data/buildings/";
+		return Application.streamingAssetsPath + "buildings/";
 	}
 
 	public float GetScore(int index, Plane plane) {
@@ -236,12 +236,14 @@ public class PointCloud : MonoBehaviour {
 
 	[MenuItem("File/Load pointcloud...")]
 	public static void LoadSingle() {
-		string selected = EditorUtility.OpenFilePanel("Load file", Application.dataPath, "xyz");
+		string selected = EditorUtility.OpenFilePanel("Load file", PointCloud.GetDataPath(), "xyz");
 		if (selected.Any() && File.Exists(selected)) {
 			GameObject gameObject = new GameObject();
 			var pointCloud = gameObject.AddComponent<PointCloud>();
 			pointCloud.Load(selected);
 			pointCloud.Show();
+			Selection.activeTransform = pointCloud.transform;
+			SceneView.lastActiveSceneView.FrameSelected();
 		}
 	}
 
