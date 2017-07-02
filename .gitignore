@@ -32,3 +32,5 @@ sysinfo.txt
 
 /Assets/data.*
 /Assets/data/*
+
+/shapefile/packages/*

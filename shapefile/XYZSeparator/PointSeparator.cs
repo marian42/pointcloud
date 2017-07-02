@@ -37,6 +37,7 @@ namespace XYZSeparator {
 			this.currentPoints.Remove(polygon);
 			File.AppendAllLines(this.outputFolder + polygon.GetXYZFilename(), points.Select(p => p.ToXYZLine()));
 			polygon.SavePolygon(this.outputFolder);
+			polygon.SaveMetadata(this.outputFolder);
 			Console.WriteLine("Wrote " + points.Count + " points to " + polygon.Name + ".xyz");
 			this.HitCount += points.Count;
 		}
@@ -67,7 +68,7 @@ namespace XYZSeparator {
 					Console.WriteLine("Processed " + this.files.ToString().PadLeft(3) + " files, "
 						+ this.points.ToString().PadLeft(12) + " points, "
 						+ this.hits.ToString().PadLeft(9) + " hits, "
-						+ buildings.ToString().PadLeft(6) +  "buildings");
+						+ buildings.ToString().PadLeft(6) +  " buildings");
 					lastUpdate = DateTime.Now;
 				}
 			}

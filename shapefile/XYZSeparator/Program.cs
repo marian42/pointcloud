@@ -32,7 +32,8 @@ namespace XYZSeparator {
 			}
 
 			separator.ClearQueue();
-			Console.WriteLine("Found " + separator.HitCount + " points in " + (DateTime.Now - startTime).TotalMinutes + "m " + (DateTime.Now - startTime).Seconds + "s.");
+			Polygon.SaveAggregatedMetadata(outputFolder);
+			Console.WriteLine("Found " + separator.HitCount + " points in " + (int)System.Math.Floor((DateTime.Now - startTime).TotalMinutes) + "m " + (DateTime.Now - startTime).Seconds + "s.");
 			
 			Console.ReadLine();
 		}

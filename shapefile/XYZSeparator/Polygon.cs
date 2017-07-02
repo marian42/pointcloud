@@ -7,6 +7,8 @@ using Catfood.Shapefile;
 using XYZSeparator;
 using System.Globalization;
 using System.IO;
+using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 public class Polygon {
 	public readonly PointD[] OffsetPoints;
@@ -19,13 +21,24 @@ public class Polygon {
 
 	private static int globalId;
 
+	private Dictionary<string, string> metadata;
+	private static List<Dictionary<string, string>> aggregatedMetadata = new List<Dictionary<string, string>>();
+
+	private bool inAggregatedMetadata;
+
 	public Polygon(ShapePolygon shapePolygon, int partIndex, double offset) {
 		this.Points = shapePolygon.Parts[partIndex];
 		this.OffsetPoints = Polygon.GetEnlargedPolygon(this.Points.ToList(), offset).ToArray();
 		this.createBoundingBox();
 		this.id = Polygon.globalId;
 		Polygon.globalId++;
-		this.Name = this.id.ToString().PadLeft(5, '0') + "-" + shapePolygon.GetMetadata("uuid");
+		this.Name = this.id.ToString().PadLeft(8, '0') + "-" + shapePolygon.GetMetadata("uuid");
+		this.metadata = new Dictionary<string, string>();
+		foreach (var key in shapePolygon.GetMetadataNames()) {
+			this.metadata[key] = shapePolygon.GetMetadata(key);
+		}
+		this.metadata["filename"] = this.Name;
+		this.metadata["address"] = Regex.Replace((shapePolygon.GetMetadata("strasse").Replace("STRA▀E", "Straße").ToLower()), @"(^\w)|(\s\w)", m => m.Value.ToUpper()) + " " + shapePolygon.GetMetadata("hausnr");
 	}
 
 	private void createBoundingBox() {
@@ -196,6 +209,23 @@ public class Polygon {
 	public void SavePolygon(string folder) {
 		string filename = folder + this.Name + ".xyzshape";
 		File.WriteAllLines(filename, this.Points.Select(p => new Vector3(p.X, 0, p.Y)).Select(p => p.ToXYZLine()));
+	}
+
+	public void SaveMetadata(string folder) {
+		string filename = folder + this.Name + ".json";
+		string json = JsonConvert.SerializeObject(this.metadata, Newtonsoft.Json.Formatting.Indented);
+		File.WriteAllText(filename, json);
+
+		if (!this.inAggregatedMetadata) {
+			Polygon.aggregatedMetadata.Add(this.metadata);
+			this.inAggregatedMetadata = true;
+		}
+	}
+
+	public static void SaveAggregatedMetadata(string folder) {
+		string filename = folder + "meta.json";
+		string json = JsonConvert.SerializeObject(Polygon.aggregatedMetadata, Newtonsoft.Json.Formatting.Indented);
+		File.WriteAllText(filename, json);
 	}
 }
 
