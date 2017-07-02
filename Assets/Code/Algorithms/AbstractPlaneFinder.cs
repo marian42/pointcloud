@@ -15,8 +15,6 @@ public abstract class AbstractPlaneFinder {
 	
 	public List<Tuple<Plane, float>> PlanesWithScore;
 
-	private Vector3 groundPoint;
-
 	public AbstractPlaneFinder(PointCloud pointCloud) {
 		this.PointCloud = pointCloud;
 	}
@@ -44,7 +42,7 @@ public abstract class AbstractPlaneFinder {
 	}
 
 	private bool isGroundPlane(Plane plane) {
-		return Mathf.Abs(plane.GetDistanceToPoint(this.groundPoint)) < 2.0f
+		return Mathf.Abs(plane.GetDistanceToPoint(this.PointCloud.GroundPoint)) < 2.0f
  			&& Vector3.Angle(Vector3.up, plane.normal) < 10.0f;
 	}
 
@@ -54,7 +52,6 @@ public abstract class AbstractPlaneFinder {
 	}	
 
 	public void RemoveGroundPlanesAndVerticalPlanes() {
-		this.groundPoint = this.PointCloud.CenteredPoints.OrderBy(p => p.y).Skip(20).FirstOrDefault();
 		this.PlanesWithScore = this.PlanesWithScore.Where(tuple => !this.isGroundPlane(tuple.Value1) && !this.isVerticalPlane(tuple.Value1)).ToList();
 	}
 }

@@ -36,6 +36,7 @@ public class PointCloud : MonoBehaviour {
 	public string Name;
 
 	public Vector3 Center;
+	public Vector3 GroundPoint;
 
 	[SerializeField, HideInInspector]
 	private PlaneParameters[] serializedPlanes;
@@ -83,12 +84,14 @@ public class PointCloud : MonoBehaviour {
 			if (point.x > maxZ) maxZ = point.z;
 		}
 		this.Center = new Vector3(Mathf.Lerp(minX, maxX, 0.5f), Mathf.Lerp(minY, maxY, 0.5f), Mathf.Lerp(minZ, maxZ, 0.5f));
-		this.transform.position = this.Center;
-
+		
 		this.CenteredPoints = new Vector3[this.Points.Length];
 		for (int i = 0; i < this.Points.Length; i++) {
 			this.CenteredPoints[i] = this.Points[i] - this.Center;
 		}
+
+		this.GroundPoint = this.CenteredPoints.OrderBy(p => p.y).Skip(20).FirstOrDefault();
+		this.transform.position = this.Center + Vector3.down * (this.Center.y + this.GroundPoint.y);
 	}
 
 	private void createMeshObject(int fromIndex, int toIndex) {
