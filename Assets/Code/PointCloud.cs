@@ -38,6 +38,8 @@ public class PointCloud : MonoBehaviour {
 	public Vector3 Center;
 	public Vector3 GroundPoint;
 
+	public BuildingMetadata Metadata;
+
 	[SerializeField, HideInInspector]
 	private PlaneParameters[] serializedPlanes;
 	public IEnumerable<Plane> Planes {
@@ -58,7 +60,13 @@ public class PointCloud : MonoBehaviour {
 		this.ResetColors(Color.red);
 		FileInfo fileInfo = new FileInfo(xyzFilename);
 		this.Name = fileInfo.Name.Substring(0, fileInfo.Name.IndexOf('.'));
-		this.gameObject.name = this.Name;
+		this.loadMetadata();
+		this.gameObject.name = this.Metadata.address;
+	}
+
+	private void loadMetadata() {
+		string filename = PointCloud.GetDataPath() + this.Name + ".json";
+		this.Metadata = JsonUtility.FromJson<BuildingMetadata>(File.ReadAllText(filename));
 	}
 
 	public void ResetColors(Color color) {
