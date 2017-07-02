@@ -9,16 +9,23 @@ using System.IO;
 namespace XYZSeparator {
 	public class PointSeparator {
 		private ShapeHashSet shapes;
-		private string polygonFolder;
+		private string outputFolder;
 		private const int QUEUE_LENGTH = 400;
 		public int HitCount { get; private set; }
 
 		private Dictionary<Polygon, List<Vector3>> currentPoints;
 		private Queue<Polygon> queue;
 
-		public PointSeparator(ShapeHashSet shapes, string polygonFolder) {
+		private long hits = 0;
+		private long points = 0;
+		private int files = 0;
+		private int buildings = 0;
+		private DateTime lastUpdate = DateTime.Now;
+			
+
+		public PointSeparator(ShapeHashSet shapes, string outputFolder) {
 			this.shapes = shapes;
-			this.polygonFolder = polygonFolder;
+			this.outputFolder = outputFolder;
 			this.currentPoints = new Dictionary<Polygon, List<Vector3>>();
 			this.queue = new Queue<Polygon>();
 			this.HitCount = 0;
@@ -28,13 +35,12 @@ namespace XYZSeparator {
 			var polygon = this.queue.Dequeue();
 			var points = this.currentPoints[polygon];
 			this.currentPoints.Remove(polygon);
-			File.AppendAllLines(this.polygonFolder + polygon.GetXYZFilename(), points.Select(p => p.ToXYZLine()));
-			polygon.SavePolygon(this.polygonFolder);
+			File.AppendAllLines(this.outputFolder + polygon.GetXYZFilename(), points.Select(p => p.ToXYZLine()));
+			polygon.SavePolygon(this.outputFolder);
 			Console.WriteLine("Wrote " + points.Count + " points to " + polygon.Name + ".xyz");
 			this.HitCount += points.Count;
 		}
 
-		int buildings = 0;
 
 		private void addPoint(Polygon polygon, Vector3 point) {
 			if (!this.currentPoints.ContainsKey(polygon)) {
@@ -44,15 +50,11 @@ namespace XYZSeparator {
 					this.dequeueAndSave();
 				}
 				buildings++;
-				Console.WriteLine("buildings: " + buildings);
 			}
 			this.currentPoints[polygon].Add(point);
 		}
 
 		public void ProcessXYZFile(string filename) {
-			int hits = 0;
-			int points = 0;
-			var lastUpdate = DateTime.Now;
 			foreach (var point in XYZLoader.LoadContinuous(filename)) {
 				foreach (var polygon in this.shapes.GetByPoint(point)) {
 					if (polygon.Contains(point)) {
@@ -61,11 +63,18 @@ namespace XYZSeparator {
 					}
 				}
 				points++;
-				if ((DateTime.Now - lastUpdate).TotalSeconds > 1) {
-					Console.WriteLine("Processed " + points + " points, " + hits + " hits.");
+				if (points % 1000 == 0 && (DateTime.Now - lastUpdate).TotalSeconds > 1) {
+					Console.WriteLine("Processed " + this.files.ToString().PadLeft(3) + " files, "
+						+ this.points.ToString().PadLeft(12) + " points, "
+						+ this.hits.ToString().PadLeft(9) + " hits, "
+						+ buildings.ToString().PadLeft(6) +  "buildings");
 					lastUpdate = DateTime.Now;
 				}
 			}
+			this.files++;
+		}
+
+		public void ClearQueue() {
 			while (this.queue.Any()) {
 				this.dequeueAndSave();
 			}
