@@ -100,7 +100,10 @@ public class Triangle {
 			if (triangles[i] == triangles[i + 1] || triangles[i + 1] == triangles[i + 2] || triangles[i + 2] == triangles[i]) {
 				continue;
 			}
-			yield return new Triangle(vertices[triangles[i]], vertices[triangles[i + 1]], vertices[triangles[i + 2]]);
+			var triangle = Triangle.TryCreate(vertices[triangles[i]], vertices[triangles[i + 1]], vertices[triangles[i + 2]]);
+			if (triangle != null) {
+				yield return triangle;
+			}
 		}
 	}
 
@@ -133,14 +136,14 @@ public class Triangle {
 
 			if (abovePlane == 1) {
 				return new Tuple<IEnumerable<Triangle>, IEnumerable<Triangle>>(
-					Triangle.TryCreate(single, intersect1, intersect2),
-					Triangle.TryCreate(double1, double2, intersect1)
-					.Concat(Triangle.TryCreate(double2, intersect1, intersect2)));
+					Triangle.TryCreateEnum(single, intersect1, intersect2),
+					Triangle.TryCreateEnum(double1, double2, intersect1)
+					.Concat(Triangle.TryCreateEnum(double2, intersect1, intersect2)));
 			} else {
 				return new Tuple<IEnumerable<Triangle>, IEnumerable<Triangle>>(
-					Triangle.TryCreate(double1, double2, intersect1)
-					.Concat(Triangle.TryCreate(double2, intersect1, intersect2)),
-					Triangle.TryCreate(single, intersect1, intersect2));
+					Triangle.TryCreateEnum(double1, double2, intersect1)
+					.Concat(Triangle.TryCreateEnum(double2, intersect1, intersect2)),
+					Triangle.TryCreateEnum(single, intersect1, intersect2));
 			}
 			
 		}
@@ -153,7 +156,7 @@ public class Triangle {
 			plane.Raycast(ray, out dst);
 			var intersect = ray.GetPoint(dst);
 
-			return new Tuple<IEnumerable<Triangle>, IEnumerable<Triangle>>(Triangle.TryCreate(vertexBelow, vertexOn, intersect), Triangle.TryCreate(vertexAbove, vertexOn, intersect));
+			return new Tuple<IEnumerable<Triangle>, IEnumerable<Triangle>>(Triangle.TryCreateEnum(vertexBelow, vertexOn, intersect), Triangle.TryCreateEnum(vertexAbove, vertexOn, intersect));
 		}
 		return new Tuple<IEnumerable<Triangle>, IEnumerable<Triangle>>(Enumerable.Empty<Triangle>(), Enumerable.Empty<Triangle>());
 	}
@@ -251,7 +254,7 @@ public class Triangle {
 		return new Triangle2D(new Vector2(this.V1.x, this.V1.z), new Vector2(this.V2.x, this.V2.z), new Vector2(this.V3.x, this.V3.z));
 	}
 
-	public static IEnumerable<Triangle> TryCreate(Vector3 v1, Vector3 v2, Vector3 v3) {
+	public static IEnumerable<Triangle> TryCreateEnum(Vector3 v1, Vector3 v2, Vector3 v3) {
 		if (v1 == v2 || v2 == v3 || v3 == v1) {
 			yield break;
 		}
@@ -260,6 +263,20 @@ public class Triangle {
 
 		if (result.GetArea() > 0.01f) {
 			yield return result;
+		}
+	}
+
+	public static Triangle TryCreate(Vector3 v1, Vector3 v2, Vector3 v3) {
+		if (v1 == v2 || v2 == v3 || v3 == v1) {
+			return null;
+		}
+
+		var result = new Triangle(v1, v2, v3);
+
+		if (result.GetArea() > 0.01f) {
+			return result;
+		} else {
+			return null;
 		}
 	}
 }
