@@ -21,7 +21,6 @@ namespace XYZSeparator {
 		private int files = 0;
 		private int buildings = 0;
 		private DateTime lastUpdate = DateTime.Now;
-			
 
 		public PointSeparator(ShapeHashSet shapes, string outputFolder) {
 			this.shapes = shapes;
@@ -38,10 +37,8 @@ namespace XYZSeparator {
 			File.AppendAllLines(this.outputFolder + polygon.GetXYZFilename(), points.Select(p => p.ToXYZLine()));
 			polygon.SavePolygon(this.outputFolder);
 			polygon.SaveMetadata(this.outputFolder);
-			Console.WriteLine("Wrote " + points.Count + " points to " + polygon.Name + ".xyz");
 			this.HitCount += points.Count;
 		}
-
 
 		private void addPoint(Polygon polygon, Vector3 point) {
 			if (!this.currentPoints.ContainsKey(polygon)) {

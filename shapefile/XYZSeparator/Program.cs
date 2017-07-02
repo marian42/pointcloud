@@ -11,14 +11,15 @@ using System.IO;
 namespace XYZSeparator {
 	class Program {
 		public static void Main(string[] args) {
-			string inputFolder = "C:/Uni/Bachelorarbeit/git/data/";
-			string outputFolder = "C:/Uni/Bachelorarbeit/git/data/buildings/";
+			string inputFolder = "E:/pointdata/xyz/";
+			string outputFolder = "E:/pointdata/output/";
+			string shapeFileName = "E:/pointdata/shape/shapes.shp";
+			
 			foreach (var file in new DirectoryInfo(outputFolder).GetFiles()) {
 				file.Delete();
 			}
 
 			var startTime = DateTime.Now;
-			string shapeFileName = "C:/Uni/Bachelorarbeit/git/data/Stand_Jan12_Grundrissdaten/Dortmun_24_01_12.shp";
 			var shapeHashSet = new ShapeHashSet(100, 2);
 			shapeHashSet.Load(shapeFileName);
 
