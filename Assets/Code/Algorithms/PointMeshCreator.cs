@@ -210,7 +210,7 @@ public class PointMeshCreator : AbstractMeshCreator {
 					continue;
 				}
 			}
-		}			
+		}
 
 		return result;
 	}

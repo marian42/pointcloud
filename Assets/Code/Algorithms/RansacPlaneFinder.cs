@@ -16,7 +16,7 @@ public class RansacPlaneFinder : AbstractPlaneFinder {
 	public void Classify(IEnumerable<int> indicesParam) {
 		Timekeeping.Reset();
 
-		if (this.PointCloud.Normals == null) {
+		if (this.PointCloud.Normals == null || this.PointCloud.Normals.Length == 0) {
 			this.PointCloud.EstimateNormals();
 			Timekeeping.CompleteTask("Estimate normals");
 		}
