@@ -42,6 +42,9 @@ public class PointCloud : MonoBehaviour {
 	private PlaneParameters[] serializedPlanes;
 	public IEnumerable<Plane> Planes {
 		get {
+			if (this.serializedPlanes == null) {
+				return null;
+			}
 			return this.serializedPlanes.Select(pp => pp.GetPlane());
 		}
 		set {

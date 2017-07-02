@@ -186,4 +186,10 @@ public abstract class AbstractMeshCreator {
 		var plane = coplanarTriangles.First().Plane;
 		return coplanarTriangles.SelectMany(t => t.ProjectToGround().Without(triangleToRemove)).Select(t => t.ProjectFromGroundToPlane(coplanarTriangles.First().Plane));
 	}
+
+	protected void CheckForPlanes() {
+		if (this.PointCloud.Planes == null || !this.PointCloud.Planes.Any()) {
+			throw new System.Exception("Can't create mesh. Find planes first.");
+		}
+	}
 }

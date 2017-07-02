@@ -9,6 +9,8 @@ public class PointMeshCreator : AbstractMeshCreator {
 	}
 
 	public void CreateMesh() {
+		this.CheckForPlanes();
+
 		Timekeeping.Reset();
 		var result = new List<Triangle>();
 		var remainingPointIndices = Enumerable.Range(0, this.PointCloud.Points.Length).ToList();

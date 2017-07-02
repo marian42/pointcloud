@@ -75,6 +75,8 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 	}
 
 	public void CreateMeshCutoff(bool createAttachments) {
+		this.CheckForPlanes();
+
 		float bestScore = -1.0f;
 		IEnumerable<Triangle> bestMesh = null;
 		IEnumerable<Plane> bestPlanes = null;
