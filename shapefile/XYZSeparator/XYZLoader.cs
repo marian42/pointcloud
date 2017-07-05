@@ -9,7 +9,6 @@ using System.Globalization;
 public class XYZLoader {
 	private const int batchSize = 1000;
 
-
 	public static Vector3[] LoadFile(string fileName) {
 		return File.ReadAllLines(fileName).Select(line => XYZLoader.parseLine(line)).ToArray();
 	}

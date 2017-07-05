@@ -19,7 +19,6 @@ namespace XYZSeparator {
 				file.Delete();
 			}
 
-			var startTime = DateTime.Now;
 			var shapeHashSet = new ShapeHashSet(100, 2);
 			shapeHashSet.Load(shapeFileName);
 
@@ -29,13 +28,12 @@ namespace XYZSeparator {
 				if (file.Extension != ".xyz") {
 					continue;
 				}
-				separator.ProcessXYZFile(file.FullName);
+				separator.AddFile(file);
 			}
 
-			separator.ClearQueue();
+			separator.Run();
+
 			Polygon.SaveAggregatedMetadata(outputFolder);
-			Console.WriteLine("Found " + separator.HitCount + " points in " + (int)System.Math.Floor((DateTime.Now - startTime).TotalMinutes) + "m " + (DateTime.Now - startTime).Seconds + "s.");
-			
 			Console.ReadLine();
 		}
 	}
