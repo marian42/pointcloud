@@ -90,7 +90,7 @@ namespace XYZSeparator {
 				+ formatNumber(this.points) + " points, "
 				+ formatNumber(this.hits) + " hits, "
 				+ formatNumber(this.buildings) + " b, "
-				+ string.Format(CultureInfo.InvariantCulture, "{0:0.0}", progress * 100.0).PadLeft(4) + "%,"
+				+ string.Format(CultureInfo.InvariantCulture, "{0:0.0}", progress * 100.0).PadLeft(4) + "%, "
 				+ timeElapsed.ToString(@"h\:mm") + " / -"
 				+ TimeSpan.FromTicks((long)(timeElapsed.Ticks * ((1.0 - progress) / progress))).ToString(@"h\:mm"));
 			lastUpdate = DateTime.Now;
@@ -157,7 +157,7 @@ namespace XYZSeparator {
 			int step = (int)Math.Floor((Math.Log10((double)number) + 0.5) / 3.0);
 			double outBase = (double)number / Math.Pow(10, step * 3);
 
-			if (step == 0) {
+			if (number == 0 || step <= 0) {
 				return number.ToString();
 			} else {
 				string s;
