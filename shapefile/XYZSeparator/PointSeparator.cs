@@ -117,7 +117,9 @@ namespace XYZSeparator {
 				+ formatNumber(this.buildings) + " b, "
 				+ string.Format(CultureInfo.InvariantCulture, "{0:0.0}", progress * 100.0).PadLeft(4) + "%, "
 				+ timeElapsed.ToString(@"h\:mm") + " / -"
-				+ TimeSpan.FromTicks((long)(timeElapsed.Ticks * ((1.0 - progress) / progress))).ToString(@"h\:mm"));
+				+ TimeSpan.FromTicks((long)(timeElapsed.Ticks * ((1.0 - progress) / progress))).ToString(@"h\:mm")
+				+ " " + this.polygonQueue.Count
+			);
 			lastUpdate = DateTime.Now;
 		}
 
@@ -135,22 +137,28 @@ namespace XYZSeparator {
 				}
 				this.processXYZFile(file.FullName);
 				this.dataProcessed += file.Length;
+				while (this.polygonQueue.Count > PointSeparator.QUEUE_LENGTH + 200) {
+					Thread.Sleep(50);
+				}
 			}
 		}
 
 		private void outputWorker() {
 			while (!this.fileQueue.IsEmpty) {
 				if (this.polygonQueue.Count > PointSeparator.QUEUE_LENGTH) {
-					for (int i = 0; i < 100; i++) {
+					for (int i = 0; i < 20; i++) {
 						this.dequeueAndSave();
 					}
 				}
-				Thread.Sleep(200);
+				while (!this.fileQueue.IsEmpty && this.polygonQueue.Count < PointSeparator.QUEUE_LENGTH) {
+					Thread.Sleep(50);
+				}
 			}
 		}
 
 		public void Run() {
-			const int workerThreadCount = 8;
+			const int workerThreadCount = 6;
+			const int outputThreadCount = 4;
 
 			this.startTime = DateTime.Now;
 			this.totalSize = this.fileQueue.Sum(file => file.Length);
@@ -159,17 +167,24 @@ namespace XYZSeparator {
 			for (int i = 0; i < workerThreadCount; i++) {
 				threads.Add(new System.Threading.Thread(new System.Threading.ThreadStart(this.xyzFileWorker)));
 			}
-			var outputThread = new System.Threading.Thread(new System.Threading.ThreadStart(this.outputWorker));
+			var outputThreads = new List<Thread>();
+			for (int i = 0; i < outputThreadCount; i++) {
+				outputThreads.Add(new System.Threading.Thread(new System.Threading.ThreadStart(this.outputWorker)));
+			}
 
 			foreach (var thread in threads) {
 				thread.Start();
 			}
-			outputThread.Start();
+			foreach (var thread in outputThreads) {
+				thread.Start();
+			}
 
 			foreach (var thread in threads) {
 				thread.Join();
 			}
-			outputThread.Join();
+			foreach (var thread in outputThreads) {
+				thread.Join();
+			}
 			Console.WriteLine("Processed all files, writing remaining output files...");
 
 			this.ClearQueue();
