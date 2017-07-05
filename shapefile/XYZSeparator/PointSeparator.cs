@@ -51,10 +51,31 @@ namespace XYZSeparator {
 			if (!this.currentPoints.TryRemove(polygon, out points)) {
 				throw new Exception("Failed to remove points from dictionary.");
 			}
-			File.AppendAllLines(this.outputFolder + polygon.GetXYZFilename(), points.Select(p => p.ToXYZLine()));
 			polygon.SavePolygon(this.outputFolder);
 			polygon.SaveMetadata(this.outputFolder);
+			this.WritePointFile(polygon, points);
 			this.HitCount += points.Count;
+		}
+
+		public void WriteXYZFile(Polygon polygon, IEnumerable<Vector3> points) {
+			File.AppendAllLines(this.outputFolder + polygon.Name + ".xyz", points.Select(p => p.ToXYZLine()));
+		}
+
+		public void WritePointFile(Polygon polygon, IEnumerable<Vector3> points) {
+			string filename = this.outputFolder + polygon.Name + ".points";
+
+			using (var fileStream = new FileStream(filename, FileMode.Append, FileAccess.Write)) {
+				using (var writer = new BinaryWriter(fileStream)) {
+					foreach (var point in points) {
+						short x = (short)((point.x - polygon.Center.x) * 100.0d);
+						short y = (short)((point.y - polygon.Center.y) * 100.0d);
+						short z = (short)((point.z - polygon.Center.z) * 100.0d);
+						writer.Write(x);
+						writer.Write(y);
+						writer.Write(z);
+					}
+				}
+			}
 		}
 
 		private void addPoint(Polygon polygon, Vector3 point) {

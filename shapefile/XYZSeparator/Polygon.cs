@@ -26,6 +26,11 @@ public class Polygon {
 
 	private bool inAggregatedMetadata;
 
+	public Vector3 Center {
+		get;
+		private set;
+	}
+
 	public Polygon(ShapePolygon shapePolygon, int partIndex, double offset) {
 		this.Points = shapePolygon.Parts[partIndex];
 		this.OffsetPoints = Polygon.GetEnlargedPolygon(this.Points.ToList(), offset).ToArray();
@@ -39,6 +44,13 @@ public class Polygon {
 		}
 		this.metadata["filename"] = this.Name;
 		this.metadata["address"] = Regex.Replace((shapePolygon.GetMetadata("strasse").Replace("STRA▀E", "Straße").ToLower()), @"(^\w)|(\s\w)", m => m.Value.ToUpper()) + " " + shapePolygon.GetMetadata("hausnr");
+		this.findCenter();
+	}
+
+	private void findCenter() {
+		double centerx = double.Parse(this.metadata["schwerp_x"].Replace(',', '.'), CultureInfo.InvariantCulture);
+		double centerz = double.Parse(this.metadata["schwerp_y"].Replace(',', '.'), CultureInfo.InvariantCulture);
+		this.Center = new Vector3(centerx, 0.0d, centerz);
 	}
 
 	private void createBoundingBox() {
@@ -200,10 +212,6 @@ public class Polygon {
 
 	public override string ToString() {
 		return this.OffsetPoints.Aggregate("", (s, p) => s + string.Format(CultureInfo.InvariantCulture, "({0:0.00} {1:0.00}), ", p.X, p.Y)).Trim();
-	}
-
-	public string GetXYZFilename() {
-		return this.Name + ".xyz";
 	}
 
 	public void SavePolygon(string folder) {
