@@ -79,12 +79,16 @@ namespace XYZSeparator {
 		}
 
 		private void addPoint(Polygon polygon, Vector3 point) {
-			if (!this.currentPoints.ContainsKey(polygon)) {
-				this.currentPoints[polygon] = new List<Vector3>();
-				this.polygonQueue.Enqueue(polygon);				
+			List<Vector3> points = null;
+
+			if (!this.currentPoints.TryGetValue(polygon, out points)) {
+				points = new List<Vector3>();
+				this.currentPoints[polygon] = points;
+				this.polygonQueue.Enqueue(polygon);
 				buildings++;
 			}
-			this.currentPoints[polygon].Add(point);
+
+			points.Add(point);
 		}
 
 		private void processXYZFile(string filename) {
