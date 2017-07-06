@@ -137,7 +137,7 @@ namespace XYZSeparator {
 				}
 				this.processXYZFile(file.FullName);
 				this.dataProcessed += file.Length;
-				while (this.polygonQueue.Count > PointSeparator.QUEUE_LENGTH + 200) {
+				while (!this.fileQueue.IsEmpty && this.polygonQueue.Count > PointSeparator.QUEUE_LENGTH + 200) {
 					Thread.Sleep(50);
 				}
 			}
