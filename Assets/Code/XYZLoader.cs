@@ -21,6 +21,6 @@ public class XYZLoader {
 		}
 		catch (FormatException) {
 			throw new Exception("Bad line: " + line);
-		}		
+		}
 	}
 }

@@ -90,7 +90,7 @@ public abstract class AbstractMeshCreator {
 			sb.Append(string.Format("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}\n",
 				this.Mesh.triangles[i] + 1, this.Mesh.triangles[i + 1] + 1, this.Mesh.triangles[i + 2] + 1));
         }
-		System.IO.File.WriteAllText(PointCloud.GetDataPath() + this.PointCloud.Name + ".obj", sb.ToString());
+		System.IO.File.WriteAllText(this.PointCloud.Folder + this.PointCloud.Name + ".obj", sb.ToString());
 	}
 
 	public IEnumerable<Triangle> MakeRoofSolid(IEnumerable<Triangle> triangles) {

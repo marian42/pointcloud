@@ -34,6 +34,7 @@ public class PointCloud : MonoBehaviour {
 	public Vector3[] Normals;
 	
 	public string Name;
+	public string Folder;
 
 	public Vector3 Center;
 	public Vector3 GroundPoint;
@@ -60,12 +61,13 @@ public class PointCloud : MonoBehaviour {
 		this.ResetColors(Color.red);
 		FileInfo fileInfo = new FileInfo(xyzFilename);
 		this.Name = fileInfo.Name.Substring(0, fileInfo.Name.IndexOf('.'));
+		this.Folder = fileInfo.Directory.FullName + "\\";
 		this.loadMetadata();
 		this.gameObject.name = this.Metadata.address;
 	}
 
 	private void loadMetadata() {
-		string filename = PointCloud.GetDataPath() + this.Name + ".json";
+		string filename = this.Folder + this.Name + ".json";
 		this.Metadata = JsonUtility.FromJson<BuildingMetadata>(File.ReadAllText(filename));
 	}
 
@@ -211,11 +213,7 @@ public class PointCloud : MonoBehaviour {
 	}
 
 	public Vector2[] GetShape() {
-		return XYZLoader.LoadFile(PointCloud.GetDataPath() + this.Name + ".xyzshape").Select(v => new Vector2(v.x - this.Center.x, v.z - this.Center.z)).ToArray();
-	}
-
-	public static string GetDataPath() {
-		return Application.dataPath + "/data/buildings/";
+		return XYZLoader.LoadFile(this.Folder + this.Name + ".xyzshape").Select(v => new Vector2(v.x - this.Center.x, v.z - this.Center.z)).ToArray();
 	}
 
 	public float GetScore(int index, Plane plane) {
@@ -247,7 +245,7 @@ public class PointCloud : MonoBehaviour {
 
 	[MenuItem("File/Load pointcloud...")]
 	public static void LoadSingle() {
-		string selected = EditorUtility.OpenFilePanel("Load file", PointCloud.GetDataPath(), "xyz");
+		string selected = EditorUtility.OpenFilePanel("Load file", Application.dataPath + "/data/buildings/", "xyz");
 		if (selected.Any() && File.Exists(selected)) {
 			GameObject gameObject = new GameObject();
 			var pointCloud = gameObject.AddComponent<PointCloud>();
@@ -260,7 +258,7 @@ public class PointCloud : MonoBehaviour {
 
 	[MenuItem("File/Load all pointclouds")]
 	public static void LoadFolder() {
-		var folder = new DirectoryInfo(PointCloud.GetDataPath());
+		var folder = new DirectoryInfo(Application.dataPath + "/data/buildings/");
 		foreach (var xyzFile in folder.GetFiles()) {
 			if (xyzFile.Extension.ToLower() != ".xyz") {
 				continue;
