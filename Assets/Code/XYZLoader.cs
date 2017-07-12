@@ -14,6 +14,30 @@ public class XYZLoader {
 		return File.ReadAllLines(fileName).Select(line => XYZLoader.parseLine(line)).ToArray();
 	}
 
+	public static Vector3[] LoadPointFile(string fileName, BuildingMetadata metadata) {
+		double centerX = metadata.CenterX;
+		double centerZ = metadata.CenterZ;
+
+		List<Vector3> result = new List<Vector3>();
+
+		using (var fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read)) {
+			using (var reader = new BinaryReader(fileStream)) {
+				while (fileStream.Position != fileStream.Length) {
+					short x = reader.ReadInt16();
+					short y = reader.ReadInt16();
+					short z = reader.ReadInt16();
+
+					result.Add(new Vector3(
+						(float)((double)x / 100.0d + centerX - XYZLoader.ReferenceX),
+						(float)((double)y / 100.0d - XYZLoader.ReferenceZ),
+						(float)((double)z / 100.0d + centerZ - XYZLoader.ReferenceY)));
+				}
+			}
+		}
+
+		return result.ToArray();
+	}
+
 	private static Vector3 parseLine(string line) {
 		try {
 			var points = line.Replace(',', ' ').Split(' ').Where(s => s.Any()).Select(s => double.Parse(s)).ToArray();

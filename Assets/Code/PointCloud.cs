@@ -54,16 +54,24 @@ public class PointCloud : MonoBehaviour {
 			this.serializedPlanes = value.Select(plane => new PlaneParameters(plane)).ToArray();
 		}
 	}
-	
-	public void Load(string xyzFilename) {
-		this.Points = XYZLoader.LoadFile(xyzFilename);
-		this.moveToCenter();
-		this.ResetColors(Color.red);
-		FileInfo fileInfo = new FileInfo(xyzFilename);
+
+	public void Load(string filename) {
+		FileInfo fileInfo = new FileInfo(filename);
 		this.Name = fileInfo.Name.Substring(0, fileInfo.Name.IndexOf('.'));
 		this.Folder = fileInfo.Directory.FullName + "\\";
 		this.loadMetadata();
 		this.gameObject.name = this.Metadata.address;
+		
+		if (fileInfo.Extension == "xyz") {
+			this.Points = XYZLoader.LoadFile(filename);
+		} else if (fileInfo.Extension == ".points") {
+			this.Points = XYZLoader.LoadPointFile(filename, this.Metadata);
+		} else {
+			throw new Exception("Unsupported file extension.");
+		}
+
+		this.moveToCenter();
+		this.ResetColors(Color.red);
 	}
 
 	private void loadMetadata() {
@@ -245,7 +253,7 @@ public class PointCloud : MonoBehaviour {
 
 	[MenuItem("File/Load pointcloud...")]
 	public static void LoadSingle() {
-		string selected = EditorUtility.OpenFilePanel("Load file", Application.dataPath + "/data/buildings/", "xyz");
+		string selected = EditorUtility.OpenFilePanel("Load file", Application.dataPath + "/data/buildings/", null);
 		if (selected.Any() && File.Exists(selected)) {
 			GameObject gameObject = new GameObject();
 			var pointCloud = gameObject.AddComponent<PointCloud>();
@@ -260,7 +268,7 @@ public class PointCloud : MonoBehaviour {
 	public static void LoadFolder() {
 		var folder = new DirectoryInfo(Application.dataPath + "/data/buildings/");
 		foreach (var xyzFile in folder.GetFiles()) {
-			if (xyzFile.Extension.ToLower() != ".xyz") {
+			if (xyzFile.Extension.ToLower() != ".xyz" && xyzFile.Extension.ToLower() != ".points") {
 				continue;
 			}
 			GameObject gameObject = new GameObject();
