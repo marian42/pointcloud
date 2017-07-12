@@ -33,7 +33,8 @@ namespace XYZSeparator {
 
 			separator.Run();
 
-			Polygon.SaveAggregatedMetadata(outputFolder);
+			// This takes too much memory
+			//Polygon.SaveAggregatedMetadata(outputFolder);
 			Console.ReadLine();
 		}
 	}
