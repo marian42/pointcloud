@@ -60,7 +60,7 @@ public class MeshCleaner {
 		for (int i = 0; i < indices.Length; i += 3) {
 			var triangle = new Triangle(distinctPoints[indices[i]], distinctPoints[indices[i + 1]], distinctPoints[indices[i + 2]]);
 			var center = triangle.Center;
-			if (!triangles.Any(t => t.ContainsXZ(center)) || Mathf.Abs(Vector3.Angle(triangle.Normal, Vector3.up) - 90.0f) < 5.0f) {
+			if (!triangles.Any(t => t.ContainsXZ(center)) || Mathf.Abs(Vector3.Angle(triangle.Normal, Vector3.up) - 90.0f) < 10.0f) {
 				continue;
 			}
 			yield return triangle;
