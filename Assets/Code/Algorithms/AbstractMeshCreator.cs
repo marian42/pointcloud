@@ -13,17 +13,22 @@ public abstract class AbstractMeshCreator {
 		FromPoints
 	}
 
+	public bool CleanMesh;
+
 	protected readonly List<Plane> Planes;
 	protected readonly PointCloud PointCloud;
 	
-	public Mesh Mesh {
+	public IEnumerable<Triangle> Triangles {
 		get;
 		protected set;
 	}
 
-	public AbstractMeshCreator(PointCloud pointCloud) {
+	private Mesh mesh;
+
+	public AbstractMeshCreator(PointCloud pointCloud, bool cleanMesh) {
 		this.Planes = pointCloud.Planes.ToList();
 		this.PointCloud = pointCloud;
+		this.CleanMesh = cleanMesh;
 	}	
 
 	protected float GetScore(IEnumerable<Triangle> mesh) {
@@ -31,35 +36,48 @@ public abstract class AbstractMeshCreator {
 	}
 
 	
-	public static AbstractMeshCreator CreateMesh(PointCloud pointCloud, Type type) {
+	public static AbstractMeshCreator CreateMesh(PointCloud pointCloud, Type type, bool cleanMesh) {
 		switch (type) {
 			case Type.Cutoff: {
-					var creator = new ShapeMeshCreator(pointCloud);
-					creator.CreateMeshCutoff(false);
-					return creator;
-				}
+				var creator = new ShapeMeshCreator(pointCloud, cleanMesh);
+				creator.CreateMeshCutoff(false);
+				return creator;
+			}
 			case Type.CutoffWithAttachments: {
-					var creator = new ShapeMeshCreator(pointCloud);
-					creator.CreateMeshCutoff(true);
-					return creator;
+				var creator = new ShapeMeshCreator(pointCloud, cleanMesh);
+				creator.CreateMeshCutoff(true);
+				return creator;
 				}
 			case Type.Permutations: {
-					var creator = new ShapeMeshCreator(pointCloud);
-					creator.CreateMeshWithPermutations();
-					return creator;
-				}
+				var creator = new ShapeMeshCreator(pointCloud, cleanMesh);
+				creator.CreateMeshWithPermutations();
+				return creator;
+			}
 			case Type.Layout: {
-					var creator = new ShapeMeshCreator(pointCloud);
-					creator.CreateLayoutMesh();
-					return creator;
-				}
+				var creator = new ShapeMeshCreator(pointCloud, cleanMesh);
+				creator.CreateLayoutMesh();
+				return creator;
+			}
 			case Type.FromPoints: {
-					var creator = new PointMeshCreator(pointCloud);
-					creator.CreateMesh();
-					return creator;
-				}
+				var creator = new PointMeshCreator(pointCloud, cleanMesh);
+				creator.CreateMesh();
+				return creator;
+			}
 			default: throw new System.NotImplementedException();
 		}
+	}
+
+	public Mesh GetMesh() {
+		if (this.mesh == null) {
+			if (this.CleanMesh) {
+				var cleanedTriangles = MeshCleaner.CleanMesh(this.Triangles);
+				this.mesh = Triangle.CreateMesh(cleanedTriangles, true);
+			} else {
+				this.mesh = Triangle.CreateMesh(this.Triangles, true);
+			}
+		}
+
+		return this.mesh;		
 	}
 
 	public void DisplayMesh() {
@@ -67,7 +85,7 @@ public abstract class AbstractMeshCreator {
 		var gameObject = new GameObject();
 		gameObject.transform.parent = this.PointCloud.transform;
 		gameObject.tag = "RoofMesh";
-		gameObject.AddComponent<MeshFilter>().sharedMesh = this.Mesh;
+		gameObject.AddComponent<MeshFilter>().sharedMesh = this.GetMesh();
 		gameObject.AddComponent<MeshRenderer>().material = material;
 		gameObject.transform.localPosition = Vector3.zero;
 		gameObject.name = "Shape";
@@ -75,20 +93,21 @@ public abstract class AbstractMeshCreator {
 	}
 
 	public void SaveMesh() {
+		this.GetMesh();
         StringBuilder sb = new StringBuilder();
  
         sb.Append("g ").Append(this.PointCloud.Name).Append("\n");
-        foreach(Vector3 v in this.Mesh.vertices) {
+        foreach(Vector3 v in this.mesh.vertices) {
 			sb.Append(string.Format("v {0} {1} {2}\n", v.x + XYZLoader.ReferenceX, v.z + XYZLoader.ReferenceY, v.y +XYZLoader.ReferenceZ));
         }
         sb.Append("\n");
-        foreach(Vector3 v in this.Mesh.normals) {
+		foreach (Vector3 v in this.mesh.normals) {
 			sb.Append(string.Format("vn {0} {1} {2}\n", v.x, v.y, v.z));
         }
 		sb.Append("\n");
-        for (int i=0;i<this.Mesh.triangles.Length;i+=3) {
+		for (int i = 0; i < this.mesh.triangles.Length; i += 3) {
 			sb.Append(string.Format("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}\n",
-				this.Mesh.triangles[i] + 1, this.Mesh.triangles[i + 1] + 1, this.Mesh.triangles[i + 2] + 1));
+				this.mesh.triangles[i] + 1, this.mesh.triangles[i + 1] + 1, this.mesh.triangles[i + 2] + 1));
         }
 		System.IO.File.WriteAllText(this.PointCloud.Folder + this.PointCloud.Name + ".obj", sb.ToString());
 	}

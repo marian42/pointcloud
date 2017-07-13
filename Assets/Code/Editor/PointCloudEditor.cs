@@ -12,6 +12,7 @@ public class PointCloudEditor : Editor {
 	private static AbstractPlaneFinder.Type classifierType = AbstractPlaneFinder.Type.Ransac;
 	private static AbstractMeshCreator.Type meshCreatorType = AbstractMeshCreator.Type.CutoffWithAttachments;
 	private static bool showPlanes = false;
+	private static bool cleanMesh = true;
 
 	public override void OnInspectorGUI() {
 		base.OnInspectorGUI();
@@ -62,6 +63,8 @@ public class PointCloudEditor : Editor {
 
 		GUILayout.EndHorizontal();
 
+		PointCloudEditor.cleanMesh = EditorGUILayout.Toggle("Clean mesh", PointCloudEditor.cleanMesh);
+
 		GUILayout.BeginHorizontal();
 
 		meshCreatorType = (AbstractMeshCreator.Type)(EditorGUILayout.EnumPopup(meshCreatorType));
@@ -107,7 +110,7 @@ public class PointCloudEditor : Editor {
 
 	private void createMesh(PointCloud pointCloud, AbstractMeshCreator.Type type) {
 		PointCloudEditor.DeleteMeshesIn(pointCloud.transform);
-		var meshCreator = AbstractMeshCreator.CreateMesh(pointCloud, type);
+		var meshCreator = AbstractMeshCreator.CreateMesh(pointCloud, type, PointCloudEditor.cleanMesh);
 		meshCreator.DisplayMesh();
 		meshCreator.SaveMesh();
 		Debug.Log(Timekeeping.GetStatus());

@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEditor;
 
 public class PointMeshCreator : AbstractMeshCreator {
-	public PointMeshCreator(PointCloud pointCloud) : base(pointCloud) {
+	public PointMeshCreator(PointCloud pointCloud, bool cleanMesh) : base(pointCloud, cleanMesh) {
 	}
 
 	public void CreateMesh() {
@@ -139,7 +139,7 @@ public class PointMeshCreator : AbstractMeshCreator {
 			}
 			Timekeeping.CompleteTask("Find polygons");
 		}
-		this.Mesh = Triangle.CreateMesh(result, true);
+		this.Triangles = result;
 	}
 
 	private IEnumerable<Vector2> snapPoints(IEnumerable<Vector2> points, PlaneCoordinates planeCoordinates, IEnumerable<Vector3> previousPoints, float snapDistance) {

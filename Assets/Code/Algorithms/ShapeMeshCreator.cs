@@ -6,7 +6,7 @@ using System.Linq;
 public class ShapeMeshCreator : AbstractMeshCreator {
 	private Vector2[] shape;
 	
-	public ShapeMeshCreator(PointCloud pointCloud) : base(pointCloud) {
+	public ShapeMeshCreator(PointCloud pointCloud, bool cleanMesh) : base(pointCloud, cleanMesh) {
 		this.shape = this.PointCloud.GetShape();
 		if (this.shape.First() == this.shape.Last()) {
 			this.shape = this.shape.Skip(1).ToArray();
@@ -24,7 +24,7 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 			triangles.Add(new Triangle(new Vector3(v1.x, 0, v1.y), new Vector3(v2.x, 5, v2.y), new Vector3(v1.x, 5, v1.y)));
 		}
 
-		this.Mesh = Triangle.CreateMesh(triangles, true);
+		this.Triangles = triangles;
 	}
 
 	private Vector3[] projectToPlane(Vector2[] vertices, Plane plane) {
@@ -96,11 +96,14 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 		var usedPlanes = bestPlanes.ToList();
 
 		if (!createAttachments) {
-			this.Mesh = Triangle.CreateMesh(resultMesh, true);
+			this.Triangles = resultMesh;
+			this.CleanMesh = false;
 			return;
 		}
 
 		var planeFinder = new RansacPlaneFinder(this.PointCloud);
+
+		bool foundAttachments = false;
 
 		foreach (var plane in bestPlanes) {
 			var indices = new List<int>();
@@ -140,6 +143,7 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 
 				if (bestScore > 2.0f) {
 					resultMesh.AddRange(bestMesh);
+					foundAttachments = true;
 					Debug.Log("Attachment score: " + bestScore + ", pointdensity: " + bestMesh.Sum(t => (t.GetPointCount(this.PointCloud, indices))) / bestMesh.Sum(t => t.GetArea()) + ", area: " + bestMesh.Sum(t => t.GetArea()) + ", created from " + outsidePlanes.Count() + " planes");
 					usedPlanes = usedPlanes.Union(planesInAttachment).ToList();
 				} else {
@@ -150,7 +154,10 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 			}
 		}
 
-		this.Mesh = Triangle.CreateMesh(MeshCleaner.CleanMesh(resultMesh), true);
+		if (!foundAttachments) {
+			this.CleanMesh = false;
+		}
+		this.Triangles = resultMesh;
 	}
 
 	private Vector3 intersectPlane(Plane plane, Vector3 pointOnLine, Vector3 lineDirection) {
@@ -242,7 +249,7 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 			}
 		}
 
-		this.Mesh = Triangle.CreateMesh(result, true);
+		this.Triangles = result;
 	}
 
 }
