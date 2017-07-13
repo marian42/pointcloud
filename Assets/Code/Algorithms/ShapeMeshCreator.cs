@@ -150,7 +150,7 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 			}
 		}
 
-		this.Mesh = Triangle.CreateMesh(resultMesh, true);
+		this.Mesh = Triangle.CreateMesh(MeshCleaner.CleanMesh(resultMesh), true);
 	}
 
 	private Vector3 intersectPlane(Plane plane, Vector3 pointOnLine, Vector3 lineDirection) {

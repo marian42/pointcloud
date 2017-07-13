@@ -21,7 +21,7 @@ public class PointMeshCreator : AbstractMeshCreator {
 			var planeCoordinates = new PlaneCoordinates(plane);
 			var planePoints = onPlane.Select(p => planeCoordinates.ToPlane(p)).ToList();
 
-			var triangles = this.triangluate(planePoints).ToArray();
+			var triangles = PointMeshCreator.Triangulate(planePoints).ToArray();
 			Timekeeping.CompleteTask("Triangulate");
 
 			const float maxDistance = 1.5f;
@@ -222,7 +222,7 @@ public class PointMeshCreator : AbstractMeshCreator {
 		return Triangle.GetTriangles(points.Select(p => planeCoordinates.ToWorld(p)).ToArray(), triangles);
 	}
 
-	private IEnumerable<int> triangluate(List<Vector2> points) {
+	public static IEnumerable<int> Triangulate(List<Vector2> points) {
 		var triangulator = new Delaunay.Voronoi(points.ToList(), null, getBounds(points));
 		var lineSegments = triangulator.DelaunayTriangulation();
 		Timekeeping.CompleteTask("Triangulate");
@@ -266,7 +266,7 @@ public class PointMeshCreator : AbstractMeshCreator {
 		}
 	}
 
-	private Rect getBounds(IEnumerable<Vector2> points) {
+	private static Rect getBounds(IEnumerable<Vector2> points) {
 		var first = points.First();
 		float minX = first.x;
 		float maxX = first.x;

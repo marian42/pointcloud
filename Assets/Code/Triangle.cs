@@ -174,22 +174,30 @@ public class Triangle {
 		return "Triangle: " + this.V1 + ", " + this.V2 + ", " + this.V3;
 	}
 
-	public bool ContainsXZ(Vector3 point) {
+	public bool ContainsXZ(float x, float z) {
 		float ax, az, bx, bz, cx, cz, apx, apz, bpx, bpz, cpx, cpz;
 		float cCROSSap, bCROSScp, aCROSSbp;
 
 		ax = this.V1.x - this.V2.x; az = this.V1.z - this.V2.z;
 		bx = this.V3.x - this.V1.x; bz = this.V3.z - this.V1.z;
 		cx = this.V2.x - this.V3.x; cz = this.V2.z - this.V3.z;
-		apx = point.x - this.V3.x; apz = point.z - this.V3.z;
-		bpx = point.x - this.V2.x; bpz = point.z - this.V2.z;
-		cpx = point.x - this.V1.x; cpz = point.z - this.V1.z;
+		apx = x - this.V3.x; apz = z - this.V3.z;
+		bpx = x - this.V2.x; bpz = z - this.V2.z;
+		cpx = x - this.V1.x; cpz = z - this.V1.z;
 
 		aCROSSbp = ax * bpz - az * bpx;
 		cCROSSap = cx * apz - cz * apx;
 		bCROSScp = bx * cpz - bz * cpx;
 
 		return ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
+	}
+
+	public bool ContainsXZ(Vector3 point) {
+		return this.ContainsXZ(point.x, point.z);
+	}
+
+	public bool ContainsXZ(Vector2 point) {
+		return this.ContainsXZ(point.x, point.y);
 	}
 
 	public float GetScore(PointCloud pointCloud) {
@@ -277,6 +285,12 @@ public class Triangle {
 			return result;
 		} else {
 			return null;
+		}
+	}
+
+	public Vector2 Center {
+		get {
+			return new Vector2((this.V1.x + this.V2.x + this.V3.x) / 3.0f, (this.V1.z + this.V2.z + this.V3.z) / 3.0f);
 		}
 	}
 }
