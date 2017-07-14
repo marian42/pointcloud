@@ -37,12 +37,12 @@ public class CameraController : MonoBehaviour {
 	void Update () {
 		float scroll = Input.GetAxis("Mouse ScrollWheel");
 		if (scroll != 0) {
-			this.distance *= Mathf.Pow(1.3f, -Mathf.Sign(scroll));
-		}		
+			//this.distance *= Mathf.Pow(1.3f, -Mathf.Sign(scroll));
+		}
+
 		if (Input.GetMouseButton(1)) {
 			this.rotH -= Input.GetAxis("Mouse X");
-			this.rotV -= Input.GetAxis("Mouse Y");
-		
+			this.rotV -= Input.GetAxis("Mouse Y");		
 		}
 		if (Input.GetMouseButtonDown(0)) {
 			this.mouseStart = this.getMousePosition();
