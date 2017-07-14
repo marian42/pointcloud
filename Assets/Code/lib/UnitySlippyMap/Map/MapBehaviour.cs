@@ -30,7 +30,6 @@ using UnityEngine;
 
 using UnitySlippyMap.Markers;
 using UnitySlippyMap.Layers;
-using UnitySlippyMap.GUI;
 using UnitySlippyMap.Input;
 using UnitySlippyMap.Helpers;
 
@@ -652,16 +651,6 @@ namespace UnitySlippyMap.Map
 		private bool showsGUIControls = false;
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map.MapBehaviour"/> shows GUI controls.
-		/// </summary>
-		/// <value><c>true</c> if show GUI controls; otherwise, <c>false</c>.</value>
-		public bool ShowsGUIControls
-		{
-			get { return showsGUIControls; }
-			set { showsGUIControls = value; }
-		}
-
-		/// <summary>
 		/// The "inputs enabled" flag.
 		/// </summary>
 		private bool inputsEnabled = false;
@@ -706,20 +695,6 @@ namespace UnitySlippyMap.Map
 			set { hasMoved = value; }
 		}
     
-		/// <summary>
-		/// The GUI delegate.
-		/// </summary>
-		private GUIDelegate guiDelegate;
-
-		/// <summary>
-		/// Gets or sets the GUI delegate.
-		/// </summary>
-		/// <value>The GUI delegate.</value>
-		public GUIDelegate GUIDelegate {
-			get { return guiDelegate; }
-			set { guiDelegate = value; }
-		}
-	
 		/// <summary>
 		/// The input delegate.
 		/// </summary>
@@ -935,10 +910,6 @@ namespace UnitySlippyMap.Map
 			// TODO: optimise, use one mesh for the tiles and combine textures in a big one (might resolve the gap bug above)
 
 			// process the user defined GUI
-			if (ShowsGUIControls && guiDelegate != null) {
-				wasInputInterceptedByGUI = guiDelegate (this);
-			}
-		
 			if (Event.current.type != EventType.Repaint
 				&& Event.current.type != EventType.MouseDown
 				&& Event.current.type != EventType.MouseDrag
