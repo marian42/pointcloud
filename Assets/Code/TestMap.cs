@@ -35,19 +35,11 @@ public class TestMap : MonoBehaviour
 	private MapBehaviour		map;
 	
 	public Texture	LocationTexture;
-	public Texture	MarkerTexture;
 	
 	private float	guiXScale;
 	private float	guiYScale;
 	private Rect	guiRect;
 	
-	private bool 	isPerspectiveView = false;
-	private float	perspectiveAngle = 30.0f;
-	private float	destinationAngle = 0.0f;
-	private float	currentAngle = 0.0f;
-	private float	animationDuration = 0.5f;
-	private float	animationStartTime = 0.0f;
-
     private List<LayerBehaviour> layers;
     private int     currentLayerIndex = 0;
 	
@@ -61,7 +53,7 @@ public class TestMap : MonoBehaviour
 		// create the map singleton
 		map = MapBehaviour.Instance;
 		map.CurrentCamera = Camera.main;
-		//map.InputDelegate += UnitySlippyMap.Input.MapInput.BasicTouchAndKeyboard;
+		map.InputDelegate += UnitySlippyMap.Input.MapInput.BasicTouchAndKeyboard;
 		map.MaxZoom = 40.0f;
 		map.CurrentZoom = 15.0f;
 		
@@ -77,44 +69,8 @@ public class TestMap : MonoBehaviour
 		layers.Add(osmLayer);
 	}
 	
-	void OnApplicationQuit()
-	{
+	void OnApplicationQuit() {
 		map = null;
-	}
-
-	private float zoomLeft = 0.0f;
-
-	void Update()
-	{
-		if (destinationAngle != 0.0f)
-		{
-			Vector3 cameraLeft = Quaternion.AngleAxis(-90.0f, Camera.main.transform.up) * Camera.main.transform.forward;
-			if ((Time.time - animationStartTime) < animationDuration)
-			{
-				float angle = Mathf.LerpAngle(0.0f, destinationAngle, (Time.time - animationStartTime) / animationDuration);
-				Camera.main.transform.RotateAround(Vector3.zero, cameraLeft, angle - currentAngle);
-				currentAngle = angle;
-			}
-			else
-			{
-				Camera.main.transform.RotateAround(Vector3.zero, cameraLeft, destinationAngle - currentAngle);
-				destinationAngle = 0.0f;
-				currentAngle = 0.0f;
-				map.IsDirty = true;
-			}
-			
-			map.HasMoved = true;
-		}
-
-		float scroll = Input.GetAxis("Mouse ScrollWheel");
-		if (scroll != 0) {
-			zoomLeft += scroll;
-			Debug.Log(this.map.CurrentZoom);
-		}
-		if (Mathf.Abs(this.zoomLeft) > 0.1) {
-			this.map.Zoom(Mathf.Sign(this.zoomLeft) * 1.0f);
-			this.zoomLeft -= Mathf.Sign(this.zoomLeft) * Time.deltaTime;
-		}		
 	}
 }
 

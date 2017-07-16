@@ -897,7 +897,6 @@ namespace UnitySlippyMap.Map
 				screenScale = 2.0f;
 
 			// initialize the camera position and rotation
-			currentCamera.transform.rotation = Quaternion.Euler (90.0f, 0.0f, 0.0f);
 			Zoom (0.0f);
 		}
 
@@ -952,26 +951,26 @@ namespace UnitySlippyMap.Map
 						&& UnityEngine.Input.location.lastData.longitude >= -180.0f
 						&& UnityEngine.Input.location.lastData.latitude <= 90.0f
 						&& UnityEngine.Input.location.lastData.latitude >= -90.0f) {
-						if (CenterWGS84 [0] != UnityEngine.Input.location.lastData.longitude
-							|| CenterWGS84 [1] != UnityEngine.Input.location.lastData.latitude)
+						if (CenterWGS84[0] != UnityEngine.Input.location.lastData.longitude
+							|| CenterWGS84[1] != UnityEngine.Input.location.lastData.latitude)
 							CenterWGS84 = new double[2] {
 																UnityEngine.Input.location.lastData.longitude,
 																UnityEngine.Input.location.lastData.latitude
 														};
-					
+
 						//Debug.Log("DEBUG: Map.Update: new location: " + Input.location.lastData.longitude + " " + Input.location.lastData.latitude + ":  " + Input.location.status);					
 					} else {
-						Debug.LogWarning ("WARNING: Map.Update: bogus location (bailing): " + UnityEngine.Input.location.lastData.longitude + " " + UnityEngine.Input.location.lastData.latitude + ":  " + UnityEngine.Input.location.status);
+						Debug.LogWarning("WARNING: Map.Update: bogus location (bailing): " + UnityEngine.Input.location.lastData.longitude + " " + UnityEngine.Input.location.lastData.latitude + ":  " + UnityEngine.Input.location.status);
 					}
 				}
-			
+
 				if (locationMarker != null) {
 #if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
 				if (locationMarker.gameObject.active == false)
 					locationMarker.gameObject.SetActiveRecursively(true);
 #else
 					if (locationMarker.gameObject.activeSelf == false)
-						locationMarker.gameObject.SetActive (true);
+						locationMarker.gameObject.SetActive(true);
 #endif
 					if (UnityEngine.Input.location.lastData.longitude <= 180.0f
 						&& UnityEngine.Input.location.lastData.longitude >= -180.0f
@@ -982,56 +981,12 @@ namespace UnitySlippyMap.Map
 														UnityEngine.Input.location.lastData.latitude
 												};
 					} else {
-//#if DEBUG_LOG
-						Debug.LogWarning ("WARNING: Map.Update: bogus location (bailing): " + UnityEngine.Input.location.lastData.longitude + " " + UnityEngine.Input.location.lastData.latitude + ":  " + UnityEngine.Input.location.status);
-//#endif
+						//#if DEBUG_LOG
+						Debug.LogWarning("WARNING: Map.Update: bogus location (bailing): " + UnityEngine.Input.location.lastData.longitude + " " + UnityEngine.Input.location.lastData.latitude + ":  " + UnityEngine.Input.location.status);
+						//#endif
 					}
 				}
-			}
-		
-			// update the orientation of the location marker
-			if (usesOrientation) {
-				float heading = 0.0f;
-				// TODO: handle all device orientations
-				switch (Screen.orientation) {
-				case ScreenOrientation.LandscapeLeft:
-					heading = UnityEngine.Input.compass.trueHeading;
-					break;
-				case ScreenOrientation.Portrait: // FIXME: not tested, likely wrong, legacy code
-					heading = -UnityEngine.Input.compass.trueHeading;
-					break;
-				}
-
-				if (cameraFollowsOrientation) {
-					if (lastCameraOrientation == 0.0f) {
-						currentCamera.transform.RotateAround (Vector3.zero, Vector3.up, heading);
-
-						lastCameraOrientation = heading;
-					} else {
-						float cameraRotationSpeed = 1.0f;
-						float relativeAngle = (heading - lastCameraOrientation) * cameraRotationSpeed * Time.deltaTime;
-						if (relativeAngle > 0.01f) {
-							currentCamera.transform.RotateAround (Vector3.zero, Vector3.up, relativeAngle);
-	
-							//Debug.Log("DEBUG: cam: " + lastCameraOrientation + ", heading: " + heading +  ", rel angle: " + relativeAngle);
-							lastCameraOrientation += relativeAngle;
-						} else {
-							currentCamera.transform.RotateAround (Vector3.zero, Vector3.up, heading - lastCameraOrientation);
-	
-							//Debug.Log("DEBUG: cam: " + lastCameraOrientation + ", heading: " + heading +  ", rel angle: " + relativeAngle);
-							lastCameraOrientation = heading;
-						}
-					}
-					
-					IsDirty = true;
-				}
-				
-				if (locationMarker != null
-					&& locationMarker.OrientationMarker != null) {
-					//Debug.Log("DEBUG: " + heading);
-					locationMarker.OrientationMarker.rotation = Quaternion.AngleAxis (heading, Vector3.up);
-				}
-			}
+			}		
 		
 			// pause the loading operations when moving
 			if (hasMoved == true) {
@@ -1270,18 +1225,22 @@ namespace UnitySlippyMap.Map
 			CurrentZoom += 4.0f * zoomSpeed * Time.deltaTime;
 
 			// move the camera
-			// FIXME: the camera jumps on the first zoom when tilted, because the cam altitude and zoom value are unsynced by the rotation
-			Transform cameraTransform = currentCamera.transform;
-			float y = GeoHelpers.OsmZoomLevelToMapScale (currentZoom, 0.0f, tileResolution, 72) / scaleDivider * screenScale;
-			float t = y / cameraTransform.forward.y;
-			cameraTransform.position = new Vector3 (
-			t * cameraTransform.forward.x,
-			y,
-			t * cameraTransform.forward.z);
+			this.UpdateCamera();
 		
 			// set the update flag to tell the behaviour the user is manipulating the map
 			hasMoved = true;
 			IsDirty = true;
+		}
+
+		public float CameraPitch = 0.0f;
+
+		public float CameraYaw = 0.0f;
+
+		public void UpdateCamera() {
+			Transform cameraTransform = currentCamera.transform;
+			float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider * screenScale;
+			cameraTransform.position = Quaternion.Euler(new Vector3(-CameraPitch, -CameraYaw, 0.0f)) * (Vector3.up * y);
+			cameraTransform.rotation = Quaternion.Euler(new Vector3(90.0f - CameraPitch, -CameraYaw, 0.0f));
 		}
 	
 	#endregion

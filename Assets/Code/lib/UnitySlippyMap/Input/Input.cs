@@ -20,6 +20,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using UnityEngine;
+using Unity;
 
 using UnitySlippyMap.Map;
 
@@ -46,6 +47,10 @@ namespace UnitySlippyMap.Input
 		/// </summary>
 		private static float	lastZoomFactor = 0.0f;
 
+
+
+		private static float zoomLeft = 0.0f;
+
 		/// <summary>
 		/// Handles inputs on touch devices and desktop.
 		/// The <see cref="UnitySlippyMap.Map.MapBehaviour"/> instance is told to update its layers and markers once a movement is complete.
@@ -53,123 +58,18 @@ namespace UnitySlippyMap.Input
 		/// </summary>
 		/// <param name="map">Map.</param>
 		/// <param name="wasInputInterceptedByGUI">If set to <c>true</c> was input intercepted by GU.</param>
-		public static void BasicTouchAndKeyboard (MapBehaviour map, bool wasInputInterceptedByGUI)
-		{
+		public static void BasicTouchAndKeyboard (MapBehaviour map, bool wasInputInterceptedByGUI) {
 			bool panning = false;
 			bool panningStopped = false;
 			Vector3 screenPosition = Vector3.zero;
-    
-			bool zooming = false;
-			bool zoomingStopped = false;
-			float zoomFactor = 0.0f;
 
-			if (Application.platform == RuntimePlatform.IPhonePlayer
-				|| Application.platform == RuntimePlatform.Android) {
-				if (wasInputInterceptedByGUI == false) {
-					int touchCount = UnityEngine.Input.touchCount;
-					if (touchCount > 0) {
-						// movements
-						panning = true;
-						panningStopped = true;
-                    
-						int validTouchCount = touchCount;
-						foreach (Touch touch in UnityEngine.Input.touches) {
-							if (touch.phase != TouchPhase.Ended) {
-								screenPosition += new Vector3 (touch.position.x, touch.position.y);
-								panningStopped = false;
-							} else {
-								--validTouchCount;
-							}
-    					
-							// reset the last hit position to avoid a sudden jump when a finger is added or removed
-							if (touch.phase == TouchPhase.Began
-								|| touch.phase == TouchPhase.Ended)
-								lastHitPosition = Vector3.zero;
-						}
-    				
-						if (validTouchCount != 0)
-							screenPosition /= validTouchCount;
-						else {
-							screenPosition = Vector3.zero;
-							panningStopped = true;
-						}
-                    
-						if (panningStopped)
-							panning = false;
-					}
-                
-					if (touchCount > 1) {
-						// zoom
-						zooming = true;
-						zoomingStopped = true;
-						bool newFingerSetup = false;
-
-						int validTouchCount = touchCount;
-						for (int i = 0; i < touchCount; ++i) {
-							Touch touch = UnityEngine.Input.GetTouch (i);
-                        
-							if (touch.phase != TouchPhase.Ended) {
-								zoomFactor += Vector3.Distance (screenPosition, new Vector3 (touch.position.x, touch.position.y));
-								zoomingStopped = false;
-							} else {
-								--validTouchCount;
-							}
-    					
-							// reset the last zoom factor to avoid a sudden jump when a finger is added or removed
-							if (touch.phase == TouchPhase.Began
-								|| touch.phase == TouchPhase.Ended)
-								newFingerSetup = true;
-						}
-                    
-						if (validTouchCount != 0)
-							zoomFactor /= validTouchCount * 10.0f;
-						else {
-							zoomFactor = 0.0f;
-							zoomingStopped = true;
-						}
-                    
-						/*
-                    Debug.Log("DEBUG: zooming: touch count: " + validTouchCount + ", factor: " + zoomFactor + ", zooming stopped: " + zoomingStopped + ", new finger setup: " + newFingerSetup);
-                    string dbg = "DEBUG: touches:\n";
-                    for (int i = 0; i < touchCount; ++i)
-                    {
-                        Touch touch = Input.GetTouch(i);
-                        dbg += touch.phase + "\n";
-                    }
-                    Debug.Log(dbg);
-                    */
-    				
-						if (newFingerSetup)
-							lastZoomFactor = zoomFactor;
-						if (zoomingStopped)
-							zooming = false;
-					}
-				}
-			} else {
-				if (wasInputInterceptedByGUI == false) {
-					// movements
-					if (UnityEngine.Input.GetMouseButton (0)) {
-						panning = true;
-						screenPosition = UnityEngine.Input.mousePosition;
-					} else if (UnityEngine.Input.GetMouseButtonUp (0)) {
-						panningStopped = true;
-					}
-	    			
-					// zoom
-					if (UnityEngine.Input.GetKey (KeyCode.Z)) {
-						zooming = true;
-						zoomFactor = 1.0f;
-						lastZoomFactor = 0.0f;
-					} else if (UnityEngine.Input.GetKeyUp (KeyCode.Z)) {
-						zoomingStopped = true;
-					}
-					if (UnityEngine.Input.GetKey (KeyCode.S)) {
-						zooming = true;
-						zoomFactor = -1.0f;
-						lastZoomFactor = 0.0f;
-					} else if (UnityEngine.Input.GetKeyUp (KeyCode.S)) {
-						zoomingStopped = true;
-					}
+			if (wasInputInterceptedByGUI == false) {
+				// movements
+				if (UnityEngine.Input.GetMouseButton (0)) {
+					panning = true;
+					screenPosition = UnityEngine.Input.mousePosition;
+				} else if (UnityEngine.Input.GetMouseButtonUp (0)) {
+					panningStopped = true;
 				}
 			}
 			
@@ -215,13 +115,24 @@ namespace UnitySlippyMap.Input
 				// trigger a tile update
 				map.IsDirty = true;
 			}
-    
-			// apply the zoom
-			if (zooming) {			
-				map.Zoom (zoomFactor - lastZoomFactor);
-				lastZoomFactor = zoomFactor;
-			} else if (zoomingStopped) {
-				lastZoomFactor = 0.0f;
+
+			// Zoom
+			float scroll = UnityEngine.Input.GetAxis("Mouse ScrollWheel");
+			if (scroll != 0) {
+				zoomLeft += scroll;
+			}
+			if (Mathf.Abs(zoomLeft) > 0.1) {
+				map.Zoom(Mathf.Sign(zoomLeft) * 1.0f);
+				zoomLeft -= Mathf.Sign(zoomLeft) * Time.deltaTime;
+			}
+
+			// Rotate
+			if (UnityEngine.Input.GetMouseButton(1)) {
+				map.CameraPitch = Mathf.Clamp(map.CameraPitch + UnityEngine.Input.GetAxis("Mouse Y"), 1.0f, 40.0f);
+				map.CameraYaw -= UnityEngine.Input.GetAxis("Mouse X");
+				map.UpdateCamera();
+			} else if (UnityEngine.Input.GetMouseButtonDown(1)) {
+				map.IsDirty = true;
 			}
 		}
 	}
