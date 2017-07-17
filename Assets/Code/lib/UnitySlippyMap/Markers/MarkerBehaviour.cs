@@ -108,9 +108,6 @@ namespace UnitySlippyMap.Markers
 		/// </summary>
 		protected void Update ()
 		{
-			if (this.gameObject.transform.localScale.x != Map.HalfMapScale)
-				this.gameObject.transform.localScale = new Vector3 (Map.HalfMapScale, Map.HalfMapScale, Map.HalfMapScale);
-
 			Reposition ();
 		}
 	
