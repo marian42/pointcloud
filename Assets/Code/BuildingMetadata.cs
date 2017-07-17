@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class BuildingMetadata {
+public class BuildingMetadata : ISerializationCallbackReceiver {
 	public string address;
 	public string schwerp_x;
 	public string schwerp_y;
+	public string filename;
 
-	public double CenterX {
-		get {
-			return double.Parse(this.schwerp_x.Replace(',', '.'));
-		}
-	}
+	[System.NonSerialized]
+	public double[] Coordinates;
 
-	public double CenterZ {
-		get {
-			return double.Parse(this.schwerp_y.Replace(',', '.'));
-		}
+	public void OnBeforeSerialize() { }
+
+	public void OnAfterDeserialize() {
+		this.Coordinates = new double[] {
+			double.Parse(this.schwerp_x.Replace(',', '.')),
+			double.Parse(this.schwerp_y.Replace(',', '.'))
+		};
 	}
 }
