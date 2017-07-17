@@ -128,7 +128,7 @@ namespace UnitySlippyMap.Input
 
 			// Rotate
 			if (UnityEngine.Input.GetMouseButton(1)) {
-				map.CameraPitch = Mathf.Clamp(map.CameraPitch + UnityEngine.Input.GetAxis("Mouse Y"), 1.0f, 40.0f);
+				map.CameraPitch = Mathf.Clamp(map.CameraPitch + UnityEngine.Input.GetAxis("Mouse Y"), 1.0f, 50.0f);
 				map.CameraYaw -= UnityEngine.Input.GetAxis("Mouse X");
 				map.UpdateCamera();
 			} else if (UnityEngine.Input.GetMouseButtonDown(1)) {

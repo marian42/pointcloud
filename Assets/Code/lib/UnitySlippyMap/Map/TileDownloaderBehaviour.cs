@@ -232,6 +232,7 @@ namespace UnitySlippyMap.Map
             	}
             	else {
                 	www = new WWW(url);
+					// Debug.Log(url);
 	            }
 
 	            yield return www;
