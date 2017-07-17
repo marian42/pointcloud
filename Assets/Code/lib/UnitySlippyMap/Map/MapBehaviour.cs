@@ -486,7 +486,7 @@ namespace UnitySlippyMap.Map
 		/// <value>
 		/// It is an arbitrary value used to keep values within single floating point range when converting coordinates
 		/// to Unity3D world coordinates.</value>
-		private float scaleDivider = 20.0f;
+		private float scaleDivider = 17.5f;
 
 		/// <summary>
 		/// The tile resolution.

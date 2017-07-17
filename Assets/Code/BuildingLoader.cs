@@ -22,7 +22,11 @@ public class BuildingLoader : MonoBehaviour {
 		public List<BuildingMetadata> buildings;
 	}
 
-	public float LoadRadius = 400.0f;
+	[Range(100.0f, 600.0f)]
+	public float LoadRadius = 200.0f;
+
+	[Range(100.0f, 2000.0f)]
+	public float UnloadRadius = 1000.0f;
 
 	private class BuildingHashSet {
 		private const double bucketSize = 100.0f;
@@ -108,6 +112,8 @@ public class BuildingLoader : MonoBehaviour {
 	}
 
 	public void UpdateBuildings() {
+		this.UnloadBuildings(this.UnloadRadius);
+
 		var center = latLonToMeters(this.map.CenterWGS84);
 
 		foreach (var building in this.buildings.GetBuildings(center, this.LoadRadius)) {
@@ -123,6 +129,24 @@ public class BuildingLoader : MonoBehaviour {
 			marker.Map = this.map;
 			marker.CoordinatesWGS84 = metersToLatLon(building.Coordinates);
 			this.activeBuildings[building.filename] = newPointCloud;
+		}
+	}
+
+	private static double getDistance(double[] a, double[] b) {
+		return Math.Sqrt(Math.Pow(a[0] - b[0], 2.0) + Math.Pow(a[1] - b[1], 2.0));	
+	}
+
+	public void UnloadBuildings(float radius) {
+		var center = latLonToMeters(this.map.CenterWGS84);
+		var removed = new List<string>();
+		foreach (var building in this.activeBuildings.Values) {
+			if (getDistance(center, building.Metadata.Coordinates) > radius) {
+				removed.Add(building.Metadata.filename);
+				GameObject.Destroy(building.gameObject);
+			}
+		}
+		foreach (var address in removed) {
+			this.activeBuildings.Remove(address);
 		}
 	}
 	

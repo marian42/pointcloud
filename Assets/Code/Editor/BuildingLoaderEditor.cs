@@ -18,5 +18,9 @@ public class BuildingLoaderEditor : Editor {
 		if (GUILayout.Button("Update")) {
 			loader.UpdateBuildings();
 		}
+
+		if (GUILayout.Button("Unload all")) {
+			loader.UnloadBuildings(0.0f);
+		}
 	}
 }
