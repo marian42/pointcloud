@@ -64,7 +64,7 @@ namespace UnitySlippyMap.Layers
 		/// <param name="tile">Tile.</param>
 		protected override void RequestTile (int tileX, int tileY, int roundedZoom, TileBehaviour tile)
 		{
-			TileDownloaderBehaviour.Instance.Get (GetTileURL (tileX, tileY, roundedZoom), tile);
+			TileDownloaderBehaviour.Instance.Get (tileX, tileY, roundedZoom, GetTileURL (tileX, tileY, roundedZoom), tile);
 		}
 
 		/// <summary>
