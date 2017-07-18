@@ -66,7 +66,7 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 	}
 
 	private Plane checkForSimilarPlanes(Plane current, IEnumerable<Plane> usedPlanes) {
-		var similarPlanes = usedPlanes.Where(plane => RansacPlaneFinder.Similar(plane, current));
+		var similarPlanes = usedPlanes.Where(plane => RansacPlaneFinder.Similar(plane, current, this.PointCloud.GroundPoint));
 		if (similarPlanes.Any()) {
 			return similarPlanes.First();
 		} else {
@@ -116,7 +116,7 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 			while (true) {
 				planeFinder.Classify(indices);
 				planeFinder.RemoveGroundPlanesAndVerticalPlanes();
-				var outsidePlanes = planeFinder.PlanesWithScore.Where(tuple => tuple.Value2 > 5.0f).Select(tuple => tuple.Value1).Where(newPlane => !RansacPlaneFinder.Similar(plane, newPlane));
+				var outsidePlanes = planeFinder.PlanesWithScore.Where(tuple => tuple.Value2 > 5.0f).Select(tuple => tuple.Value1).Where(newPlane => !RansacPlaneFinder.Similar(plane, newPlane, this.PointCloud.GroundPoint));
 				outsidePlanes = outsidePlanes.Select(p => this.checkForSimilarPlanes(p, usedPlanes));
 
 				if (outsidePlanes.Count() == 0) {

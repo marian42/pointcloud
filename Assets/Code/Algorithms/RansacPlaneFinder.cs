@@ -43,7 +43,7 @@ public class RansacPlaneFinder : AbstractPlaneFinder {
 		for (int i = 0; i < this.PlanesWithScore.Count; i++) {
 			var plane = this.PlanesWithScore.ElementAt(i).Value1;
 			for (int j = i + 1; j < this.PlanesWithScore.Count; j++) {
-				if (RansacPlaneFinder.Similar(plane, this.PlanesWithScore[j].Value1)) {
+				if (RansacPlaneFinder.Similar(plane, this.PlanesWithScore[j].Value1, this.PointCloud.GroundPoint)) {
 					this.PlanesWithScore.RemoveAt(j);
 					j--;
 				}
@@ -53,8 +53,8 @@ public class RansacPlaneFinder : AbstractPlaneFinder {
 		Timekeeping.CompleteTask("Remove duplicates");
 	}	
 
-	public static bool Similar(Plane plane1, Plane plane2) {
-		return Vector3.Angle(plane1.normal, plane2.normal) < 30.0f
-			&& Mathf.Abs(plane1.distance - plane2.distance) < 5.0f;
+	public static bool Similar(Plane plane1, Plane plane2, Vector3 reference) {
+		return Vector3.Angle(plane1.normal, plane2.normal) < 20.0f
+			&& Mathf.Abs(plane1.GetDistanceToPoint(reference) - plane2.GetDistanceToPoint(reference)) < 2.0f;
 	}
 }
