@@ -153,5 +153,10 @@ public class BuildingLoader : MonoBehaviour {
 	void OnApplicationQuit() {
 		map = null;
 	}
-}
 
+	public void Update() {
+		if (Input.GetMouseButtonDown(2)) {
+			this.UpdateBuildings();
+		}
+	}
+}

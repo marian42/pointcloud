@@ -6,6 +6,8 @@ using System.Linq;
 using System.IO;
 using System;
 
+using UnitySlippyMap;
+
 
 [CustomEditor(typeof(BuildingLoader))]
 public class BuildingLoaderEditor : Editor {
@@ -22,5 +24,23 @@ public class BuildingLoaderEditor : Editor {
 		if (GUILayout.Button("Unload all")) {
 			loader.UnloadBuildings(0.0f);
 		}
+		
+		var map = UnitySlippyMap.Map.MapBehaviour.Instance;
+
+		EditorGUILayout.LabelField("Bookmarks", EditorStyles.boldLabel);
+
+		if (GUILayout.Button("TU Dortmund")) {
+			map.CenterWGS84 = new double[] { 7.4141978, 51.4921254 };
+		}
+
+		if (GUILayout.Button("Mitte")) {
+			map.CenterWGS84 = new double[] { 7.4649531, 51.5139996 };
+		}
+
+		if (GUILayout.Button("Testdaten")) {
+			map.CenterWGS84 = new double[] { 7.4402747, 51.5638601 };
+		}
+
+		GUILayout.TextField(map.CenterWGS84[0] + ", " + map.CenterWGS84[1]);
 	}
 }
