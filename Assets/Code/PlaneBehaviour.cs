@@ -23,7 +23,7 @@ public class PlaneBehaviour : MonoBehaviour {
 	}
 
 	public void UpdateTransform() {
-		this.transform.localPosition = -this.Plane.normal * this.Plane.distance;
+		this.transform.localPosition = Math3d.ProjectFromGroundToPlane(Vector2.zero, this.Plane);
 		this.transform.rotation = Quaternion.LookRotation(this.Plane.normal);
 	}
 
