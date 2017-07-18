@@ -68,7 +68,7 @@ namespace UnitySlippyMap.Map
 		/// <summary>
 		/// The duration of the apparition.
 		/// </summary>
-		private float apparitionDuration = 0.5f;
+		private float apparitionDuration = 0.2f;
 
 		/// <summary>
 		/// The apparition start time.
