@@ -51,12 +51,10 @@ public class RansacPlaneFinder : AbstractPlaneFinder {
 		}
 
 		Timekeeping.CompleteTask("Remove duplicates");
-	}
-
-	
+	}	
 
 	public static bool Similar(Plane plane1, Plane plane2) {
-		return Vector3.Angle(plane1.normal, plane2.normal) < 20.0f
-			&& Mathf.Abs(plane1.distance - plane2.distance) < 2.0f;
+		return Vector3.Angle(plane1.normal, plane2.normal) < 30.0f
+			&& Mathf.Abs(plane1.distance - plane2.distance) < 5.0f;
 	}
 }
