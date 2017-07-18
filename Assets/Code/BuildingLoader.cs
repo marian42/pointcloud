@@ -18,6 +18,9 @@ public class BuildingLoader : MonoBehaviour {
 
 	private Dictionary<string, PointCloud> activeBuildings;
 
+	private LineRenderer selectionRenderer;
+	private LocationMarkerBehaviour selectionMarker;
+
 	private class MetadataList {
 		public List<BuildingMetadata> buildings;
 	}
@@ -95,6 +98,11 @@ public class BuildingLoader : MonoBehaviour {
 		this.setupMap();
 		this.loadMetadata();
 		this.activeBuildings = new Dictionary<string, PointCloud>();
+
+		GameObject selectionGO = GameObject.Find("Selection");
+		this.selectionRenderer = selectionGO.GetComponent<LineRenderer>();
+		this.selectionMarker = selectionGO.AddComponent<LocationMarkerBehaviour>();
+		this.selectionMarker.Map = this.map;
 	}
 
 	private static double[] metersToLatLon(double[] coordinates) {
@@ -196,5 +204,10 @@ public class BuildingLoader : MonoBehaviour {
 		}
 		var result = selected.First();
 		UnityEditor.Selection.objects = new GameObject[] { result.gameObject };
+
+		this.selectionMarker.CoordinatesWGS84 = result.GetComponent<LocationMarkerBehaviour>().CoordinatesWGS84;
+		var shape = result.GetComponent<PointCloud>().GetShape();
+		this.selectionRenderer.SetPositions(shape.Select(p => new Vector3(p.x, 0.25f, p.y)).ToArray());
+		this.selectionRenderer.numPositions = shape.Length;
 	}
 }
