@@ -6,12 +6,8 @@ using System.Linq;
 using System;
 
 public class XYZLoader {
-	public const double ReferenceX = 391812;
-	public const double ReferenceY = 5713741;
-	public const double ReferenceZ = 80;
-
-	public static Vector3[] LoadFile(string fileName) {
-		return File.ReadAllLines(fileName).Select(line => XYZLoader.parseLine(line)).ToArray();
+	public static Vector3[] LoadFile(string fileName, BuildingMetadata metadata) {
+		return File.ReadAllLines(fileName).Select(line => XYZLoader.parseLine(line, metadata.Coordinates)).ToArray();
 	}
 
 	public static Vector3[] LoadPointFile(string fileName, BuildingMetadata metadata) {
@@ -28,9 +24,9 @@ public class XYZLoader {
 					short z = reader.ReadInt16();
 
 					result.Add(new Vector3(
-						(float)((double)x / 100.0d + centerX - XYZLoader.ReferenceX),
-						(float)((double)y / 100.0d - XYZLoader.ReferenceZ),
-						(float)((double)z / 100.0d + centerZ - XYZLoader.ReferenceY)));
+						(float)((double)x / 100.0d),
+						(float)((double)y / 100.0d),
+						(float)((double)z / 100.0d)));
 				}
 			}
 		}
@@ -38,10 +34,10 @@ public class XYZLoader {
 		return result.ToArray();
 	}
 
-	private static Vector3 parseLine(string line) {
+	private static Vector3 parseLine(string line, double[] center) {
 		try {
 			var points = line.Replace(',', ' ').Split(' ').Where(s => s.Any()).Select(s => double.Parse(s)).ToArray();
-			return new Vector3((float)(points[0] - XYZLoader.ReferenceX), (float)(points[2] - XYZLoader.ReferenceZ), (float)(points[1] - XYZLoader.ReferenceY));
+			return new Vector3((float)(points[0] - center[0]), (float)(points[2]), (float)(points[1] - center[1]));
 		}
 		catch (FormatException) {
 			throw new Exception("Bad line: " + line);

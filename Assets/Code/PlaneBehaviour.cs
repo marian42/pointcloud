@@ -11,7 +11,7 @@ public class PlaneBehaviour : MonoBehaviour {
 	public PointCloud PointCloud;
 
 	public void ColorPoints() {
-		for (int i = 0; i < this.PointCloud.CenteredPoints.Length; i++) {
+		for (int i = 0; i < this.PointCloud.Points.Length; i++) {
 			float score = this.PointCloud.GetScore(i, this.Plane);
 			if (score == 0) {
 				this.PointCloud.Colors[i] = Color.red;

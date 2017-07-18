@@ -15,7 +15,7 @@ public class PointMeshCreator : AbstractMeshCreator {
 		var result = new List<Triangle>();
 		var remainingPointIndices = Enumerable.Range(0, this.PointCloud.Points.Length).ToList();
 		foreach (var plane in this.Planes.Take(8)) {
-			var onPlane = this.PointCloud.CenteredPoints.Where(p => Mathf.Abs(plane.GetDistanceToPoint(p)) < HoughPlaneFinder.MaxDistance);
+			var onPlane = this.PointCloud.Points.Where(p => Mathf.Abs(plane.GetDistanceToPoint(p)) < HoughPlaneFinder.MaxDistance);
 			Timekeeping.CompleteTask("Select points");
 
 			var planeCoordinates = new PlaneCoordinates(plane);
@@ -79,8 +79,8 @@ public class PointMeshCreator : AbstractMeshCreator {
 			}
 			
 			foreach (var edge in outsideEdges) {
-				Debug.DrawLine(this.PointCloud.Center + planeCoordinates.ToWorld(planePoints[edge.Value1]),
-					this.PointCloud.Center + planeCoordinates.ToWorld(planePoints[edge.Value2]),
+				Debug.DrawLine(this.PointCloud.transform.position + planeCoordinates.ToWorld(planePoints[edge.Value1]),
+					this.PointCloud.transform.position + planeCoordinates.ToWorld(planePoints[edge.Value2]),
 					Color.green, 20.0f, false);
 			}
 			Timekeeping.CompleteTask("Find outside edges");
@@ -133,7 +133,7 @@ public class PointMeshCreator : AbstractMeshCreator {
 					Debug.Log(score);
 					if (score > 60) {
 						result.AddRange(meshTriangles);
-						remainingPointIndices = remainingPointIndices.Where(i => !meshTriangles.Any(triangle => triangle.Contains(this.PointCloud.CenteredPoints[i]))).ToList();
+						remainingPointIndices = remainingPointIndices.Where(i => !meshTriangles.Any(triangle => triangle.Contains(this.PointCloud.Points[i]))).ToList();
 					}
 				}
 			}

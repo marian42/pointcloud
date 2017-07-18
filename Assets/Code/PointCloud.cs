@@ -24,10 +24,11 @@ public class PlaneParameters {
 [SelectionBase]
 public class PointCloud : MonoBehaviour {
 	private const int pointsPerMesh = 60000;
+
+	public double[] Center;
+
 	[SerializeField, HideInInspector]
 	public Vector3[] Points;
-	[SerializeField, HideInInspector]
-	public Vector3[] CenteredPoints;
 	[SerializeField, HideInInspector]
 	public Color[] Colors;
 	[SerializeField, HideInInspector]
@@ -36,7 +37,6 @@ public class PointCloud : MonoBehaviour {
 	public string Name;
 	public string Folder;
 
-	public Vector3 Center;
 	public Vector3 GroundPoint;
 
 	public BuildingMetadata Metadata;
@@ -60,17 +60,25 @@ public class PointCloud : MonoBehaviour {
 		this.Name = fileInfo.Name.Substring(0, fileInfo.Name.IndexOf('.'));
 		this.Folder = fileInfo.Directory.FullName + "\\";
 		this.loadMetadata();
-		this.gameObject.name = this.Metadata.address;
+		this.Load(filename, this.Metadata);
+	}
+
+	public void Load(string filename, BuildingMetadata metadata) {
+		FileInfo fileInfo = new FileInfo(filename);
 		
-		if (fileInfo.Extension == "xyz") {
-			this.Points = XYZLoader.LoadFile(filename);
+		this.Metadata = metadata;
+		this.gameObject.name = this.Metadata.address;
+		this.Center = this.Metadata.Coordinates;
+
+		if (fileInfo.Extension == ".xyz") {
+			this.Points = XYZLoader.LoadFile(filename, this.Metadata);
 		} else if (fileInfo.Extension == ".points") {
 			this.Points = XYZLoader.LoadPointFile(filename, this.Metadata);
 		} else {
 			throw new Exception("Unsupported file extension.");
 		}
 
-		this.moveToCenter();
+		this.findGroundPoint();
 		this.ResetColors(Color.red);
 	}
 
@@ -93,26 +101,9 @@ public class PointCloud : MonoBehaviour {
 		}
 	}
 
-	private void moveToCenter() {
-		float minX = Points[0].x, minY = Points[0].y, minZ = Points[0].z, maxX = Points[0].x, maxY = Points[0].y, maxZ = Points[0].z;
-
-		foreach (var point in this.Points) {
-			if (point.x < minX) minX = point.x;
-			if (point.y < minY) minY = point.y;
-			if (point.x < minZ) minZ = point.z;
-			if (point.x > maxX) maxX = point.x;
-			if (point.y > maxY) maxY = point.y;
-			if (point.x > maxZ) maxZ = point.z;
-		}
-		this.Center = new Vector3(Mathf.Lerp(minX, maxX, 0.5f), Mathf.Lerp(minY, maxY, 0.5f), Mathf.Lerp(minZ, maxZ, 0.5f));
-		
-		this.CenteredPoints = new Vector3[this.Points.Length];
-		for (int i = 0; i < this.Points.Length; i++) {
-			this.CenteredPoints[i] = this.Points[i] - this.Center;
-		}
-
-		this.GroundPoint = this.CenteredPoints.OrderBy(p => p.y).Skip(20).FirstOrDefault();
-		this.transform.position = this.Center + Vector3.down * (this.Center.y + this.GroundPoint.y);
+	private void findGroundPoint() {
+		this.GroundPoint = this.Points.OrderBy(p => p.y).Skip(20).FirstOrDefault();
+		this.transform.position = Vector3.down * this.GroundPoint.y;
 	}
 
 	private void createMeshObject(int fromIndex, int toIndex) {
@@ -129,7 +120,7 @@ public class PointCloud : MonoBehaviour {
 		Color[] meshColors = new Color[toIndex - fromIndex];
 		for (int i = fromIndex; i < toIndex; ++i) {
 			indecies[i - fromIndex] = i - fromIndex;
-			meshPoints[i - fromIndex] = this.CenteredPoints[i];
+			meshPoints[i - fromIndex] = this.Points[i];
 			meshColors[i - fromIndex] = this.Colors[i];
 		}
 
@@ -151,14 +142,14 @@ public class PointCloud : MonoBehaviour {
 	}
 
 	public void EstimateNormals() {
-		var pointHashSet = new PointHashSet(2.0f, this.CenteredPoints);
+		var pointHashSet = new PointHashSet(2.0f, this.Points);
 		this.Normals = new Vector3[this.Points.Length];
 
 		const float neighbourRange = 2.0f;
 		const int neighbourCount = 6;
 
 		for (int i = 0; i < this.Points.Length; i++) {
-			var point = this.CenteredPoints[i];
+			var point = this.Points[i];
 			var neighbours = pointHashSet.GetPointsInRange(point, neighbourRange, true)
 				.OrderBy(p => (point - p).magnitude)
 				.SkipWhile(p => p == point)
@@ -221,11 +212,11 @@ public class PointCloud : MonoBehaviour {
 	}
 
 	public Vector2[] GetShape() {
-		return XYZLoader.LoadFile(this.Folder + this.Name + ".xyzshape").Select(v => new Vector2(v.x - this.Center.x, v.z - this.Center.z)).ToArray();
+		return XYZLoader.LoadFile(this.Folder + this.Name + ".xyzshape", this.Metadata).Select(v => new Vector2(v.x, v.z)).ToArray();
 	}
 
 	public float GetScore(int index, Plane plane) {
-		var point = this.CenteredPoints[index];
+		var point = this.Points[index];
 		float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / HoughPlaneFinder.MaxDistance;
 		if (distance > 1) {
 			return 0;
@@ -245,7 +236,7 @@ public class PointCloud : MonoBehaviour {
 
 	public float GetScore(Plane plane) {
 		float result = 0;
-		for (int i = 0; i < this.CenteredPoints.Length; i++) {
+		for (int i = 0; i < this.Points.Length; i++) {
 			result += this.GetScore(i, plane);
 		}
 		return result;

@@ -205,8 +205,8 @@ public class Triangle {
 
 		var plane = this.Plane;
 
-		for (int i = 0; i < pointCloud.CenteredPoints.Length; i++) {
-			if (!this.ContainsXZ(pointCloud.CenteredPoints[i])) {
+		for (int i = 0; i < pointCloud.Points.Length; i++) {
+			if (!this.ContainsXZ(pointCloud.Points[i])) {
 				continue;
 			}
 			result += pointCloud.GetScore(i, plane);
@@ -221,7 +221,7 @@ public class Triangle {
 		var plane = this.Plane;
 
 		foreach (int i in indices) {
-			if (!this.ContainsXZ(pointCloud.CenteredPoints[i])) {
+			if (!this.ContainsXZ(pointCloud.Points[i])) {
 				continue;
 			}
 			result += pointCloud.GetScore(i, plane);
@@ -243,10 +243,10 @@ public class Triangle {
 		var plane = this.Plane;
 
 		foreach (int i in indices) {
-			if (!this.ContainsXZ(pointCloud.CenteredPoints[i])) {
+			if (!this.ContainsXZ(pointCloud.Points[i])) {
 				continue;
 			}
-			if (Mathf.Abs(plane.GetDistanceToPoint(pointCloud.CenteredPoints[i])) < HoughPlaneFinder.MaxDistance) {
+			if (Mathf.Abs(plane.GetDistanceToPoint(pointCloud.Points[i])) < HoughPlaneFinder.MaxDistance) {
 				result++;
 			}
 		}

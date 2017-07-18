@@ -72,8 +72,8 @@ public class HoughPlaneFinder : AbstractPlaneFinder {
 		for (int i0 = 0; i0 < ranges[0]; i0++) {
 			for (int i1 = 0; i1 < ranges[1]; i1++) {
 				Plane plane = this.getHoughPlane(i0, i1);
-				for (int i = 0; i < this.PointCloud.CenteredPoints.Length; i++) {
-					float distance = -plane.GetDistanceToPoint(this.PointCloud.CenteredPoints[i]);
+				for (int i = 0; i < this.PointCloud.Points.Length; i++) {
+					float distance = -plane.GetDistanceToPoint(this.PointCloud.Points[i]);
 					int start = Mathf.FloorToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance - HoughPlaneFinder.MaxDistance));
 					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + HoughPlaneFinder.MaxDistance));
 					if ((start >= 0 && start < ranges[2]) || (end >= 0 && end < ranges[2])) {

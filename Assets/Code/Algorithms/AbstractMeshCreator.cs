@@ -98,7 +98,7 @@ public abstract class AbstractMeshCreator {
  
         sb.Append("g ").Append(this.PointCloud.Name).Append("\n");
         foreach(Vector3 v in this.mesh.vertices) {
-			sb.Append(string.Format("v {0} {1} {2}\n", v.x + XYZLoader.ReferenceX, v.z + XYZLoader.ReferenceY, v.y +XYZLoader.ReferenceZ));
+			sb.Append(string.Format("v {0} {1} {2}\n", v.x + this.PointCloud.Center[0], v.z, v.y + this.PointCloud.Center[1]));
         }
         sb.Append("\n");
 		foreach (Vector3 v in this.mesh.normals) {

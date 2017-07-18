@@ -32,7 +32,7 @@ public class RansacPlaneFinder : AbstractPlaneFinder {
 			indices.RemoveAt(Random.Range(0, indices.Count));
 		}
 
-		var planes = indices.Select(i => new Plane(this.PointCloud.Normals[i], this.PointCloud.CenteredPoints[i])).ToList();
+		var planes = indices.Select(i => new Plane(this.PointCloud.Normals[i], this.PointCloud.Points[i])).ToList();
 		Timekeeping.CompleteTask("Choose samples");
 
 		this.PlanesWithScore = planes.Select(plane => new Tuple<Plane, float>(plane, this.PointCloud.GetScore(plane)))

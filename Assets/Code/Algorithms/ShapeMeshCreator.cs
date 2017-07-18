@@ -108,7 +108,7 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 		foreach (var plane in bestPlanes) {
 			var indices = new List<int>();
 			for (int i = 0; i < this.PointCloud.Points.Length; i++) {
-				if (plane.GetDistanceToPoint(this.PointCloud.CenteredPoints[i]) > HoughPlaneFinder.MaxDistance * 0.5f) {
+				if (plane.GetDistanceToPoint(this.PointCloud.Points[i]) > HoughPlaneFinder.MaxDistance * 0.5f) {
 					indices.Add(i);
 				}
 			}
@@ -150,7 +150,7 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 					break;
 				}
 
-				indices = indices.Where(i => !bestMesh.Any(triangle => triangle.Contains(this.PointCloud.CenteredPoints[i]))).ToList();
+				indices = indices.Where(i => !bestMesh.Any(triangle => triangle.Contains(this.PointCloud.Points[i]))).ToList();
 			}
 		}
 
