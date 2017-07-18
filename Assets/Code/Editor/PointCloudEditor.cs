@@ -9,7 +9,7 @@ using System;
 
 [CustomEditor(typeof(PointCloud))]
 public class PointCloudEditor : Editor {
-	private static AbstractPlaneFinder.Type classifierType = AbstractPlaneFinder.Type.Ransac;
+	private static AbstractPlaneFinder.Type planeClassifierType = AbstractPlaneFinder.Type.Ransac;
 	private static AbstractMeshCreator.Type meshCreatorType = AbstractMeshCreator.Type.CutoffWithAttachments;
 	private static bool showPlanes = false;
 	private static bool cleanMesh = true;
@@ -46,16 +46,16 @@ public class PointCloudEditor : Editor {
 
 		GUILayout.BeginHorizontal();
 
-		classifierType = (AbstractPlaneFinder.Type)(EditorGUILayout.EnumPopup(classifierType));
+		planeClassifierType = (AbstractPlaneFinder.Type)(EditorGUILayout.EnumPopup(planeClassifierType));
 
 		if (GUILayout.Button("Find planes")) {
-			this.findPlanes(pointCloud, classifierType);
+			this.findPlanes(pointCloud, planeClassifierType);
 		}
 
 		if (GUILayout.Button("Find all")) {
 			DateTime start = DateTime.Now;
-			foreach (var otherPointCloud in GameObject.FindObjectsOfType<PointCloud>()) {
-				this.findPlanes(otherPointCloud, classifierType);
+			foreach (var otherPointCloud in BuildingLoader.Instance.GetLoadedPointClouds()) {
+				this.findPlanes(otherPointCloud, planeClassifierType);
 			}
 			var time = DateTime.Now - start;
 			Debug.Log("Classified all planes in " + (int)System.Math.Floor(time.TotalMinutes) + ":" + time.Seconds.ToString().PadLeft(2, '0'));
@@ -75,7 +75,7 @@ public class PointCloudEditor : Editor {
 
 		if (GUILayout.Button("Create all")) {
 			DateTime start = DateTime.Now;
-			foreach (var otherPointCloud in GameObject.FindObjectsOfType<PointCloud>()) {
+			foreach (var otherPointCloud in BuildingLoader.Instance.GetLoadedPointClouds()) {
 				this.createMesh(otherPointCloud, meshCreatorType);
 			}
 			var time = DateTime.Now - start;
@@ -109,6 +109,10 @@ public class PointCloudEditor : Editor {
 	}
 
 	private void createMesh(PointCloud pointCloud, AbstractMeshCreator.Type type) {
+		if (pointCloud.Planes == null) {
+			this.findPlanes(pointCloud, planeClassifierType);
+		}
+
 		PointCloudEditor.DeleteMeshesIn(pointCloud.transform);
 		var meshCreator = AbstractMeshCreator.CreateMesh(pointCloud, type, PointCloudEditor.cleanMesh);
 		meshCreator.DisplayMesh();

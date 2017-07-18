@@ -10,6 +10,11 @@ using SimpleJson;
 using System.Linq;
 
 public class BuildingLoader : MonoBehaviour {
+	public static BuildingLoader Instance {
+		get;
+		private set;
+	}
+
 	private MapBehaviour map;
 
 	private const string metadataFilename = "/data/metadata.json";
@@ -95,6 +100,7 @@ public class BuildingLoader : MonoBehaviour {
 	}
 
 	private void Start() {
+		BuildingLoader.Instance = this;
 		this.setupMap();
 		this.loadMetadata();
 		this.activeBuildings = new Dictionary<string, PointCloud>();
@@ -209,5 +215,9 @@ public class BuildingLoader : MonoBehaviour {
 		var shape = result.GetComponent<PointCloud>().GetShape();
 		this.selectionRenderer.SetPositions(shape.Select(p => new Vector3(p.x, 0.25f, p.y)).ToArray());
 		this.selectionRenderer.numPositions = shape.Length;
+	}
+
+	public IEnumerable<PointCloud> GetLoadedPointClouds() {
+		return this.activeBuildings.Values;
 	}
 }
