@@ -154,9 +154,47 @@ public class BuildingLoader : MonoBehaviour {
 		map = null;
 	}
 
+	private float lastMouseDown;
+
 	public void Update() {
 		if (Input.GetMouseButtonDown(2)) {
 			this.UpdateBuildings();
 		}
+
+		if (Input.GetMouseButtonDown(0)) {
+			this.lastMouseDown = Time.time;
+		}
+
+		if (Input.GetMouseButtonUp(0) && Time.time - this.lastMouseDown < 0.2) {
+			this.selectFromMap();
+		}
+	}
+
+	private void selectFromMap() {
+		Ray ray = map.CurrentCamera.ScreenPointToRay(Input.mousePosition);
+		Plane plane = new Plane(Vector3.up, Vector3.zero);
+		float dist;
+		if (!plane.Raycast(ray, out dist)) {
+			return;
+		}
+		Vector3 displacement = ray.GetPoint(dist);
+
+		double[] displacementMeters = new double[2] {
+				displacement.x / map.RoundedScaleMultiplier,
+				displacement.z / map.RoundedScaleMultiplier
+			};
+		double[] coordinateMeters = new double[2] {
+				map.CenterEPSG900913[0] + displacementMeters[0],
+				map.CenterEPSG900913[1] + displacementMeters[1]
+			};
+
+		var coordinates = latLonToMeters(this.map.EPSG900913ToWGS84Transform.Transform(coordinateMeters));
+
+		var selected = this.activeBuildings.Values.OrderBy(pointcloud => getDistance(pointcloud.Center, coordinates));
+		if (!selected.Any()) {
+			return;
+		}
+		var result = selected.First();
+		UnityEditor.Selection.objects = new GameObject[] { result.gameObject };
 	}
 }
