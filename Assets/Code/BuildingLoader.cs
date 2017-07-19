@@ -113,15 +113,15 @@ public class BuildingLoader : MonoBehaviour {
 
 	private static double[] metersToLatLon(double[] coordinates) {
 		return new double[] {
-			0.0000146113 * coordinates[0] + 1.7137570370,
-			0.0000089185 * coordinates[1] + 0.6062153869
+			0.0000144692 * coordinates[0] + 1.7716571143,
+			0.0000089461 * coordinates[1] + 0.4487232494
 		};
 	}
 
 	private static double[] latLonToMeters(double[] coordinates) {
 		return new double[] {
-			(coordinates[0] - 1.7137570370) / 0.0000146113,
-			(coordinates[1] - 0.6062153869) / 0.0000089185
+			(coordinates[0] - 1.7716571143) / 0.0000144692,
+			(coordinates[1] - 0.4487232494) / 0.0000089461
 		};
 	}
 
