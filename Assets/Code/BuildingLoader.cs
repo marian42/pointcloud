@@ -26,6 +26,8 @@ public class BuildingLoader : MonoBehaviour {
 	private LineRenderer selectionRenderer;
 	private LocationMarkerBehaviour selectionMarker;
 
+	private string dataPath;
+
 	private class MetadataList {
 		public List<BuildingMetadata> buildings;
 	}
@@ -92,18 +94,21 @@ public class BuildingLoader : MonoBehaviour {
 	}
 
 	private void loadMetadata() {
-		var data = JsonUtility.FromJson<MetadataList>(File.ReadAllText(Application.dataPath + metadataFilename));
+		var data = JsonUtility.FromJson<MetadataList>(File.ReadAllText(this.dataPath + metadataFilename));
 		var buildingList = data.buildings;
-		Debug.Log("Loaded metadata for " + buildingList.Count + " buildings.");
-		Debug.Log(buildingList[0].Coordinates[0] + ", " + buildingList[0].Coordinates[1]);
 		this.buildings = new BuildingHashSet(buildingList);
+		Debug.Log("Loaded metadata for " + buildingList.Count + " buildings.");
 	}
 
 	private void Start() {
 		BuildingLoader.Instance = this;
 		this.setupMap();
-		this.loadMetadata();
+		this.buildings = new BuildingHashSet(Enumerable.Empty<BuildingMetadata>());
 		this.activeBuildings = new Dictionary<string, PointCloud>();
+
+		this.dataPath = Application.dataPath;
+		var thread = new System.Threading.Thread(this.loadMetadata);
+		thread.Start();
 
 		GameObject selectionGO = GameObject.Find("Selection");
 		this.selectionRenderer = selectionGO.GetComponent<LineRenderer>();
