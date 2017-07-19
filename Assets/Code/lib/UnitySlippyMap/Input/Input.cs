@@ -122,14 +122,14 @@ namespace UnitySlippyMap.Input
 				zoomLeft += scroll;
 			}
 			if (Mathf.Abs(zoomLeft) > 0.1) {
-				map.Zoom(Mathf.Sign(zoomLeft) * 1.0f);
-				zoomLeft -= Mathf.Sign(zoomLeft) * Time.deltaTime;
+				map.Zoom(Mathf.Sign(zoomLeft) * 3.0f);
+				zoomLeft -= Mathf.Sign(zoomLeft) * 3.0f * Time.deltaTime;
 			}
 
 			// Rotate
 			if (UnityEngine.Input.GetMouseButton(1)) {
-				map.CameraPitch = Mathf.Clamp(map.CameraPitch + UnityEngine.Input.GetAxis("Mouse Y"), 1.0f, 50.0f);
-				map.CameraYaw -= UnityEngine.Input.GetAxis("Mouse X");
+				map.CameraPitch = Mathf.Clamp(map.CameraPitch + 10.0f * UnityEngine.Input.GetAxis("Mouse Y"), 1.0f, 50.0f);
+				map.CameraYaw -= 10.0f * UnityEngine.Input.GetAxis("Mouse X");
 				map.UpdateCamera();
 			} else if (UnityEngine.Input.GetMouseButtonDown(1)) {
 				map.IsDirty = true;
