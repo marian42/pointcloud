@@ -218,8 +218,8 @@ public class BuildingLoader : MonoBehaviour {
 
 		this.selectionMarker.CoordinatesWGS84 = result.GetComponent<LocationMarkerBehaviour>().CoordinatesWGS84;
 		var shape = result.GetComponent<PointCloud>().GetShape();
-		this.selectionRenderer.SetPositions(shape.Select(p => new Vector3(p.x, 0.25f, p.y)).ToArray());
 		this.selectionRenderer.numPositions = shape.Length;
+		this.selectionRenderer.SetPositions(shape.Select(p => new Vector3(p.x, 0.25f, p.y)).ToArray());
 	}
 
 	public IEnumerable<PointCloud> GetLoadedPointClouds() {
