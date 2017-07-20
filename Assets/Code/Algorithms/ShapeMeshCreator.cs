@@ -200,24 +200,6 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 		}
 	}
 
-	private IEnumerable<Triangle> displayVerticalPlane(Plane plane) {
-		var vectorLeft = Vector3.Cross(plane.normal, Vector3.up);
-		var pointOnPlane = this.intersectPlane(plane, Vector3.zero, plane.normal);
-		pointOnPlane -= Vector3.up * pointOnPlane.y;
-
-		float scale = 10.0f * 0.5f;
-
-		var topLeft = pointOnPlane + (vectorLeft + Vector3.up) * scale;
-		var downLeft = pointOnPlane + (vectorLeft + Vector3.down) * scale;
-
-		var topRight = pointOnPlane + (-vectorLeft + Vector3.up) * scale;
-		var downRight = pointOnPlane + (-vectorLeft + Vector3.down) * scale;
-
-
-		yield return new Triangle(topLeft, downLeft, downRight);
-		yield return new Triangle(topLeft, topRight, downRight);
-	}
-
 	public void CreateMeshWithPermutations() {
 		const int planeCount = 5;
 		var result = new List<Triangle>();

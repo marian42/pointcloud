@@ -1027,9 +1027,4 @@ public class Math3d {
 		}
 		return ray.GetPoint(distance);
 	}
-
-	public static bool SimilarPlanes(Plane plane1, Plane plane2) {
-		return Vector3.Angle(plane1.normal, plane2.normal) < 3.0f
-			&& Mathf.Abs(plane1.distance - plane2.distance) < 0.1f;
-	}
 }
