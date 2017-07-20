@@ -63,7 +63,7 @@ public class PointCloud {
 		}
 
 		this.findGroundPoint();
-		this.ResetColors(Color.red);
+		this.ResetColors(Color.black);
 	}
 
 	private void loadMetadata() {
