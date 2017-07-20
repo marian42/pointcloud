@@ -37,12 +37,6 @@ public class PointCloudEditor : Editor {
 			pointCloudBehaviour.Show();
 		}
 
-		if (GUILayout.Button("Classify by ridge")) {
-			var roofClassifier = new RidgeFirstClassifier(pointCloud);
-			roofClassifier.Classify();
-			pointCloudBehaviour.Show();
-		}
-
 		PointCloudEditor.showPlanes = EditorGUILayout.Toggle("Display planes", PointCloudEditor.showPlanes);
 
 		GUILayout.BeginHorizontal();
