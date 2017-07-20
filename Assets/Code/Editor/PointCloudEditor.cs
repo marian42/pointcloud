@@ -20,23 +20,6 @@ public class PointCloudEditor : Editor {
 		var pointCloudBehaviour = this.target as PointCloudBehaviour;
 		var pointCloud = pointCloudBehaviour.PointCloud;
 
-		GUILayout.BeginHorizontal();
-
-		if (GUILayout.Button("Estimate normals")) {
-			pointCloud.EstimateNormals();
-		}
-
-		if (GUILayout.Button("Show normals")) {
-			pointCloudBehaviour.DisplayNormals();
-		}
-
-		GUILayout.EndHorizontal();
-
-		if (GUILayout.Button("Reset colors")) {
-			pointCloud.ResetColors(Color.red);
-			pointCloudBehaviour.Show();
-		}
-
 		PointCloudEditor.showPlanes = EditorGUILayout.Toggle("Display planes", PointCloudEditor.showPlanes);
 
 		GUILayout.BeginHorizontal();
