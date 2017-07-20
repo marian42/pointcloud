@@ -21,13 +21,6 @@ public abstract class AbstractPlaneFinder {
 
 	public abstract void Classify();
 
-	public void DisplayPlanes(int count) {
-		foreach (var tuple in this.PlanesWithScore.OrderByDescending(t => t.Value2).Take(count)) {
-			var plane = tuple.Value1;
-			PlaneBehaviour.DisplayPlane(plane, this.PointCloud);
-		}
-	}
-
 	public enum Type {
 		Hough,
 		Ransac

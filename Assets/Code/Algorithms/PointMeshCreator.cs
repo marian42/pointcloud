@@ -78,11 +78,6 @@ public class PointMeshCreator : AbstractMeshCreator {
 				}
 			}
 			
-			foreach (var edge in outsideEdges) {
-				Debug.DrawLine(this.PointCloud.transform.position + planeCoordinates.ToWorld(planePoints[edge.Value1]),
-					this.PointCloud.transform.position + planeCoordinates.ToWorld(planePoints[edge.Value2]),
-					Color.green, 20.0f, false);
-			}
 			Timekeeping.CompleteTask("Find outside edges");
 
 			var nextOutsideEdge = new Dictionary<int, HashSet<Tuple<int, int>>>();

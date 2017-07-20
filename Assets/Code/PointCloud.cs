@@ -4,76 +4,60 @@ using UnityEngine;
 using System.Linq;
 using System;
 using System.IO;
-using UnityEditor;
 
-[Serializable]
-public class PlaneParameters {
-	public Vector3 Normal;
-	public float Distance;
+public class PointCloud {
 
-	public PlaneParameters(Plane plane) {
-		this.Normal = plane.normal;
-		this.Distance = plane.distance;
-	
+	public double[] Center {
+		get;
+		private set;
 	}
-	public Plane GetPlane() {
-		return new Plane(this.Normal, this.Distance);
+
+	public Vector3[] Points {
+		get;
+		private set;
 	}
-}
-
-[SelectionBase]
-public class PointCloud : MonoBehaviour {
-	private const int pointsPerMesh = 60000;
-
-	public double[] Center;
-
-	[SerializeField, HideInInspector]
-	public Vector3[] Points;
-	[SerializeField, HideInInspector]
 	public Color[] Colors;
-	[SerializeField, HideInInspector]
-	public Vector3[] Normals;
+	public Vector3[] Normals {
+		get;
+		private set;
+	}
 	
-	public string Name;
-	public string Folder;
+	public readonly string Name;
+	public readonly FileInfo FileInfo;
 
-	public Vector3 GroundPoint;
-
-	public BuildingMetadata Metadata;
-
-	[SerializeField, HideInInspector]
-	private PlaneParameters[] serializedPlanes;
-	public IEnumerable<Plane> Planes {
-		get {
-			if (this.serializedPlanes == null) {
-				return null;
-			}
-			return this.serializedPlanes.Select(pp => pp.GetPlane());
-		}
-		set {
-			this.serializedPlanes = value.Select(plane => new PlaneParameters(plane)).ToArray();
-		}
+	public Vector3 GroundPoint {
+		get;
+		private set;
 	}
 
-	public void Load(string filename) {
-		FileInfo fileInfo = new FileInfo(filename);
-		this.Name = fileInfo.Name.Substring(0, fileInfo.Name.IndexOf('.'));
-		this.Folder = fileInfo.Directory.FullName + "\\";
+	public BuildingMetadata Metadata {
+		get;
+		private set;
+	}
+
+	public List<Plane> Planes;
+
+	public PointCloud(string filename) {
+		this.FileInfo = new FileInfo(filename);
+		this.Name = this.FileInfo.Name.Substring(0, this.FileInfo.Name.IndexOf('.'));
 		this.loadMetadata();
-		this.Load(filename, this.Metadata);
+		this.load();
 	}
 
-	public void Load(string filename, BuildingMetadata metadata) {
-		FileInfo fileInfo = new FileInfo(filename);
-		
+	public PointCloud(string filename, BuildingMetadata metadata) {
+		FileInfo fileInfo = new FileInfo(filename);		
 		this.Metadata = metadata;
-		this.gameObject.name = this.Metadata.address;
-		this.Center = this.Metadata.Coordinates;
 
-		if (fileInfo.Extension == ".xyz") {
-			this.Points = XYZLoader.LoadFile(filename, this.Metadata);
-		} else if (fileInfo.Extension == ".points") {
-			this.Points = XYZLoader.LoadPointFile(filename, this.Metadata);
+		this.load();
+	}
+
+	private void load() {
+		this.Center = this.Metadata.Coordinates;
+		
+		if (this.FileInfo.Extension == ".xyz") {
+			this.Points = XYZLoader.LoadFile(this.FileInfo.FullName, this.Metadata);
+		} else if (this.FileInfo.Extension == ".points") {
+			this.Points = XYZLoader.LoadPointFile(this.FileInfo.FullName, this.Metadata);
 		} else {
 			throw new Exception("Unsupported file extension.");
 		}
@@ -83,7 +67,7 @@ public class PointCloud : MonoBehaviour {
 	}
 
 	private void loadMetadata() {
-		string filename = this.Folder + this.Name + ".json";
+		string filename = this.FileInfo.Directory + "/" + this.Name + ".json";
 		this.Metadata = JsonUtility.FromJson<BuildingMetadata>(File.ReadAllText(filename));
 	}
 
@@ -92,55 +76,12 @@ public class PointCloud : MonoBehaviour {
 		for (int i = 0; i < this.Points.Length; i++) {
 			this.Colors[i] = color;
 		}
-	}
-
-	public void Show() {
-		this.deleteMeshes();
-		for (int start = 0; start < Points.Length; start += pointsPerMesh) {
-			this.createMeshObject(start, Math.Min(start + pointsPerMesh, Points.Length - 1));
-		}
-	}
+	}	
 
 	private void findGroundPoint() {
 		this.GroundPoint = this.Points.OrderBy(p => p.y).Skip(20).FirstOrDefault();
-		this.transform.position = Vector3.down * this.GroundPoint.y;
 	}
-
-	private void createMeshObject(int fromIndex, int toIndex) {
-		var prefab = Resources.Load("Prefabs/PointMesh") as GameObject;
-		var gameObject = GameObject.Instantiate(prefab) as GameObject;
-		gameObject.layer = 8;
-		gameObject.transform.parent = this.transform;
-		gameObject.transform.localPosition = Vector3.zero;
-		var mesh = new Mesh();
-		gameObject.GetComponent<MeshFilter>().mesh = mesh;
-
-		int[] indecies = new int[toIndex - fromIndex];
-		Vector3[] meshPoints = new Vector3[toIndex - fromIndex];
-		Color[] meshColors = new Color[toIndex - fromIndex];
-		for (int i = fromIndex; i < toIndex; ++i) {
-			indecies[i - fromIndex] = i - fromIndex;
-			meshPoints[i - fromIndex] = this.Points[i];
-			meshColors[i - fromIndex] = this.Colors[i];
-		}
-
-		mesh.vertices = meshPoints;
-		mesh.colors = meshColors;
-		mesh.SetIndices(indecies, MeshTopology.Points, 0);
-	}
-
-	private void deleteMeshes() {
-		var existingMeshes = new List<GameObject>();
-		foreach (var child in this.transform) {
-			if ((child as Transform).tag == "PointMesh") {
-				existingMeshes.Add((child as Transform).gameObject);
-			}
-		}
-		foreach (var existingQuad in existingMeshes) {
-			GameObject.DestroyImmediate(existingQuad);
-		}
-	}
-
+	
 	public void EstimateNormals() {
 		var pointHashSet = new PointHashSet(2.0f, this.Points);
 		this.Normals = new Vector3[this.Points.Length];
@@ -200,19 +141,8 @@ public class PointCloud : MonoBehaviour {
 		}
 	}
 
-	public void DisplayNormals() {
-		if (this.Normals == null) {
-			Debug.LogError("No normals found.");
-			return;
-		}
-		for (int i = 0; i < this.Normals.Length; i++) {
-			var start = this.Points[i];
-			Debug.DrawLine(start, start + this.Normals[i], Color.blue, 10.0f);
-		}
-	}
-
 	public Vector2[] GetShape() {
-		return XYZLoader.LoadFile(this.Folder + this.Name + ".xyzshape", this.Metadata).Select(v => new Vector2(v.x, v.z)).ToArray();
+		return XYZLoader.LoadFile(this.FileInfo.Directory + "/" + this.Name + ".xyzshape", this.Metadata).Select(v => new Vector2(v.x, v.z)).ToArray();
 	}
 
 	public float GetScore(int index, Plane plane) {
@@ -240,32 +170,5 @@ public class PointCloud : MonoBehaviour {
 			result += this.GetScore(i, plane);
 		}
 		return result;
-	}
-
-	[MenuItem("File/Load pointcloud...")]
-	public static void LoadSingle() {
-		string selected = EditorUtility.OpenFilePanel("Load file", Application.dataPath + "/data/buildings/", null);
-		if (selected.Any() && File.Exists(selected)) {
-			GameObject gameObject = new GameObject();
-			var pointCloud = gameObject.AddComponent<PointCloud>();
-			pointCloud.Load(selected);
-			pointCloud.Show();
-			Selection.activeTransform = pointCloud.transform;
-			SceneView.lastActiveSceneView.FrameSelected();
-		}
-	}
-
-	[MenuItem("File/Load all pointclouds")]
-	public static void LoadFolder() {
-		var folder = new DirectoryInfo(Application.dataPath + "/data/buildings/");
-		foreach (var xyzFile in folder.GetFiles()) {
-			if (xyzFile.Extension.ToLower() != ".xyz" && xyzFile.Extension.ToLower() != ".points") {
-				continue;
-			}
-			GameObject gameObject = new GameObject();
-			var newPointCloud = gameObject.AddComponent<PointCloud>();
-			newPointCloud.Load(xyzFile.FullName);
-			newPointCloud.Show();
-		}
 	}
 }

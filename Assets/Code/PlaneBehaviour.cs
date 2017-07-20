@@ -8,18 +8,19 @@ public class PlaneBehaviour : MonoBehaviour {
 	private readonly Color orange = new Color(1f, 0.5f, 0f);
 
 	public Plane Plane;
-	public PointCloud PointCloud;
+	public PointCloudBehaviour PointCloudBehaviour;
 
 	public void ColorPoints() {
-		for (int i = 0; i < this.PointCloud.Points.Length; i++) {
-			float score = this.PointCloud.GetScore(i, this.Plane);
+		var pointCloud = this.PointCloudBehaviour.PointCloud;
+		for (int i = 0; i < pointCloud.Points.Length; i++) {
+			float score = pointCloud.GetScore(i, this.Plane);
 			if (score == 0) {
-				this.PointCloud.Colors[i] = Color.red;
+				pointCloud.Colors[i] = Color.red;
 			} else {
-				this.PointCloud.Colors[i] = Color.Lerp(orange, Color.green, score);
+				pointCloud.Colors[i] = Color.Lerp(orange, Color.green, score);
 			}
 		}
-		this.PointCloud.Show();
+		this.PointCloudBehaviour.Show();
 	}
 
 	public void UpdateTransform() {
@@ -66,7 +67,7 @@ public class PlaneBehaviour : MonoBehaviour {
 	}
 
 	public void UpdateName() {
-		float score = this.PointCloud.GetScore(this.Plane);
+		float score = this.PointCloudBehaviour.PointCloud.GetScore(this.Plane);
 		this.gameObject.name = "Plane, score: " + string.Format("{0:0.0}", score) + ", n: " + (this.Plane.normal / this.Plane.normal.y) + ", d: " + this.Plane.distance;
 	}
 
@@ -76,12 +77,12 @@ public class PlaneBehaviour : MonoBehaviour {
 		this.UpdateName();
 	}
 
-	public static void DisplayPlane(Plane plane, PointCloud pointCloud) {
+	public static void DisplayPlane(Plane plane, PointCloudBehaviour pointCloudBehaviour) {
 		GameObject planeGameObject = new GameObject();
 		var planeBehaviour = planeGameObject.AddComponent<PlaneBehaviour>();
 		planeBehaviour.Plane = plane;
-		planeBehaviour.PointCloud = pointCloud;
-		planeGameObject.transform.parent = pointCloud.transform;
+		planeBehaviour.PointCloudBehaviour = pointCloudBehaviour;
+		planeGameObject.transform.parent = pointCloudBehaviour.transform;
 		planeBehaviour.Initialize();
 		planeBehaviour.gameObject.layer = 9;
 	}

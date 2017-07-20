@@ -80,18 +80,6 @@ public abstract class AbstractMeshCreator {
 		return this.mesh;		
 	}
 
-	public void DisplayMesh() {
-		var material = Resources.Load("Materials/MeshMaterial", typeof(Material)) as Material;
-		var gameObject = new GameObject();
-		gameObject.transform.parent = this.PointCloud.transform;
-		gameObject.tag = "RoofMesh";
-		gameObject.AddComponent<MeshFilter>().sharedMesh = this.GetMesh();
-		gameObject.AddComponent<MeshRenderer>().material = material;
-		gameObject.transform.localPosition = Vector3.zero;
-		gameObject.name = "Shape";
-		gameObject.layer = 10;
-	}
-
 	public void SaveMesh() {
 		this.GetMesh();
         StringBuilder sb = new StringBuilder();
@@ -109,7 +97,7 @@ public abstract class AbstractMeshCreator {
 			sb.Append(string.Format("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}\n",
 				this.mesh.triangles[i] + 1, this.mesh.triangles[i + 1] + 1, this.mesh.triangles[i + 2] + 1));
         }
-		System.IO.File.WriteAllText(this.PointCloud.Folder + this.PointCloud.Name + ".obj", sb.ToString());
+		System.IO.File.WriteAllText(this.PointCloud.FileInfo.Directory + "/" + this.PointCloud.Name + ".obj", sb.ToString());
 	}
 
 	public IEnumerable<Triangle> MakeRoofSolid(IEnumerable<Triangle> triangles) {

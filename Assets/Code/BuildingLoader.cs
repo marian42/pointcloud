@@ -21,7 +21,7 @@ public class BuildingLoader : MonoBehaviour {
 
 	private BuildingHashSet buildings;
 
-	private Dictionary<string, PointCloud> activeBuildings;
+	private Dictionary<string, PointCloudBehaviour> activeBuildings;
 
 	private LineRenderer selectionRenderer;
 	private LocationMarkerBehaviour selectionMarker;
@@ -104,7 +104,7 @@ public class BuildingLoader : MonoBehaviour {
 		BuildingLoader.Instance = this;
 		this.setupMap();
 		this.buildings = new BuildingHashSet(Enumerable.Empty<BuildingMetadata>());
-		this.activeBuildings = new Dictionary<string, PointCloud>();
+		this.activeBuildings = new Dictionary<string, PointCloudBehaviour>();
 
 		this.dataPath = Application.dataPath;
 		var thread = new System.Threading.Thread(this.loadMetadata);
@@ -140,9 +140,8 @@ public class BuildingLoader : MonoBehaviour {
 				continue;
 			}
 			GameObject gameObject = new GameObject();
-			var newPointCloud = gameObject.AddComponent<PointCloud>();
-			newPointCloud.Load("C:/output/" + building.filename + ".points");
-			newPointCloud.Show();
+			var newPointCloud = gameObject.AddComponent<PointCloudBehaviour>();
+			newPointCloud.Initialize(new PointCloud("C:/output/" + building.filename + ".points"));
 			gameObject.transform.position = Vector3.up * gameObject.transform.position.y;
 			var marker = gameObject.AddComponent<LocationMarkerBehaviour>();
 			marker.Map = this.map;
@@ -159,8 +158,8 @@ public class BuildingLoader : MonoBehaviour {
 		var center = latLonToMeters(this.map.CenterWGS84);
 		var removed = new List<string>();
 		foreach (var building in this.activeBuildings.Values) {
-			if (getDistance(center, building.Metadata.Coordinates) > radius) {
-				removed.Add(building.Metadata.filename);
+			if (getDistance(center, building.PointCloud.Metadata.Coordinates) > radius) {
+				removed.Add(building.PointCloud.Metadata.filename);
 				GameObject.Destroy(building.gameObject);
 			}
 		}
@@ -209,7 +208,7 @@ public class BuildingLoader : MonoBehaviour {
 
 		var coordinates = latLonToMeters(this.map.EPSG900913ToWGS84Transform.Transform(coordinateMeters));
 
-		var selected = this.activeBuildings.Values.OrderBy(pointcloud => getDistance(pointcloud.Center, coordinates));
+		var selected = this.activeBuildings.Values.OrderBy(p => getDistance(p.PointCloud.Center, coordinates));
 		if (!selected.Any()) {
 			return;
 		}
@@ -217,12 +216,12 @@ public class BuildingLoader : MonoBehaviour {
 		UnityEditor.Selection.objects = new GameObject[] { result.gameObject };
 
 		this.selectionMarker.CoordinatesWGS84 = result.GetComponent<LocationMarkerBehaviour>().CoordinatesWGS84;
-		var shape = result.GetComponent<PointCloud>().GetShape();
+		var shape = result.GetComponent<PointCloudBehaviour>().PointCloud.GetShape();
 		this.selectionRenderer.numPositions = shape.Length;
 		this.selectionRenderer.SetPositions(shape.Select(p => new Vector3(p.x, 0.25f, p.y)).ToArray());
 	}
 
-	public IEnumerable<PointCloud> GetLoadedPointClouds() {
+	public IEnumerable<PointCloudBehaviour> GetLoadedPointClouds() {
 		return this.activeBuildings.Values;
 	}
 }
