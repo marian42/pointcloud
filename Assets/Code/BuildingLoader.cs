@@ -28,6 +28,8 @@ public class BuildingLoader : MonoBehaviour {
 
 	private string dataPath;
 
+	private Queue<PointCloud> pointCloudsToDisplay;
+
 	private class MetadataList {
 		public List<BuildingMetadata> buildings;
 	}
@@ -60,6 +62,7 @@ public class BuildingLoader : MonoBehaviour {
 
 		public IEnumerable<BuildingMetadata> GetBuildings(double[] coordinates, double radius) {
 			double radiusSquared = Math.Pow(radius, 2.0);
+
 			for (int x = (int)Math.Floor((coordinates[0] - radius) / bucketSize); x <= (int)Math.Ceiling((coordinates[0] + radius) / bucketSize); x++) {
 				for (int y = (int)Math.Floor((coordinates[1] - radius) / bucketSize); y <= (int)Math.Ceiling((coordinates[1] + radius) / bucketSize); y++) {
 					var bucket = new Tuple<int, int>(x, y);
@@ -103,6 +106,7 @@ public class BuildingLoader : MonoBehaviour {
 	private void Start() {
 		BuildingLoader.Instance = this;
 		this.setupMap();
+		this.pointCloudsToDisplay = new Queue<PointCloud>();
 		this.buildings = new BuildingHashSet(Enumerable.Empty<BuildingMetadata>());
 		this.activeBuildings = new Dictionary<string, PointCloudBehaviour>();
 
@@ -133,20 +137,17 @@ public class BuildingLoader : MonoBehaviour {
 	public void UpdateBuildings() {
 		this.UnloadBuildings(this.UnloadRadius);
 
-		var center = latLonToMeters(this.map.CenterWGS84);
+		var thread = new System.Threading.Thread(this.updateBuildingsThread);
+		thread.Start();
+	}
 
-		foreach (var building in this.buildings.GetBuildings(center, this.LoadRadius)) {
+	private void updateBuildingsThread() {
+		var center = latLonToMeters(this.map.CenterWGS84);
+		foreach (var building in this.buildings.GetBuildings(center, this.LoadRadius).OrderBy(b => getDistance(b.Coordinates, center))) {
 			if (this.activeBuildings.ContainsKey(building.filename)) {
 				continue;
 			}
-			GameObject gameObject = new GameObject();
-			var newPointCloud = gameObject.AddComponent<PointCloudBehaviour>();
-			newPointCloud.Initialize(new PointCloud("C:/output/" + building.filename + ".points"));
-			gameObject.transform.position = Vector3.up * gameObject.transform.position.y;
-			var marker = gameObject.AddComponent<LocationMarkerBehaviour>();
-			marker.Map = this.map;
-			marker.CoordinatesWGS84 = metersToLatLon(building.Coordinates);
-			this.activeBuildings[building.filename] = newPointCloud;
+			this.pointCloudsToDisplay.Enqueue((new PointCloud("C:/output/" + building.filename + ".points")));
 		}
 	}
 
@@ -185,6 +186,18 @@ public class BuildingLoader : MonoBehaviour {
 
 		if (Input.GetMouseButtonUp(0) && Time.time - this.lastMouseDown < 0.2) {
 			this.selectFromMap();
+		}
+
+		while (this.pointCloudsToDisplay.Any()) {
+			var pointCloud = this.pointCloudsToDisplay.Dequeue();
+			GameObject gameObject = new GameObject();
+			var pointCloudBehaviour = gameObject.AddComponent<PointCloudBehaviour>();
+			pointCloudBehaviour.Initialize(pointCloud);
+			gameObject.transform.position = Vector3.up * gameObject.transform.position.y;
+			var marker = gameObject.AddComponent<LocationMarkerBehaviour>();
+			marker.Map = this.map;
+			marker.CoordinatesWGS84 = metersToLatLon(pointCloud.Metadata.Coordinates);
+			this.activeBuildings[pointCloud.Metadata.filename] = pointCloudBehaviour;
 		}
 	}
 
