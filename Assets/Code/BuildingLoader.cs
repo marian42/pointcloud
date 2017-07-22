@@ -8,6 +8,8 @@ using System.Collections;
 using System.Collections.Generic;
 using SimpleJson;
 using System.Linq;
+using ProjNet.CoordinateSystems;
+using ProjNet.CoordinateSystems.Transformations;
 
 public class BuildingLoader : MonoBehaviour {
 	public static BuildingLoader Instance {
@@ -39,6 +41,9 @@ public class BuildingLoader : MonoBehaviour {
 
 	[Range(100.0f, 2000.0f)]
 	public float UnloadRadius = 1000.0f;
+
+	private static IMathTransform latLonToMetersTransform;
+	private static IMathTransform metersToLatLonTransform;
 
 	private class BuildingHashSet {
 		private const double bucketSize = 100.0f;
@@ -96,6 +101,31 @@ public class BuildingLoader : MonoBehaviour {
 		Debug.Log(Application.temporaryCachePath);
 	}
 
+	private static void initiailizeTransforms() {
+		ICoordinateSystem wgs84geo = ProjNet.CoordinateSystems.GeographicCoordinateSystem.WGS84;
+		ICoordinateSystem utm = ProjNet.CoordinateSystems.ProjectedCoordinateSystem.WGS84_UTM(32, true);
+		var factory = new CoordinateTransformationFactory();
+		var wgsToUtm = factory.CreateFromCoordinateSystems(wgs84geo, utm);
+		latLonToMetersTransform = wgsToUtm.MathTransform;
+		metersToLatLonTransform = wgsToUtm.MathTransform.Inverse();
+	}
+
+	public static double[] latLonToMeters(double[] value) {
+		if (BuildingLoader.latLonToMetersTransform == null) {
+			initiailizeTransforms();
+		}
+
+		return latLonToMetersTransform.Transform(value);
+	}
+
+	public static double[] metersToLatLon(double[] value) {
+		if (BuildingLoader.metersToLatLonTransform == null) {
+			initiailizeTransforms();
+		}
+
+		return metersToLatLonTransform.Transform(value);
+	}
+
 	private void loadMetadata() {
 		var data = JsonUtility.FromJson<MetadataList>(File.ReadAllText(this.dataPath + metadataFilename));
 		var buildingList = data.buildings;
@@ -120,20 +150,6 @@ public class BuildingLoader : MonoBehaviour {
 		this.selectionMarker.Map = this.map;
 	}
 
-	private static double[] metersToLatLon(double[] coordinates) {
-		return new double[] {
-			0.0000144692 * coordinates[0] + 1.7716571143,
-			0.0000089461 * coordinates[1] + 0.4487232494
-		};
-	}
-
-	private static double[] latLonToMeters(double[] coordinates) {
-		return new double[] {
-			(coordinates[0] - 1.7716571143) / 0.0000144692,
-			(coordinates[1] - 0.4487232494) / 0.0000089461
-		};
-	}
-
 	public void UpdateBuildings() {
 		this.UnloadBuildings(this.UnloadRadius);
 
@@ -142,7 +158,7 @@ public class BuildingLoader : MonoBehaviour {
 	}
 
 	private void updateBuildingsThread() {
-		var center = latLonToMeters(this.map.CenterWGS84);
+		var center = BuildingLoader.latLonToMeters(this.map.CenterWGS84);
 		foreach (var building in this.buildings.GetBuildings(center, this.LoadRadius).OrderBy(b => getDistance(b.Coordinates, center))) {
 			if (this.activeBuildings.ContainsKey(building.filename)) {
 				continue;
@@ -156,7 +172,7 @@ public class BuildingLoader : MonoBehaviour {
 	}
 
 	public void UnloadBuildings(float radius) {
-		var center = latLonToMeters(this.map.CenterWGS84);
+		var center = BuildingLoader.latLonToMeters(this.map.CenterWGS84);
 		var removed = new List<string>();
 		foreach (var building in this.activeBuildings.Values) {
 			if (getDistance(center, building.PointCloud.Metadata.Coordinates) > radius) {
@@ -196,7 +212,7 @@ public class BuildingLoader : MonoBehaviour {
 			gameObject.transform.position = Vector3.up * gameObject.transform.position.y;
 			var marker = gameObject.AddComponent<LocationMarkerBehaviour>();
 			marker.Map = this.map;
-			marker.CoordinatesWGS84 = metersToLatLon(pointCloud.Metadata.Coordinates);
+			marker.CoordinatesWGS84 = BuildingLoader.metersToLatLon(pointCloud.Metadata.Coordinates);
 			this.activeBuildings[pointCloud.Metadata.filename] = pointCloudBehaviour;
 		}
 	}
@@ -219,7 +235,7 @@ public class BuildingLoader : MonoBehaviour {
 				map.CenterEPSG900913[1] + displacementMeters[1]
 			};
 
-		var coordinates = latLonToMeters(this.map.EPSG900913ToWGS84Transform.Transform(coordinateMeters));
+		var coordinates = BuildingLoader.latLonToMeters(this.map.EPSG900913ToWGS84Transform.Transform(coordinateMeters));
 
 		var selected = this.activeBuildings.Values.OrderBy(p => getDistance(p.PointCloud.Center, coordinates));
 		if (!selected.Any()) {
