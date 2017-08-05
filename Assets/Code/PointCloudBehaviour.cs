@@ -108,4 +108,29 @@ public class PointCloudBehaviour : MonoBehaviour {
 		gameObject.name = "Shape";
 		gameObject.layer = 10;
 	}
+
+	public void CreateMesh(AbstractMeshCreator.Type type, bool cleanMesh) {
+		this.transform.DeleteRoofMeshes();
+		var meshCreator = AbstractMeshCreator.CreateMesh(this.PointCloud, type, cleanMesh);
+		this.DisplayMesh(meshCreator.GetMesh());
+		meshCreator.SaveMesh();
+		Debug.Log(Timekeeping.GetStatus());
+	}
+
+	public void FindPlanes(AbstractPlaneFinder.Type type, bool showPlanes) {
+		PlaneBehaviour.DeletePlanesIn(this.transform);
+		this.transform.DeleteRoofMeshes();
+		var planeClassifier = AbstractPlaneFinder.Instantiate(type, this.PointCloud);
+		planeClassifier.Classify();
+		planeClassifier.RemoveGroundPlanesAndVerticalPlanes();
+		if (showPlanes) {
+			foreach (var tuple in planeClassifier.PlanesWithScore.OrderByDescending(t => t.Value2).Take(6)) {
+				var plane = tuple.Value1;
+				PlaneBehaviour.DisplayPlane(plane, this);
+			}
+		}
+
+		this.PointCloud.Planes = planeClassifier.PlanesWithScore.OrderByDescending(t => t.Value2).Take(10).Select(t => t.Value1).ToList();
+		Debug.Log(Timekeeping.GetStatus() + " -> " + planeClassifier.PlanesWithScore.Count() + " planes out of " + this.PointCloud.Points.Length + " points.");
+	}
 }

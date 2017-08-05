@@ -21,10 +21,18 @@ public class BuildingLoaderEditor : Editor {
 			loader.UpdateBuildings();
 		}
 
+		GUILayout.BeginHorizontal();
+
 		if (GUILayout.Button("Unload all")) {
 			loader.UnloadBuildings(0.0f);
 		}
-		
+
+		if (GUILayout.Button("Unload others")) {
+			loader.UnloadBuildings(2.0f);
+		}
+
+		GUILayout.EndHorizontal();
+
 		var map = UnitySlippyMap.Map.MapBehaviour.Instance;
 
 		EditorGUILayout.LabelField("Bookmarks", EditorStyles.boldLabel);

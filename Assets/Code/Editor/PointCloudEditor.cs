@@ -27,13 +27,13 @@ public class PointCloudEditor : Editor {
 		planeClassifierType = (AbstractPlaneFinder.Type)(EditorGUILayout.EnumPopup(planeClassifierType));
 
 		if (GUILayout.Button("Find planes")) {
-			this.findPlanes(pointCloudBehaviour, planeClassifierType);
+			pointCloudBehaviour.FindPlanes(planeClassifierType, showPlanes);
 		}
 
 		if (GUILayout.Button("Find all")) {
 			DateTime start = DateTime.Now;
 			foreach (var otherPointCloud in BuildingLoader.Instance.GetLoadedPointClouds()) {
-				this.findPlanes(otherPointCloud, planeClassifierType);
+				otherPointCloud.FindPlanes(planeClassifierType, showPlanes);
 			}
 			var time = DateTime.Now - start;
 			Debug.Log("Classified all planes in " + (int)System.Math.Floor(time.TotalMinutes) + ":" + time.Seconds.ToString().PadLeft(2, '0'));
@@ -48,13 +48,19 @@ public class PointCloudEditor : Editor {
 		meshCreatorType = (AbstractMeshCreator.Type)(EditorGUILayout.EnumPopup(meshCreatorType));
 
 		if (GUILayout.Button("Create mesh")) {
-			this.createMesh(pointCloudBehaviour, meshCreatorType);
+			if (pointCloudBehaviour.PointCloud.Planes == null) {
+				pointCloudBehaviour.FindPlanes(planeClassifierType, showPlanes);
+			}
+			pointCloudBehaviour.CreateMesh(meshCreatorType, cleanMesh);
 		}
 
 		if (GUILayout.Button("Create all")) {
 			DateTime start = DateTime.Now;
 			foreach (var otherPointCloud in BuildingLoader.Instance.GetLoadedPointClouds()) {
-				this.createMesh(pointCloudBehaviour, meshCreatorType);
+				if (otherPointCloud.PointCloud.Planes == null) {
+					otherPointCloud.FindPlanes(planeClassifierType, showPlanes);
+				}
+				otherPointCloud.CreateMesh(meshCreatorType, cleanMesh);
 			}
 			var time = DateTime.Now - start;
 			Debug.Log("Created all meshes in " + (int)System.Math.Floor(time.TotalMinutes) + ":" + time.Seconds.ToString().PadLeft(2, '0'));
@@ -71,46 +77,5 @@ public class PointCloudEditor : Editor {
 
 	public void OnSceneGUI() {
 		hideSelectionHighlight();
-	}
-
-	private void findPlanes(PointCloudBehaviour pointCloudBehaviour, AbstractPlaneFinder.Type type) {
-		PlaneBehaviour.DeletePlanesIn(pointCloudBehaviour.transform);
-		PointCloudEditor.DeleteMeshesIn(pointCloudBehaviour.transform);
-		var planeClassifier = AbstractPlaneFinder.Instantiate(type, pointCloudBehaviour.PointCloud);
-		planeClassifier.Classify();
-		planeClassifier.RemoveGroundPlanesAndVerticalPlanes();
-		if (PointCloudEditor.showPlanes) {
-			foreach (var tuple in planeClassifier.PlanesWithScore.OrderByDescending(t => t.Value2).Take(6)) {
-				var plane = tuple.Value1;
-				PlaneBehaviour.DisplayPlane(plane, pointCloudBehaviour);
-			}
-		}
-
-		pointCloudBehaviour.PointCloud.Planes = planeClassifier.PlanesWithScore.OrderByDescending(t => t.Value2).Take(10).Select(t => t.Value1).ToList();
-		Debug.Log(Timekeeping.GetStatus() + " -> " + planeClassifier.PlanesWithScore.Count() + " planes out of " + pointCloudBehaviour.PointCloud.Points.Length + " points.");
-	}
-
-	private void createMesh(PointCloudBehaviour pointCloudBehaviour, AbstractMeshCreator.Type type) {
-		if (pointCloudBehaviour.PointCloud.Planes == null) {
-			this.findPlanes(pointCloudBehaviour, planeClassifierType);
-		}
-
-		PointCloudEditor.DeleteMeshesIn(pointCloudBehaviour.transform);
-		var meshCreator = AbstractMeshCreator.CreateMesh(pointCloudBehaviour.PointCloud, type, PointCloudEditor.cleanMesh);
-		pointCloudBehaviour.DisplayMesh(meshCreator.GetMesh());
-		meshCreator.SaveMesh();
-		Debug.Log(Timekeeping.GetStatus());
-	}
-
-	public static void DeleteMeshesIn(Transform transform) {
-		var existingMeshes = new List<GameObject>();
-		foreach (var child in transform) {
-			if ((child as Transform).tag == "RoofMesh") {
-				existingMeshes.Add((child as Transform).gameObject);
-			}
-		}
-		foreach (var existingMesh in existingMeshes) {
-			GameObject.DestroyImmediate(existingMesh);
-		}
 	}
 }

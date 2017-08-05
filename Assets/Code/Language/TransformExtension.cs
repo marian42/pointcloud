@@ -12,6 +12,18 @@ public static class TransformExtension {
 		children.ForEach(child => Transform.DestroyImmediate(child));
 	}
 
+	public static void DeleteRoofMeshes(this Transform transform) {
+		var existingMeshes = new List<GameObject>();
+		foreach (var child in transform) {
+			if ((child as Transform).tag == "RoofMesh") {
+				existingMeshes.Add((child as Transform).gameObject);
+			}
+		}
+		foreach (var existingMesh in existingMeshes) {
+			GameObject.DestroyImmediate(existingMesh);
+		}
+	}
+
 	public static T TakeRandom<T>(this IEnumerable<T> list) {
 		if (!list.Any()) {
 			return default(T);

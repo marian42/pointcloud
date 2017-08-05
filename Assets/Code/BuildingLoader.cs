@@ -27,10 +27,13 @@ public class BuildingLoader : MonoBehaviour {
 
 	private LineRenderer selectionRenderer;
 	private LocationMarkerBehaviour selectionMarker;
+	private PointCloudBehaviour selectedBuilding;
 
 	private string dataPath;
 
 	private Queue<PointCloud> pointCloudsToDisplay;
+
+	private bool doubleClick;
 
 	private class MetadataList {
 		public List<BuildingMetadata> buildings;
@@ -192,16 +195,24 @@ public class BuildingLoader : MonoBehaviour {
 	private float lastMouseDown;
 
 	public void Update() {
-		if (Input.GetMouseButtonDown(2)) {
+		if (Input.GetMouseButtonDown(2) || Input.GetKeyDown(KeyCode.Space)) {
 			this.UpdateBuildings();
 		}
 
 		if (Input.GetMouseButtonDown(0)) {
+			this.doubleClick = Time.time - this.lastMouseDown < 0.3;
 			this.lastMouseDown = Time.time;
 		}
 
 		if (Input.GetMouseButtonUp(0) && Time.time - this.lastMouseDown < 0.2) {
-			this.selectFromMap();
+			if (this.selectedBuilding != null && this.doubleClick) {
+				if (this.selectedBuilding.PointCloud.Planes == null) {
+					this.selectedBuilding.FindPlanes(AbstractPlaneFinder.Type.Ransac, false);
+				}
+				this.selectedBuilding.CreateMesh(AbstractMeshCreator.Type.CutoffWithAttachments, true);
+			} else {
+				this.selectFromMap();
+			}
 		}
 
 		while (this.pointCloudsToDisplay.Any()) {
@@ -237,15 +248,15 @@ public class BuildingLoader : MonoBehaviour {
 
 		var coordinates = BuildingLoader.latLonToMeters(this.map.EPSG900913ToWGS84Transform.Transform(coordinateMeters));
 
-		var selected = this.activeBuildings.Values.OrderBy(p => getDistance(p.PointCloud.Center, coordinates));
-		if (!selected.Any()) {
+		var result = this.activeBuildings.Values.OrderBy(p => getDistance(p.PointCloud.Center, coordinates));
+		if (!result.Any()) {
 			return;
 		}
-		var result = selected.First();
-		UnityEditor.Selection.objects = new GameObject[] { result.gameObject };
+		selectedBuilding = result.First();
+		UnityEditor.Selection.objects = new GameObject[] { selectedBuilding.gameObject };
 
-		this.selectionMarker.CoordinatesWGS84 = result.GetComponent<LocationMarkerBehaviour>().CoordinatesWGS84;
-		var shape = result.GetComponent<PointCloudBehaviour>().PointCloud.GetShape();
+		this.selectionMarker.CoordinatesWGS84 = selectedBuilding.GetComponent<LocationMarkerBehaviour>().CoordinatesWGS84;
+		var shape = selectedBuilding.GetComponent<PointCloudBehaviour>().PointCloud.GetShape();
 		this.selectionRenderer.numPositions = shape.Length;
 		this.selectionRenderer.SetPositions(shape.Select(p => new Vector3(p.x, 0.25f, p.y)).ToArray());
 	}
