@@ -91,7 +91,7 @@ public class BuildingLoader : MonoBehaviour {
 	private void setupMap() {
 		map = MapBehaviour.Instance;
 		map.CurrentCamera = Camera.main;
-		map.InputDelegate += UnitySlippyMap.Input.MapInput.BasicTouchAndKeyboard;
+		map.InputDelegate += UnitySlippyMap.MapInput.BasicTouchAndKeyboard;
 		map.MaxZoom = 40.0f;
 		map.CurrentZoom = 15.0f;
 

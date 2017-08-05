@@ -30,7 +30,6 @@ using UnityEngine;
 
 using UnitySlippyMap.Markers;
 using UnitySlippyMap.Layers;
-using UnitySlippyMap.Input;
 using UnitySlippyMap.Helpers;
 
 namespace UnitySlippyMap.Map
@@ -901,28 +900,6 @@ namespace UnitySlippyMap.Map
 		}
 
 		/// <summary>
-		/// Raises the GUI event.
-		/// </summary>
-		private void OnGUI ()
-		{
-			// FIXME: gaps beween tiles appear when zooming and panning the map at the same time on iOS, precision ???
-			// TODO: optimise, use one mesh for the tiles and combine textures in a big one (might resolve the gap bug above)
-
-			// process the user defined GUI
-			if (Event.current.type != EventType.Repaint
-				&& Event.current.type != EventType.MouseDown
-				&& Event.current.type != EventType.MouseDrag
-				&& Event.current.type != EventType.MouseMove
-				&& Event.current.type != EventType.MouseUp)
-				return;
-		
-			if (InputsEnabled && inputDelegate != null) {
-				inputDelegate (this, wasInputInterceptedByGUI);
-			}
-		
-		}
-
-		/// <summary>
 		/// Implementation of <see cref="http://docs.unity3d.com/ScriptReference/MonoBehaviour.html">MonoBehaviour</see>.Update().
 		/// During an update cycle:
 		/// * The map may use the host's location to update its center (see <see cref="UnitySlippyMap.Map.MapBehaviour.UsesLocation"/>
@@ -942,7 +919,9 @@ namespace UnitySlippyMap.Map
 #if DEBUG_PROFILE
 		UnitySlippyMap.Profiler.Begin("Map.Update");
 #endif
-		
+
+			inputDelegate(this, wasInputInterceptedByGUI);
+
 			// update the centerWGS84 with the last location if enabled
 			if (usesLocation
 				&& UnityEngine.Input.location.status == LocationServiceStatus.Running) {

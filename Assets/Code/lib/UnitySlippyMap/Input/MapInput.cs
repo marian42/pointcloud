@@ -24,13 +24,13 @@ using Unity;
 
 using UnitySlippyMap.Map;
 
-namespace UnitySlippyMap.Input
+namespace UnitySlippyMap
 {
 
 	/// <summary>
 	/// Input delegate.
 	/// </summary>
-	public delegate void InputDelegate (MapBehaviour map,bool wasInputInterceptedByGUI);
+	public delegate void InputDelegate(MapBehaviour map, bool wasInputInterceptedByGUI);
 
 	/// <summary>
 	/// A class defining a basic set of user inputs.
@@ -118,6 +118,14 @@ namespace UnitySlippyMap.Input
 
 			// Zoom
 			float scroll = UnityEngine.Input.GetAxis("Mouse ScrollWheel");
+
+			if (UnityEngine.Input.GetKey(KeyCode.Equals)) {
+				map.Zoom(0.8f);
+			}
+			if (UnityEngine.Input.GetKey(KeyCode.Minus)) {
+				map.Zoom(-0.8f);
+			}
+
 			if (scroll != 0) {
 				zoomLeft += scroll;
 			}
@@ -127,13 +135,65 @@ namespace UnitySlippyMap.Input
 			}
 
 			// Rotate
+			bool updateCamera = false;
+
 			if (UnityEngine.Input.GetMouseButton(1)) {
 				map.CameraPitch = Mathf.Clamp(map.CameraPitch + 10.0f * UnityEngine.Input.GetAxis("Mouse Y"), 1.0f, 50.0f);
 				map.CameraYaw -= 10.0f * UnityEngine.Input.GetAxis("Mouse X");
-				map.UpdateCamera();
+				updateCamera = true;
 			} else if (UnityEngine.Input.GetMouseButtonDown(1)) {
 				map.IsDirty = true;
 			}
+
+			if (UnityEngine.Input.GetKey(KeyCode.Q)) {
+				map.CameraYaw -= 90.0f * Time.deltaTime;
+				updateCamera = true;
+			}
+
+			if (UnityEngine.Input.GetKey(KeyCode.E)) {
+				map.CameraYaw += 90.0f * Time.deltaTime;
+				updateCamera = true;
+			}
+
+			if (UnityEngine.Input.GetKey(KeyCode.F)) {
+				map.CameraPitch  = Mathf.Clamp(map.CameraPitch + 60.0f * Time.deltaTime, 1.0f, 50.0f);
+				updateCamera = true;
+			}
+
+			if (UnityEngine.Input.GetKey(KeyCode.R)) {
+				map.CameraPitch = Mathf.Clamp(map.CameraPitch - 60.0f * Time.deltaTime, 1.0f, 50.0f);
+				updateCamera = true;
+			}
+
+			if (updateCamera) {
+				map.UpdateCamera();
+			}
+
+			// Move
+			if (UnityEngine.Input.GetKey(KeyCode.W)) {
+				move(map, Vector3.forward);
+			}
+
+			if (UnityEngine.Input.GetKey(KeyCode.A)) {
+				move(map, Vector3.right);
+			}
+
+			if (UnityEngine.Input.GetKey(KeyCode.S)) {
+				move(map, Vector3.back);
+			}
+
+			if (UnityEngine.Input.GetKey(KeyCode.D)) {
+				move(map, Vector3.left);
+			}
+		}
+
+		private static void move(MapBehaviour map, Vector3 direction) {
+			var displacement = Quaternion.Euler(Vector3.up * map.CameraYaw) * direction * 400.0f * Time.deltaTime * map.MetersPerPixel;
+			double[] newMapCenter = new double[2] {
+					map.CenterEPSG900913[0] - displacement.x,
+					map.CenterEPSG900913[1] + displacement.z
+				};
+			map.CenterEPSG900913 = newMapCenter;
 		}
 	}
 }
