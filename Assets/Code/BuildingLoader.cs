@@ -93,9 +93,9 @@ public class BuildingLoader : MonoBehaviour {
 		map.CurrentCamera = Camera.main;
 		map.InputDelegate += UnitySlippyMap.MapInput.BasicTouchAndKeyboard;
 		map.MaxZoom = 40.0f;
-		map.CurrentZoom = 15.0f;
+		map.CurrentZoom = 18.0f;
 
-		map.CenterWGS84 = new double[2] { 7.4639796, 51.5135063 };
+		map.CenterWGS84 = new double[2] { 7.4402747, 51.5638601 };
 		map.UsesLocation = true;
 		map.InputsEnabled = true;
 
