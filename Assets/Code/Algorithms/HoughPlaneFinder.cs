@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System.Text;
+using System.IO;
 
 [System.Serializable]
 public class HoughPlaneFinder : AbstractPlaneFinder {
 
 	private const int houghSpaceSize = 20;
 	private readonly int[] ranges = new int[] { houghSpaceSize, houghSpaceSize, 200 };
-	private readonly float[] min = new float[] { -1.4f, -1.4f, -6 };
-	private readonly float[] max = new float[] { +1.4f, +1.4f, 4 };
+	private readonly float[] min = new float[] { -1.4f, -1.4f, -8f };
+	private readonly float[] max = new float[] { +1.4f, +1.4f, 0.5f };
 	private const float minScoreRelative = 0.05f;
 	private float[, ,] houghSpace;
 
@@ -29,7 +31,12 @@ public class HoughPlaneFinder : AbstractPlaneFinder {
 	}
 
 	private Plane getHoughPlane(int i0, int i1, int i2) {
-		return new Plane(new Vector3(map(0, ranges[0], min[0], max[0], i0), 1.0f, map(0, ranges[1], min[1], max[1], i1)), map(0, ranges[2], min[2], max[2], i2));
+		var normal = new Vector3(map(0, ranges[0], min[0], max[0], i0), 1.0f, map(0, ranges[1], min[1], max[1], i1)).normalized;
+		var distance = map(0, ranges[2], min[2], max[2], i2);
+
+		var offset = this.PointCloud.GroundPoint.y;
+		var onPlane = Vector3.up * offset - normal.normalized * distance;
+		return new Plane(normal, onPlane);
 	}
 
 	private Plane getHoughPlane(int i0, int i1) {
@@ -68,12 +75,12 @@ public class HoughPlaneFinder : AbstractPlaneFinder {
 
 	private void houghTransform() {
 		houghSpace = new float[ranges[0], ranges[1], ranges[2]];
-		Timekeeping.CompleteTask("Init Hough Space");
+		Timekeeping.CompleteTask("Create Hough Space");
 		for (int i0 = 0; i0 < ranges[0]; i0++) {
 			for (int i1 = 0; i1 < ranges[1]; i1++) {
 				Plane plane = this.getHoughPlane(i0, i1);
 				for (int i = 0; i < this.PointCloud.Points.Length; i++) {
-					float distance = -plane.GetDistanceToPoint(this.PointCloud.Points[i]);
+					float distance = -plane.GetDistanceToPoint(this.PointCloud.Points[i] + Vector3.down * this.PointCloud.GroundPoint.y);
 					int start = Mathf.FloorToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance - HoughPlaneFinder.MaxDistance));
 					int end = Mathf.CeilToInt(map(this.min[2], this.max[2], 0, this.ranges[2], distance + HoughPlaneFinder.MaxDistance));
 					if ((start >= 0 && start < ranges[2]) || (end >= 0 && end < ranges[2])) {
@@ -85,7 +92,7 @@ public class HoughPlaneFinder : AbstractPlaneFinder {
 				}
 			}
 		}
-		Timekeeping.CompleteTask("Transform to Hough");
+		Timekeeping.CompleteTask("Find maxima");
 		this.PlanesWithScore = new List<Tuple<Plane, float>>();
 		float maxScore = 0;
 		for (int i0 = 0; i0 < ranges[0]; i0++) {

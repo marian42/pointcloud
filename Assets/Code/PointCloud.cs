@@ -146,6 +146,10 @@ public class PointCloud {
 	}
 
 	public float GetScore(int index, Plane plane) {
+		if (this.Normals == null) {
+			this.EstimateNormals();
+		}
+
 		var point = this.Points[index];
 		float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / HoughPlaneFinder.MaxDistance;
 		if (distance > 1) {
