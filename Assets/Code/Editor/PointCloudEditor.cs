@@ -67,6 +67,10 @@ public class PointCloudEditor : Editor {
 		}
 
 		GUILayout.EndHorizontal();
+
+		if (GUILayout.Button("Isolate")) {
+			BuildingLoader.Instance.Isolate(pointCloud);
+		}
 	}
 
 	private void hideSelectionHighlight() {

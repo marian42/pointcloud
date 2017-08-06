@@ -187,6 +187,16 @@ public class BuildingLoader : MonoBehaviour {
 			this.activeBuildings.Remove(address);
 		}
 	}
+
+	public void Isolate(PointCloud pointCloud) {
+		foreach (var building in this.activeBuildings.Values.ToList()) {
+			if (building.PointCloud == pointCloud) {
+				continue;
+			}
+			this.activeBuildings.Remove(building.PointCloud.Metadata.filename);
+			GameObject.Destroy(building.gameObject);
+		}
+	}
 	
 	void OnApplicationQuit() {
 		map = null;
