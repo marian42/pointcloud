@@ -20,6 +20,10 @@ public class PointCloudEditor : Editor {
 		var pointCloudBehaviour = this.target as PointCloudBehaviour;
 		var pointCloud = pointCloudBehaviour.PointCloud;
 
+		if (GUILayout.Button("Show normals")) {
+			pointCloudBehaviour.DisplayNormals();
+		}
+
 		PointCloudEditor.showPlanes = EditorGUILayout.Toggle("Display planes", PointCloudEditor.showPlanes);
 
 		GUILayout.BeginHorizontal();

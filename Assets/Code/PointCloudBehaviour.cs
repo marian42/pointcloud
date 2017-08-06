@@ -63,12 +63,11 @@ public class PointCloudBehaviour : MonoBehaviour {
 
 	public void DisplayNormals() {
 		if (this.PointCloud.Normals == null) {
-			Debug.LogError("No normals found.");
-			return;
+			this.PointCloud.EstimateNormals();
 		}
 		for (int i = 0; i < this.PointCloud.Normals.Length; i++) {
 			var start = this.PointCloud.Points[i];
-			Debug.DrawLine(start, start + this.PointCloud.Normals[i], Color.blue, 10.0f);
+			Debug.DrawLine(this.transform.position + start, this.transform.position + start + this.PointCloud.Normals[i].normalized * 3.0f, Color.red, 10.0f);
 		}
 	}
 
