@@ -33,3 +33,6 @@ sysinfo.txt
 /Assets/data/*
 
 /shapefile/packages/*
+Assets/hough\.txt
+
+Assets/hough\.txt\.meta

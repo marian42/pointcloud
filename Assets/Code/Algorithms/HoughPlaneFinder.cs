@@ -110,6 +110,7 @@ public class HoughPlaneFinder : AbstractPlaneFinder {
 		}
 
 		Timekeeping.CompleteTask("Find planes");
+		this.printHoughArray();
 	}
 
 	private static float getScore(float relativeDistance) {
@@ -117,5 +118,21 @@ public class HoughPlaneFinder : AbstractPlaneFinder {
 			return 0;
 		}
 		return 1.0f - relativeDistance;
+	}
+
+	private void printHoughArray() {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (int i0 = 0; i0 < ranges[0]; i0++) {
+			for (int i1 = 0; i1 < ranges[1]; i1++) {
+				for (int i2 = 0; i2 < ranges[2]; i2++) {
+					stringBuilder.Append(
+						+ map(0, ranges[0], min[0], max[0], i0) + " "
+						+ map(0, ranges[1], min[1], max[1], i1) + " "
+						+ map(0, ranges[2], min[2], max[2], i2) + " "
+						+ this.houghSpace[i0, i1, i2] + "\n");
+				}
+			}
+		}
+		File.WriteAllText(Application.dataPath + "/hough.txt", stringBuilder.ToString());
 	}
 }
