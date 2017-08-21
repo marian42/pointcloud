@@ -14,47 +14,52 @@ public class Triangulator {
 		List<int> indices = new List<int>();
 
 		int n = m_points.Count;
-		if (n < 3)
+		if (n < 3) {
 			return indices.ToArray();
+		}
 
 		int[] V = new int[n];
 		if (Area() > 0) {
-			for (int v = 0; v < n; v++)
-				V[v] = v;
+			for (int i = 0; i < n; i++) {
+				V[i] = i;
+			}
 		} else {
-			for (int v = 0; v < n; v++)
-				V[v] = (n - 1) - v;
+			for (int i = 0; i < n; i++)
+				V[i] = (n - 1) - i;
 		}
 
-		int nv = n;
-		int count = 2 * nv;
-		for (int m = 0, v = nv - 1; nv > 2; ) {
-			if ((count--) <= 0)
+		int verticesRemaining = n;
+		int count = 2 * verticesRemaining;
+		int v = verticesRemaining - 1;
+		while (verticesRemaining > 2) {
+			if ((count--) == 0) {
 				return indices.ToArray();
+			}
 
 			int u = v;
-			if (nv <= u)
+			if (u >= verticesRemaining) {
 				u = 0;
+			}
 			v = u + 1;
-			if (nv <= v)
+			if (v >= verticesRemaining) {
 				v = 0;
+			}
 			int w = v + 1;
-			if (nv <= w)
+			if (w >= verticesRemaining) {
 				w = 0;
+			}
 
-			if (Snip(u, v, w, nv, V)) {
-				int a, b, c, s, t;
-				a = V[u];
-				b = V[v];
-				c = V[w];
-				indices.Add(a);
-				indices.Add(b);
-				indices.Add(c);
-				m++;
-				for (s = v, t = v + 1; t < nv; s++, t++)
-					V[s] = V[t];
-				nv--;
-				count = 2 * nv;
+			if (Snip(u, v, w, verticesRemaining, V)) {
+				indices.Add(V[u]);
+				indices.Add(V[v]);
+				indices.Add(V[w]);
+
+				for (int i = v; i + 1 < verticesRemaining; i++) {
+					V[i] = V[i + 1];
+				}
+
+				verticesRemaining--;
+				count = 2 * verticesRemaining;
 			}
 		}
 
