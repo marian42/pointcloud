@@ -18,7 +18,7 @@ public abstract class AbstractMeshCreator {
 	protected readonly List<Plane> Planes;
 	protected readonly PointCloud PointCloud;
 	
-	public IEnumerable<Triangle> Triangles {
+	public List<Triangle> Triangles {
 		get;
 		protected set;
 	}
@@ -34,7 +34,6 @@ public abstract class AbstractMeshCreator {
 	protected float GetScore(IEnumerable<Triangle> mesh) {
 		return mesh.Sum(triangle => triangle.GetScore(this.PointCloud));
 	}
-
 	
 	public static AbstractMeshCreator CreateMesh(PointCloud pointCloud, Type type, bool cleanMesh) {
 		switch (type) {

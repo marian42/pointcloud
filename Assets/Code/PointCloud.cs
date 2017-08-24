@@ -142,7 +142,12 @@ public class PointCloud {
 	}
 
 	public Vector2[] GetShape() {
-		return XYZLoader.LoadFile(this.FileInfo.Directory + "/" + this.Name + ".xyzshape", this.Metadata).Select(v => new Vector2(v.x, v.z)).ToArray();
+		var shape = XYZLoader.LoadFile(this.FileInfo.Directory + "/" + this.Name + ".xyzshape", this.Metadata).Select(v => new Vector2(v.x, v.z));
+
+		if (shape.First() == shape.Last()) {
+			shape = shape.Skip(1);
+		}
+		return shape.ToArray();
 	}
 
 	public float GetScore(int index, Plane plane) {

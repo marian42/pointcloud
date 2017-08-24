@@ -6,14 +6,14 @@ using System.Linq;
 public class MeshCleaner {
 	private const float minDistance = 0.6f;
 
-	public static IEnumerable<Triangle> CleanMesh(IEnumerable<Triangle> triangles) {
+	public static List<Triangle> CleanMesh(IEnumerable<Triangle> triangles) {
 		List<Vector2> samplePoints = new List<Vector2>();
 
 		foreach (var triangle in triangles) {
 			samplePoints.AddRange(getSamplePoints(triangle));
 		}
 		
-		return MeshCleaner.SampleMesh(triangles, samplePoints);
+		return MeshCleaner.SampleMesh(triangles, samplePoints).ToList();
 	}
 
 	private static IEnumerable<Vector2> getSamplePoints(Triangle triangle) {

@@ -8,9 +8,6 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 	
 	public ShapeMeshCreator(PointCloud pointCloud, bool cleanMesh) : base(pointCloud, cleanMesh) {
 		this.shape = this.PointCloud.GetShape();
-		if (this.shape.First() == this.shape.Last()) {
-			this.shape = this.shape.Skip(1).ToArray();
-		}
 	}
 
 	public void CreateLayoutMesh() {
