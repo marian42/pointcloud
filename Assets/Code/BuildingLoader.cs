@@ -267,7 +267,7 @@ public class BuildingLoader : MonoBehaviour {
 
 		this.selectionMarker.CoordinatesWGS84 = selectedBuilding.GetComponent<LocationMarkerBehaviour>().CoordinatesWGS84;
 		var shape = selectedBuilding.GetComponent<PointCloudBehaviour>().PointCloud.GetShape();
-		this.selectionRenderer.numPositions = shape.Length;
+		this.selectionRenderer.positionCount = shape.Length;
 		this.selectionRenderer.SetPositions(shape.Select(p => new Vector3(p.x, 0.25f, p.y)).ToArray());
 	}
 
