@@ -151,26 +151,12 @@ public class PointCloud {
 	}
 
 	public float GetScore(int index, Plane plane) {
-		if (this.Normals == null) {
-			this.EstimateNormals();
-		}
-
 		var point = this.Points[index];
 		float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / HoughPlaneFinder.MaxDistance;
 		if (distance > 1) {
 			return 0;
 		}
-		float result = 1.0f - distance;
-
-		var normal = this.Normals[index];
-		
-		const float maxAngle = 60.0f;
-		float angle = Vector3.Angle(plane.normal, normal) / maxAngle;
-		if (angle > 1.0f) {
-			return 0;
-		} else {
-			return result * (1.0f - angle);
-		}
+		return 1.0f - distance;
 	}
 
 	public float GetScore(Plane plane) {
