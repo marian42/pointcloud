@@ -12,16 +12,18 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 
 	public void CreateLayoutMesh() {
 		var triangles = new List<Triangle>();
+		float height = this.PointCloud.GroundPoint.y;
 
 		for (int i = 0; i < this.shape.Length; i++) {
 			var v1 = this.shape[i];
 			var v2 = this.shape[(i + 1) % this.shape.Length];
 
-			triangles.Add(new Triangle(new Vector3(v1.x, 0, v1.y), new Vector3(v2.x, 0, v2.y), new Vector3(v2.x, 5, v2.y)));
-			triangles.Add(new Triangle(new Vector3(v1.x, 0, v1.y), new Vector3(v2.x, 5, v2.y), new Vector3(v1.x, 5, v1.y)));
+			triangles.Add(new Triangle(new Vector3(v1.x, height, v1.y), new Vector3(v2.x, height, v2.y), new Vector3(v2.x, height + 5, v2.y)));
+			triangles.Add(new Triangle(new Vector3(v1.x, height, v1.y), new Vector3(v2.x, height + 5, v2.y), new Vector3(v1.x, height + 5, v1.y)));
 		}
 
 		this.Triangles = triangles;
+		this.CleanMesh = false;
 	}
 
 	private Vector3[] projectToPlane(Vector2[] vertices, Plane plane) {
