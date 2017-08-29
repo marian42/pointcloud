@@ -110,10 +110,16 @@ public class PointCloudBehaviour : MonoBehaviour {
 
 	public void CreateMesh(AbstractMeshCreator.Type type, bool cleanMesh) {
 		this.transform.DeleteRoofMeshes();
+		Timekeeping.Reset();
 		var meshCreator = AbstractMeshCreator.CreateMesh(this.PointCloud, type, cleanMesh);
 		this.DisplayMesh(meshCreator.GetMesh());
 		meshCreator.SaveMesh();
 		Debug.Log(Timekeeping.GetStatus());
+		File.AppendAllText(Application.dataPath + "/table.txt", Timekeeping.CreateTableLine(this.PointCloud.Metadata.address, 6));
+		File.AppendAllText(Application.dataPath + "/data.txt", Timekeeping.GetDataLine(5)
+			+ this.PointCloud.Points.Length + ";"
+			+ this.PointCloud.Stats["attachments"] + ";"
+			+ meshCreator.GetMesh().triangles.Length / 6 + "\n");
 	}
 
 	public void FindPlanes(AbstractPlaneFinder.Type type, bool showPlanes) {
@@ -129,7 +135,6 @@ public class PointCloudBehaviour : MonoBehaviour {
 			}
 		}
 
-		this.PointCloud.Planes = planeClassifier.PlanesWithScore.OrderByDescending(t => t.Value2).Take(10).Select(t => t.Value1).ToList();
-		Debug.Log(Timekeeping.GetStatus() + " -> " + planeClassifier.PlanesWithScore.Count() + " planes out of " + this.PointCloud.Points.Length + " points.");
+		this.PointCloud.Planes = planeClassifier.GetPlanes();
 	}
 }

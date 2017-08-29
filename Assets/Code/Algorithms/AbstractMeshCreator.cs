@@ -13,9 +13,11 @@ public abstract class AbstractMeshCreator {
 		FromPoints
 	}
 
+	public static AbstractMeshCreator.Type CurrentType = AbstractMeshCreator.Type.CutoffWithAttachments;	
+
 	public bool CleanMesh;
 
-	protected readonly List<Plane> Planes;
+	protected List<Plane> Planes { get; private set; }
 	protected readonly PointCloud PointCloud;
 	
 	public List<Triangle> Triangles {
@@ -26,7 +28,6 @@ public abstract class AbstractMeshCreator {
 	private Mesh mesh;
 
 	public AbstractMeshCreator(PointCloud pointCloud, bool cleanMesh) {
-		this.Planes = pointCloud.Planes.ToList();
 		this.PointCloud = pointCloud;
 		this.CleanMesh = cleanMesh;
 	}	
@@ -70,6 +71,7 @@ public abstract class AbstractMeshCreator {
 		if (this.mesh == null) {
 			if (this.CleanMesh) {
 				var cleanedTriangles = MeshCleaner.CleanMesh(this.Triangles);
+				Timekeeping.CompleteTask("Clean mesh");
 				this.mesh = Triangle.CreateMesh(cleanedTriangles, true);
 			} else {
 				this.mesh = Triangle.CreateMesh(this.Triangles, true);
@@ -101,7 +103,11 @@ public abstract class AbstractMeshCreator {
 
 	protected void CheckForPlanes() {
 		if (this.PointCloud.Planes == null || !this.PointCloud.Planes.Any()) {
-			throw new System.Exception("Can't create mesh. Find planes first.");
+			var planeClassifier = AbstractPlaneFinder.Instantiate(AbstractPlaneFinder.CurrentType, this.PointCloud);
+			planeClassifier.Classify();
+			planeClassifier.RemoveGroundPlanesAndVerticalPlanes();
+			PointCloud.Planes = planeClassifier.GetPlanes();
 		}
+		this.Planes = this.PointCloud.Planes;
 	}
 }

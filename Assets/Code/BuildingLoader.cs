@@ -101,7 +101,6 @@ public class BuildingLoader : MonoBehaviour {
 
 		OSMTileLayer osmLayer = map.CreateLayer<OSMTileLayer>("OSM");
 		osmLayer.BaseURL = "http://cartodb-basemaps-b.global.ssl.fastly.net/light_all/";
-		Debug.Log(Application.temporaryCachePath);
 	}
 
 	private static void initiailizeTransforms() {
@@ -216,10 +215,7 @@ public class BuildingLoader : MonoBehaviour {
 
 		if (Input.GetMouseButtonUp(0) && Time.time - this.lastMouseDown < 0.2) {
 			if (this.selectedBuilding != null && this.doubleClick) {
-				if (this.selectedBuilding.PointCloud.Planes == null) {
-					this.selectedBuilding.FindPlanes(AbstractPlaneFinder.Type.Ransac, false);
-				}
-				this.selectedBuilding.CreateMesh(AbstractMeshCreator.Type.CutoffWithAttachments, true);
+				this.selectedBuilding.CreateMesh(AbstractMeshCreator.CurrentType, true);
 			} else {
 				this.selectFromMap();
 			}

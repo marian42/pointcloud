@@ -222,8 +222,6 @@ namespace UnitySlippyMap.Map
 
 				centerEPSG900913 = ComputeCenterEPSG900913 (newCenterESPG900913);
 
-				Debug.Log("center: " + centerEPSG900913[0] + " " + centerEPSG900913[1]);
-
 				FitVerticalBorder ();
 				IsDirty = true;
 			}

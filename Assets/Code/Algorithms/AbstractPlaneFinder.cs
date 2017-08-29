@@ -26,6 +26,8 @@ public abstract class AbstractPlaneFinder {
 		Ransac
 	}
 
+	public static AbstractPlaneFinder.Type CurrentType = AbstractPlaneFinder.Type.Ransac;	
+
 	public static AbstractPlaneFinder Instantiate(Type type, PointCloud pointCloud) {
 		switch (type) {
 			case Type.Hough: return new HoughPlaneFinder(pointCloud);
@@ -46,5 +48,9 @@ public abstract class AbstractPlaneFinder {
 
 	public void RemoveGroundPlanesAndVerticalPlanes() {
 		this.PlanesWithScore = this.PlanesWithScore.Where(tuple => !this.isGroundPlane(tuple.Value1) && !this.isVerticalPlane(tuple.Value1)).ToList();
+	}
+
+	public List<Plane> GetPlanes(int count = 10) {
+		return this.PlanesWithScore.OrderByDescending(t => t.Value2).Take(count).Select(t => t.Value1).ToList();
 	}
 }

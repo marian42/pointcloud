@@ -9,8 +9,6 @@ using System;
 
 [CustomEditor(typeof(PointCloudBehaviour))]
 public class PointCloudEditor : Editor {
-	private static AbstractPlaneFinder.Type planeClassifierType = AbstractPlaneFinder.Type.Ransac;
-	private static AbstractMeshCreator.Type meshCreatorType = AbstractMeshCreator.Type.CutoffWithAttachments;
 	private static bool showPlanes = false;
 	private static bool cleanMesh = true;
 
@@ -28,16 +26,16 @@ public class PointCloudEditor : Editor {
 
 		GUILayout.BeginHorizontal();
 
-		planeClassifierType = (AbstractPlaneFinder.Type)(EditorGUILayout.EnumPopup(planeClassifierType));
+		AbstractPlaneFinder.CurrentType = (AbstractPlaneFinder.Type)(EditorGUILayout.EnumPopup(AbstractPlaneFinder.CurrentType));
 
 		if (GUILayout.Button("Find planes")) {
-			pointCloudBehaviour.FindPlanes(planeClassifierType, showPlanes);
+			pointCloudBehaviour.FindPlanes(AbstractPlaneFinder.CurrentType, showPlanes);
 		}
 
 		if (GUILayout.Button("Find all")) {
 			DateTime start = DateTime.Now;
 			foreach (var otherPointCloud in BuildingLoader.Instance.GetLoadedPointClouds()) {
-				otherPointCloud.FindPlanes(planeClassifierType, showPlanes);
+				otherPointCloud.FindPlanes(AbstractPlaneFinder.CurrentType, showPlanes);
 			}
 			var time = DateTime.Now - start;
 			Debug.Log("Classified all planes in " + (int)System.Math.Floor(time.TotalMinutes) + ":" + time.Seconds.ToString().PadLeft(2, '0'));
@@ -49,22 +47,16 @@ public class PointCloudEditor : Editor {
 
 		GUILayout.BeginHorizontal();
 
-		meshCreatorType = (AbstractMeshCreator.Type)(EditorGUILayout.EnumPopup(meshCreatorType));
+		AbstractMeshCreator.CurrentType = (AbstractMeshCreator.Type)(EditorGUILayout.EnumPopup(AbstractMeshCreator.CurrentType));
 
 		if (GUILayout.Button("Create mesh")) {
-			if (pointCloudBehaviour.PointCloud.Planes == null) {
-				pointCloudBehaviour.FindPlanes(planeClassifierType, showPlanes);
-			}
-			pointCloudBehaviour.CreateMesh(meshCreatorType, cleanMesh);
+			pointCloudBehaviour.CreateMesh(AbstractMeshCreator.CurrentType, cleanMesh);
 		}
 
 		if (GUILayout.Button("Create all")) {
 			DateTime start = DateTime.Now;
 			foreach (var otherPointCloud in BuildingLoader.Instance.GetLoadedPointClouds()) {
-				if (otherPointCloud.PointCloud.Planes == null) {
-					otherPointCloud.FindPlanes(planeClassifierType, showPlanes);
-				}
-				otherPointCloud.CreateMesh(meshCreatorType, cleanMesh);
+				otherPointCloud.CreateMesh(AbstractMeshCreator.CurrentType, cleanMesh);
 			}
 			var time = DateTime.Now - start;
 			Debug.Log("Created all meshes in " + (int)System.Math.Floor(time.TotalMinutes) + ":" + time.Seconds.ToString().PadLeft(2, '0'));

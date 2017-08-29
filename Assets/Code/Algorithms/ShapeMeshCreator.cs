@@ -75,6 +75,7 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 
 	public void CreateMeshCutoff(bool createAttachments) {
 		this.CheckForPlanes();
+		Timekeeping.CompleteTask("Find planes");
 
 		float bestScore = -1.0f;
 		IEnumerable<Triangle> bestMesh = null;
@@ -94,15 +95,18 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 		var resultMesh = bestMesh.ToList();
 		var usedPlanes = bestPlanes.ToList();
 
+		Timekeeping.CompleteTask("Convex roof");
+
 		if (!createAttachments) {
 			this.Triangles = resultMesh;
 			this.CleanMesh = false;
+			this.PointCloud.Stats["attachments"] = "0";
 			return;
 		}
 
 		var planeFinder = new RansacPlaneFinder(this.PointCloud);
 
-		bool foundAttachments = false;
+		int attachmentCount = 0;
 
 		foreach (var plane in bestPlanes) {
 			var indices = new List<int>();
@@ -142,8 +146,8 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 
 				if (bestScore > 2.0f) {
 					resultMesh.AddRange(bestMesh);
-					foundAttachments = true;
-					Debug.Log("Attachment score: " + bestScore + ", pointdensity: " + bestMesh.Sum(t => (t.GetPointCount(this.PointCloud, indices))) / bestMesh.Sum(t => t.GetArea()) + ", area: " + bestMesh.Sum(t => t.GetArea()) + ", created from " + outsidePlanes.Count() + " planes");
+					attachmentCount++;
+					//Debug.Log("Attachment score: " + bestScore + ", pointdensity: " + bestMesh.Sum(t => (t.GetPointCount(this.PointCloud, indices))) / bestMesh.Sum(t => t.GetArea()) + ", area: " + bestMesh.Sum(t => t.GetArea()) + ", created from " + outsidePlanes.Count() + " planes");
 					usedPlanes = usedPlanes.Union(planesInAttachment).ToList();
 				} else {
 					break;
@@ -153,7 +157,10 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 			}
 		}
 
-		if (!foundAttachments) {
+		this.PointCloud.Stats["attachments"] = attachmentCount.ToString();
+		Timekeeping.CompleteTask("Find attachments");
+
+		if (attachmentCount == 0) {
 			this.CleanMesh = false;
 		}
 		this.Triangles = resultMesh;

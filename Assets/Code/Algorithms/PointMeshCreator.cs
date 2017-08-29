@@ -220,7 +220,6 @@ public class PointMeshCreator : AbstractMeshCreator {
 	public static IEnumerable<int> Triangulate(List<Vector2> points) {
 		var triangulator = new Delaunay.Voronoi(points.ToList(), null, getBounds(points));
 		var lineSegments = triangulator.DelaunayTriangulation();
-		Timekeeping.CompleteTask("Triangulate");
 
 		var edges = new HashSet<Tuple<int, int>>(lineSegments.Select(segment => new Tuple<int, int>(points.IndexOf(segment.p0.Value), points.IndexOf(segment.p1.Value))));
 			

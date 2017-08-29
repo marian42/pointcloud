@@ -35,11 +35,14 @@ public class PointCloud {
 		private set;
 	}
 
+	public Dictionary<String, String> Stats;
+
 	public List<Plane> Planes;
 
 	public PointCloud(string filename) {
 		this.FileInfo = new FileInfo(filename);
 		this.Name = this.FileInfo.Name.Substring(0, this.FileInfo.Name.IndexOf('.'));
+		this.Stats = new Dictionary<string, string>();
 		this.loadMetadata();
 		this.load();
 	}
