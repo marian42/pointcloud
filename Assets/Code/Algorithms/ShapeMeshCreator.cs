@@ -207,6 +207,7 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 	}
 
 	public void CreateMeshWithPermutations() {
+		this.CheckForPlanes();
 		const int planeCount = 5;
 		var result = new List<Triangle>();
 
