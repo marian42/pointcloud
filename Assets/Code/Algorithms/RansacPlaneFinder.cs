@@ -46,7 +46,7 @@ public class RansacPlaneFinder : AbstractPlaneFinder {
 	}	
 
 	public static bool Similar(Plane plane1, Plane plane2, Vector3 reference) {
-		return Vector3.Angle(plane1.normal, plane2.normal) < 20.0f
-			&& Mathf.Abs(plane1.GetDistanceToPoint(reference) - plane2.GetDistanceToPoint(reference)) < 2.0f;
+		return Vector3.Angle(plane1.normal, plane2.normal) < 30.0f
+			&& Mathf.Abs(plane1.GetDistanceToPoint(reference) - plane2.GetDistanceToPoint(reference)) < 5.0f;
 	}
 }
