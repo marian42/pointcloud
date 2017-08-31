@@ -121,7 +121,7 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 			while (true) {
 				planeFinder.Classify(indices);
 				planeFinder.RemoveGroundPlanesAndVerticalPlanes();
-				var outsidePlanes = planeFinder.PlanesWithScore.Where(tuple => tuple.Value2 > 5.0f).Select(tuple => tuple.Value1).Where(newPlane => !RansacPlaneFinder.Similar(plane, newPlane, this.PointCloud.GroundPoint));
+				var outsidePlanes = planeFinder.PlanesWithScore.Where(tuple => tuple.Value2 > 2.0f).Select(tuple => tuple.Value1).Where(newPlane => !RansacPlaneFinder.Similar(plane, newPlane, this.PointCloud.GroundPoint));
 				outsidePlanes = outsidePlanes.Select(p => this.checkForSimilarPlanes(p, usedPlanes));
 
 				if (outsidePlanes.Count() == 0) {
@@ -134,7 +134,7 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 					var currentMesh = this.createFromPlanes(selectedPlanes);
 					currentMesh = Triangle.CutMesh(currentMesh, plane, true);
 					float pointDensity = currentMesh.Sum(t => t.GetPointCount(this.PointCloud, indices)) / currentMesh.Sum(t => t.GetArea());
-					if (pointDensity < 4.0f) {
+					if (pointDensity < 3.0f) {
 						continue;
 					}
 					var currentScore = currentMesh.Sum(triangle => triangle.GetScore(this.PointCloud, indices));
