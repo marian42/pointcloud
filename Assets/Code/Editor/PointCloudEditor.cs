@@ -10,7 +10,6 @@ using System;
 [CustomEditor(typeof(PointCloudBehaviour))]
 public class PointCloudEditor : Editor {
 	private static bool showPlanes = false;
-	private static bool cleanMesh = true;
 
 	public override void OnInspectorGUI() {
 		base.OnInspectorGUI();
@@ -43,20 +42,20 @@ public class PointCloudEditor : Editor {
 
 		GUILayout.EndHorizontal();
 
-		PointCloudEditor.cleanMesh = EditorGUILayout.Toggle("Clean mesh", PointCloudEditor.cleanMesh);
+		ShapeMeshCreator.CleanMeshDefault = EditorGUILayout.Toggle("Clean mesh", ShapeMeshCreator.CleanMeshDefault);
 
 		GUILayout.BeginHorizontal();
 
 		AbstractMeshCreator.CurrentType = (AbstractMeshCreator.Type)(EditorGUILayout.EnumPopup(AbstractMeshCreator.CurrentType));
 
 		if (GUILayout.Button("Create mesh")) {
-			pointCloudBehaviour.CreateMesh(AbstractMeshCreator.CurrentType, cleanMesh);
+			pointCloudBehaviour.CreateMesh(AbstractMeshCreator.CurrentType, ShapeMeshCreator.CleanMeshDefault);
 		}
 
 		if (GUILayout.Button("Create all")) {
 			DateTime start = DateTime.Now;
 			foreach (var otherPointCloud in BuildingLoader.Instance.GetLoadedPointClouds()) {
-				otherPointCloud.CreateMesh(AbstractMeshCreator.CurrentType, cleanMesh);
+				otherPointCloud.CreateMesh(AbstractMeshCreator.CurrentType, ShapeMeshCreator.CleanMeshDefault);
 			}
 			var time = DateTime.Now - start;
 			Debug.Log("Created all meshes in " + (int)System.Math.Floor(time.TotalMinutes) + ":" + time.Seconds.ToString().PadLeft(2, '0'));

@@ -4,6 +4,8 @@ using UnityEngine;
 using System.Linq;
 
 public class ShapeMeshCreator : AbstractMeshCreator {
+	public static bool CleanMeshDefault = true;
+
 	private Vector2[] shape;
 	
 	public ShapeMeshCreator(PointCloud pointCloud, bool cleanMesh) : base(pointCloud, cleanMesh) {
@@ -147,7 +149,6 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 				if (bestScore > 2.0f) {
 					resultMesh.AddRange(bestMesh);
 					attachmentCount++;
-					//Debug.Log("Attachment score: " + bestScore + ", pointdensity: " + bestMesh.Sum(t => (t.GetPointCount(this.PointCloud, indices))) / bestMesh.Sum(t => t.GetArea()) + ", area: " + bestMesh.Sum(t => t.GetArea()) + ", created from " + outsidePlanes.Count() + " planes");
 					usedPlanes = usedPlanes.Union(planesInAttachment).ToList();
 				} else {
 					break;

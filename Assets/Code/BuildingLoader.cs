@@ -215,7 +215,7 @@ public class BuildingLoader : MonoBehaviour {
 
 		if (Input.GetMouseButtonUp(0) && Time.time - this.lastMouseDown < 0.2) {
 			if (this.selectedBuilding != null && this.doubleClick) {
-				this.selectedBuilding.CreateMesh(AbstractMeshCreator.CurrentType, true);
+				this.selectedBuilding.CreateMesh(AbstractMeshCreator.CurrentType, ShapeMeshCreator.CleanMeshDefault);
 			} else {
 				this.selectFromMap();
 			}
