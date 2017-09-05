@@ -10,15 +10,17 @@ using System.Globalization;
 
 namespace XYZSeparator {
 	public class PointSeparator {
-		private ShapeHashSet shapes;
-		private string outputFolder;
 		private const int QUEUE_LENGTH = 400;
+
 		public int HitCount { get; private set; }
+		
+		private readonly ShapeHashSet shapes;
+		private readonly string outputFolder;
+		
+		private readonly ConcurrentDictionary<Polygon, List<Vector3>> currentPoints;
 
-		private ConcurrentDictionary<Polygon, List<Vector3>> currentPoints;
-
-		private ConcurrentQueue<Polygon> polygonQueue;
-		private ConcurrentQueue<FileInfo> fileQueue;
+		private readonly ConcurrentQueue<Polygon> polygonQueue;
+		private readonly ConcurrentQueue<FileInfo> fileQueue;
 
 		private long hits = 0;
 		private long points = 0;

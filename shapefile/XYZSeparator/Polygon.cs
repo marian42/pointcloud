@@ -26,10 +26,7 @@ public class Polygon {
 
 	private bool inAggregatedMetadata;
 
-	public Vector3 Center {
-		get;
-		private set;
-	}
+	public readonly Vector3 Center;
 
 	public Polygon(ShapePolygon shapePolygon, int partIndex, double offset) {
 		this.Points = shapePolygon.Parts[partIndex];
@@ -39,18 +36,19 @@ public class Polygon {
 		Polygon.globalId++;
 		this.Name = this.id.ToString().PadLeft(8, '0') + "-" + shapePolygon.GetMetadata("uuid");
 		this.metadata = new Dictionary<string, string>();
-		foreach (var key in shapePolygon.GetMetadataNames()) {
-			this.metadata[key] = shapePolygon.GetMetadata(key);
-		}
+
+		this.metadata["schwerp_x"] = shapePolygon.GetMetadata("schwerp_x");
+		this.metadata["schwerp_y"] = shapePolygon.GetMetadata("schwerp_y");		
 		this.metadata["filename"] = this.Name;
 		this.metadata["address"] = Regex.Replace((shapePolygon.GetMetadata("strasse").Replace("STRA▀E", "Straße").ToLower()), @"(^\w)|(\s\w)", m => m.Value.ToUpper()) + " " + shapePolygon.GetMetadata("hausnr");
-		this.findCenter();
+		
+		this.Center = this.getCenter();
 	}
-
-	private void findCenter() {
+	
+	private Vector3 getCenter() {
 		double centerx = double.Parse(this.metadata["schwerp_x"].Replace(',', '.'), CultureInfo.InvariantCulture);
 		double centerz = double.Parse(this.metadata["schwerp_y"].Replace(',', '.'), CultureInfo.InvariantCulture);
-		this.Center = new Vector3(centerx, 0.0d, centerz);
+		return new Vector3(centerx, 0.0d, centerz);
 	}
 
 	private void createBoundingBox() {
