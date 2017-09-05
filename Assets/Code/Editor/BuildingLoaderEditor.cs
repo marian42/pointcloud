@@ -15,6 +15,10 @@ public class BuildingLoaderEditor : Editor {
 	public override void OnInspectorGUI() {
 		base.OnInspectorGUI();
 
+		if (!Application.isPlaying) {
+			return;
+		}
+
 		var loader = this.target as BuildingLoader;
 
 		if (GUILayout.Button("Update")) {
@@ -25,10 +29,6 @@ public class BuildingLoaderEditor : Editor {
 
 		if (GUILayout.Button("Unload all")) {
 			loader.UnloadBuildings(0.0f);
-		}
-
-		if (GUILayout.Button("Unload others")) {
-			loader.UnloadBuildings(2.0f);
 		}
 
 		GUILayout.EndHorizontal();
