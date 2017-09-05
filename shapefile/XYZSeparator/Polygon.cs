@@ -230,10 +230,17 @@ public class Polygon {
 		}
 	}
 
-	public static void SaveAggregatedMetadata(string folder) {
-		string filename = folder + "meta.json";
-		string json = JsonConvert.SerializeObject(Polygon.aggregatedMetadata, Newtonsoft.Json.Formatting.Indented);
-		File.WriteAllText(filename, json);
+	public static void SaveAggregatedMetadata(string filename) {
+		Console.WriteLine("Writing metadata...");
+		using (System.IO.StreamWriter file = new System.IO.StreamWriter(filename, false)) {
+			file.Write("[");
+			foreach (var building in Polygon.aggregatedMetadata) {
+				string json = JsonConvert.SerializeObject(building, Newtonsoft.Json.Formatting.Indented);
+				file.Write(json);
+				file.Write(", ");
+			}
+			file.Write("]");
+		}
 	}
 }
 
