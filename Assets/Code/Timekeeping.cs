@@ -45,12 +45,6 @@ public class Timekeeping {
 		Timekeeping.startTime = DateTime.Now;
 	}
 
-	public static string CreateTableLine(string name, int rowCount) {
-		return name + String.Concat(tasks.Select(t => " & " + t.GetDurationString()).Concat(Enumerable.Repeat(" &", rowCount - tasks.Count - 2)).ToArray())
-			+ " & " + tasks.Select(t => t.TimeSpan).Aggregate(TimeSpan.FromTicks(0), (t1, t2) => t1.Add(t2)).TotalSeconds.ToString("0.00")
-			+ " \\\\\n";
-	}
-
 	public static string GetDataLine(int rowCount) {
 		return String.Concat(tasks.Select(t => t.GetDurationString() + ";").Concat(Enumerable.Repeat("0;", rowCount - tasks.Count - 1)).ToArray())
 			+ tasks.Select(t => t.TimeSpan).Aggregate(TimeSpan.FromTicks(0), (t1, t2) => t1.Add(t2)).TotalSeconds.ToString("0.00") + ";";

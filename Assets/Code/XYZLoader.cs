@@ -6,7 +6,7 @@ using System.Linq;
 using System;
 
 public class XYZLoader {
-	public static Vector3[] LoadFile(string fileName, BuildingMetadata metadata) {
+	public static Vector3[] LoadXYZFile(string fileName, BuildingMetadata metadata) {
 		return File.ReadAllLines(fileName).Select(line => XYZLoader.parseLine(line, metadata.Coordinates)).ToArray();
 	}
 

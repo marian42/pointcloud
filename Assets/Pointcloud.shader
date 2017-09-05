@@ -5,6 +5,7 @@ Shader "Custom/PointCloud"
 	Properties
 	{
 		_MainTex ("Texture (RGB)", 2D) = "white" {}
+		_PointColor ("Point Color", Color) = (0, 0, 0, 0)
 		_Size ("Size", Range(0.05, 0.5)) = 0.15
 		_ColorNear ("ColorNear", Range(0, 100)) = 20
 		_ColorFar ("ColorFar", Range(10, 1000)) = 250
@@ -28,6 +29,7 @@ Shader "Custom/PointCloud"
 			#include "UnityCG.cginc"
 
 			sampler2D _MainTex;
+			float4 _PointColor;
 			float _Size;
 			float _ColorNear;
 			float _ColorFar;
@@ -54,10 +56,9 @@ Shader "Custom/PointCloud"
 				GS_INPUT o = (GS_INPUT)0;
 				o.vertex = v.vertex;
 				o.normal = v.normal;
-				o.color = v.color;
 
 				float dist = length(_WorldSpaceCameraPos - mul(unity_ObjectToWorld, v.vertex).xyz);
-				o.color = lerp(v.color, float4(1,1,1,1), clamp((dist - _ColorNear) / (_ColorFar - _ColorNear), 0, 1.0) * _AtmosphereValue);
+				o.color = lerp(_PointColor, float4(1,1,1,1), clamp((dist - _ColorNear) / (_ColorFar - _ColorNear), 0, 1.0) * _AtmosphereValue);
 
 				return o;
 			}

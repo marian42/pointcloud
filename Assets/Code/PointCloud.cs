@@ -16,7 +16,7 @@ public class PointCloud {
 		get;
 		private set;
 	}
-	public Color[] Colors;
+	
 	public Vector3[] Normals {
 		get;
 		private set;
@@ -43,7 +43,6 @@ public class PointCloud {
 		this.FileInfo = new FileInfo(filename);
 		this.Name = this.FileInfo.Name.Substring(0, this.FileInfo.Name.IndexOf('.'));
 		this.Stats = new Dictionary<string, string>();
-		this.loadMetadata();
 		this.load();
 	}
 
@@ -55,31 +54,26 @@ public class PointCloud {
 	}
 
 	private void load() {
-		this.Center = this.Metadata.Coordinates;
 		
 		if (this.FileInfo.Extension == ".xyz") {
-			this.Points = XYZLoader.LoadFile(this.FileInfo.FullName, this.Metadata);
+			this.Points = XYZLoader.LoadXYZFile(this.FileInfo.FullName, this.Metadata);
 		} else if (this.FileInfo.Extension == ".points") {
+			this.loadMetadata();
+			this.Center = this.Metadata.Coordinates;		
 			this.Points = XYZLoader.LoadPointFile(this.FileInfo.FullName, this.Metadata);
 		} else {
 			throw new Exception("Unsupported file extension.");
 		}
 
 		this.findGroundPoint();
-		this.ResetColors(Color.black);
 	}
 
 	private void loadMetadata() {
 		string filename = this.FileInfo.Directory + "/" + this.Name + ".json";
-		this.Metadata = JsonUtility.FromJson<BuildingMetadata>(File.ReadAllText(filename));
-	}
-
-	public void ResetColors(Color color) {
-		this.Colors = new Color[this.Points.Length];
-		for (int i = 0; i < this.Points.Length; i++) {
-			this.Colors[i] = color;
+		if (File.Exists(filename)) {
+			this.Metadata = JsonUtility.FromJson<BuildingMetadata>(File.ReadAllText(filename));
 		}
-	}	
+	}
 
 	private void findGroundPoint() {
 		this.GroundPoint = this.Points.OrderBy(p => p.y).Skip(20).FirstOrDefault();
@@ -145,7 +139,7 @@ public class PointCloud {
 	}
 
 	public Vector2[] GetShape() {
-		var shape = XYZLoader.LoadFile(this.FileInfo.Directory + "/" + this.Name + ".xyzshape", this.Metadata).Select(v => new Vector2(v.x, v.z));
+		var shape = XYZLoader.LoadXYZFile(this.FileInfo.Directory + "/" + this.Name + ".xyzshape", this.Metadata).Select(v => new Vector2(v.x, v.z));
 
 		if (shape.First() == shape.Last()) {
 			shape = shape.Skip(1);

@@ -10,19 +10,6 @@ public class PlaneBehaviour : MonoBehaviour {
 	public Plane Plane;
 	public PointCloudBehaviour PointCloudBehaviour;
 
-	public void ColorPoints() {
-		var pointCloud = this.PointCloudBehaviour.PointCloud;
-		for (int i = 0; i < pointCloud.Points.Length; i++) {
-			float score = pointCloud.GetScore(i, this.Plane);
-			if (score == 0) {
-				pointCloud.Colors[i] = Color.red;
-			} else {
-				pointCloud.Colors[i] = Color.Lerp(orange, Color.green, score);
-			}
-		}
-		this.PointCloudBehaviour.Show();
-	}
-
 	public void UpdateTransform() {
 		this.transform.localPosition = Math3d.ProjectFromGroundToPlane(Vector2.zero, this.Plane);
 		this.transform.rotation = Quaternion.LookRotation(this.Plane.normal);
