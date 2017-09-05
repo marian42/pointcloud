@@ -6,8 +6,20 @@ using System.Linq;
 using System;
 
 public class XYZLoader {
-	public static Vector3[] LoadXYZFile(string fileName, BuildingMetadata metadata) {
-		return File.ReadAllLines(fileName).Select(line => XYZLoader.parseLine(line, metadata.Coordinates)).ToArray();
+	public struct Vector3d {
+		public readonly double x;
+		public readonly double y;
+		public readonly double z;
+
+		public Vector3d(double x, double y, double z) {
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		}
+	}
+
+	public static Vector3d[] LoadXYZFile(string fileName) {
+		return File.ReadAllLines(fileName).Select(line => XYZLoader.parseLine(line)).ToArray();
 	}
 
 	public static Vector3[] LoadPointFile(string fileName, BuildingMetadata metadata) {
@@ -34,10 +46,10 @@ public class XYZLoader {
 		return result.ToArray();
 	}
 
-	private static Vector3 parseLine(string line, double[] center) {
+	private static Vector3d parseLine(string line) {
 		try {
 			var points = line.Replace(',', ' ').Split(' ').Where(s => s.Any()).Select(s => double.Parse(s)).ToArray();
-			return new Vector3((float)(points[0] - center[0]), (float)(points[2]), (float)(points[1] - center[1]));
+			return new Vector3d(points[0], points[2], points[1]);
 		}
 		catch (FormatException) {
 			throw new Exception("Bad line: " + line);

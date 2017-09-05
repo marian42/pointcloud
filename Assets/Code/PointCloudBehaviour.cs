@@ -5,6 +5,8 @@ using System;
 using UnityEditor;
 using System.Linq;
 using System.IO;
+using UnitySlippyMap.Markers;
+using UnitySlippyMap.Map;
 
 [SelectionBase]
 public class PointCloudBehaviour : MonoBehaviour {
@@ -14,7 +16,7 @@ public class PointCloudBehaviour : MonoBehaviour {
 
 	public void Initialize(PointCloud pointCloud) {
 		this.PointCloud = pointCloud;
-		this.gameObject.name = pointCloud.Metadata.address;
+		this.gameObject.name = pointCloud.GetName();
 		this.transform.position = Vector3.down * this.PointCloud.GroundPoint.y;
 		
 		for (int start = 0; start < this.PointCloud.Points.Length; start += POINTS_PER_MESH) {
@@ -59,8 +61,11 @@ public class PointCloudBehaviour : MonoBehaviour {
 			GameObject gameObject = new GameObject();
 			var pointCloudBehaviour = gameObject.AddComponent<PointCloudBehaviour>();
 			pointCloudBehaviour.Initialize(new PointCloud(selected));
-			Selection.activeTransform = pointCloudBehaviour.transform;
-			SceneView.lastActiveSceneView.FrameSelected();
+			gameObject.transform.position = Vector3.up * gameObject.transform.position.y;
+			var marker = gameObject.AddComponent<LocationMarkerBehaviour>();
+			marker.Map = MapBehaviour.Instance;
+			marker.CoordinatesWGS84 = BuildingLoader.metersToLatLon(pointCloudBehaviour.PointCloud.Center);
+			MapBehaviour.Instance.CenterEPSG900913 = marker.CoordinatesEPSG900913;
 		}
 	}
 

@@ -43,28 +43,33 @@ public class PointCloud {
 		this.FileInfo = new FileInfo(filename);
 		this.Name = this.FileInfo.Name.Substring(0, this.FileInfo.Name.IndexOf('.'));
 		this.Stats = new Dictionary<string, string>();
-		this.load();
-	}
 
-	public PointCloud(string filename, BuildingMetadata metadata) {
-		FileInfo fileInfo = new FileInfo(filename);		
-		this.Metadata = metadata;
-
-		this.load();
-	}
-
-	private void load() {
-		
 		if (this.FileInfo.Extension == ".xyz") {
-			this.Points = XYZLoader.LoadXYZFile(this.FileInfo.FullName, this.Metadata);
+			this.loadXYZFile();
 		} else if (this.FileInfo.Extension == ".points") {
-			this.loadMetadata();
-			this.Center = this.Metadata.Coordinates;		
-			this.Points = XYZLoader.LoadPointFile(this.FileInfo.FullName, this.Metadata);
+			this.loadPointFile();
 		} else {
 			throw new Exception("Unsupported file extension.");
 		}
+	}
 
+	private void loadXYZFile() {
+		var points = XYZLoader.LoadXYZFile(this.FileInfo.FullName);
+
+		this.Center = new double[] {
+			0.5d * (points.Max(p => p.x) + points.Min(p => p.x)),
+			0.5d * (points.Max(p => p.z) + points.Min(p => p.z))
+		};
+
+		this.Points = points.Select(p => new Vector3((float)(p.x - this.Center[0]), (float)(p.y), (float)(p.z - this.Center[1]))).ToArray();
+
+		this.findGroundPoint();
+	}
+
+	private void loadPointFile() {
+		this.loadMetadata();
+		this.Center = this.Metadata.Coordinates;		
+		this.Points = XYZLoader.LoadPointFile(this.FileInfo.FullName, this.Metadata);
 		this.findGroundPoint();
 	}
 
@@ -139,7 +144,7 @@ public class PointCloud {
 	}
 
 	public Vector2[] GetShape() {
-		var shape = XYZLoader.LoadXYZFile(this.FileInfo.Directory + "/" + this.Name + ".xyzshape", this.Metadata).Select(v => new Vector2(v.x, v.z));
+		var shape = XYZLoader.LoadXYZFile(this.FileInfo.Directory + "/" + this.Name + ".xyzshape").Select(v => new Vector2((float)(v.x - this.Center[0]), (float)(v.z - this.Center[1])));
 
 		if (shape.First() == shape.Last()) {
 			shape = shape.Skip(1);
@@ -162,5 +167,13 @@ public class PointCloud {
 			result += this.GetScore(i, plane);
 		}
 		return result;
+	}
+
+	public string GetName() {
+		if (this.Metadata != null) {
+			return this.Metadata.address;
+		} else {
+			return this.FileInfo.Name;
+		}		
 	}
 }
