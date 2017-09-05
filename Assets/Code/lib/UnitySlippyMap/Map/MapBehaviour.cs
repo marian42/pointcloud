@@ -119,26 +119,11 @@ namespace UnitySlippyMap.Map
 						var go = new GameObject ("[Map]");
 						//go.hideFlags = HideFlags.HideAndDontSave;
 						instance = go.AddComponent<MapBehaviour> ();
-						instance.EnsureMap ();
 					}
 				}
 
 				return instance;
 			}
-		}
-	
-		/// <summary>
-		/// Ensures the map.
-		/// </summary>
-		private void EnsureMap ()
-		{
-		}
-	
-		/// <summary>
-		/// Initializes a new instance of the <see cref="UnitySlippyMap.Map.MapBehaviour"/> class.
-		/// </summary>
-		private MapBehaviour ()
-		{
 		}
 
 		/// <summary>
@@ -1209,8 +1194,10 @@ namespace UnitySlippyMap.Map
 			IsDirty = true;
 		}
 
+		[HideInInspector]
 		public float CameraPitch = 0.0f;
 
+		[HideInInspector]
 		public float CameraYaw = 0.0f;
 
 		public void UpdateCamera() {
