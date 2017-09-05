@@ -4,7 +4,6 @@ Shader "Custom/PointCloud"
 {
 	Properties
 	{
-		_MainTex ("Texture (RGB)", 2D) = "white" {}
 		_PointColor ("Point Color", Color) = (0, 0, 0, 0)
 		_Size ("Size", Range(0.05, 0.5)) = 0.15
 		_ColorNear ("ColorNear", Range(0, 100)) = 20
@@ -14,11 +13,11 @@ Shader "Custom/PointCloud"
 	}
 	SubShader
 	{
-		Tags { "Queue"="AlphaTest" "IgnoreProjector"="True" }
-		Blend One OneMinusSrcAlpha
+		Tags { "Queue"="AlphaTest" "RenderType"="TransparentCutout" "IgnoreProjector"="True" }
+		Blend SrcAlpha OneMinusSrcAlpha
 		AlphaToMask On
 		Cull Off
-
+		
 		Pass
 		{
 			CGPROGRAM
@@ -76,22 +75,23 @@ Shader "Custom/PointCloud"
 				float3 up = normalize(cross(tangent, pIn.normal));
 
 				pIn.vertex = mul(UNITY_MATRIX_VP, vertex + float4(up * -0.5 * _Size + tangent * -0.866 * _Size, 0));
-				pIn.texcoord = float2(-0.5,0);
+				pIn.texcoord = float2(-0.866, -0.5);
 				triStream.Append(pIn);
 
 				pIn.vertex = mul(UNITY_MATRIX_VP, vertex + float4(up * _Size, 0));
-				pIn.texcoord = float2(0.5,1.5);
+				pIn.texcoord = float2(0.0, 1);
 				triStream.Append(pIn);
 
 				pIn.vertex = mul(UNITY_MATRIX_VP, vertex + float4(up * -0.5 * _Size + tangent *  0.866 * _Size, 0));
-				pIn.texcoord = float2(1.5,0);
+				pIn.texcoord = float2(0.866, -0.5);
 				triStream.Append(pIn);
 			}
 
 			float4 frag (FS_INPUT i) : COLOR
 			{
 				float4 color = i.color;
-				color.a = step(0.5, tex2D(_MainTex, i.texcoord).a);
+				float dst = length(i.texcoord);
+				color.a = 1 - step(0.5, dst);
 				return color;
 			}
 			ENDCG
