@@ -88,7 +88,9 @@ public class PointCloudBehaviour : MonoBehaviour {
 		Timekeeping.Reset();
 		var meshCreator = AbstractMeshCreator.CreateMesh(this.PointCloud, type, cleanMesh);
 		this.DisplayMesh(meshCreator.GetMesh());
-		meshCreator.SaveMesh();
+		if (Options.Instance.SaveMeshes) {
+			meshCreator.SaveMesh();
+		}		
 		Debug.Log(Timekeeping.GetStatus());
 	}
 

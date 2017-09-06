@@ -7,9 +7,14 @@ public class Options : MonoBehaviour {
 
 	public string PointDataFolder;
 	public string MetadataFile;
-	
+	public string MeshOutputFolder;
+	public bool SaveMeshes;
+
+	private static string dataPath;
+
 	public void Start() {
 		Options.Instance = this;
+		Options.dataPath = Application.dataPath;
 
 		if (!this.PointDataFolder.EndsWith("/") && !this.PointDataFolder.EndsWith("\\")) {
 			this.PointDataFolder += "/";
@@ -20,7 +25,7 @@ public class Options : MonoBehaviour {
 		if (path.Contains(":")) {
 			return path;
 		} else {
-			return System.IO.Path.Combine(Application.dataPath, path);
+			return System.IO.Path.Combine(dataPath, path);
 		}
 	}
 }

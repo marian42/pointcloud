@@ -87,18 +87,18 @@ public abstract class AbstractMeshCreator {
  
         sb.Append("g ").Append(this.PointCloud.Name).Append("\n");
         foreach(Vector3 v in this.mesh.vertices) {
-			sb.Append(string.Format("v {0} {1} {2}\n", v.x + this.PointCloud.Center[0], v.z, v.y + this.PointCloud.Center[1]));
+			sb.Append(string.Format("v {0} {1} {2}\n", v.x, v.y - this.PointCloud.GroundPoint.y, v.z));
         }
         sb.Append("\n");
 		foreach (Vector3 v in this.mesh.normals) {
-			sb.Append(string.Format("vn {0} {1} {2}\n", v.x, v.y, v.z));
+			sb.Append(string.Format("vn {0} {1} {2}\n", v.x, v.z, v.y));
         }
 		sb.Append("\n");
 		for (int i = 0; i < this.mesh.triangles.Length; i += 3) {
 			sb.Append(string.Format("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}\n",
 				this.mesh.triangles[i] + 1, this.mesh.triangles[i + 1] + 1, this.mesh.triangles[i + 2] + 1));
         }
-		System.IO.File.WriteAllText(this.PointCloud.FileInfo.Directory + "/" + this.PointCloud.Name + ".obj", sb.ToString());
+		System.IO.File.WriteAllText(Options.CleanPath(Options.Instance.MeshOutputFolder) + "/" + this.PointCloud.Name + ".obj", sb.ToString());
 	}	
 
 	protected void CheckForPlanes() {
