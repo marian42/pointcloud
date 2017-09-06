@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Catfood.Shapefile;
-using System.Reflection;
-using System.Globalization;
 using System.IO;
 
 namespace XYZSeparator {
@@ -31,8 +26,10 @@ namespace XYZSeparator {
 				}
 			}
 
-			var shapeHashSet = new ShapeHashSet(100, config.GetDouble("offset"));
-			shapeHashSet.Load(shapeFilename);
+			var boundingBox = new RectangleD(config.GetDouble("minX"), config.GetDouble("maxY"), config.GetDouble("maxX"), config.GetDouble("minY"));
+
+			var shapeHashSet = new ShapeHashSet(100, config.GetDouble("offset"), config.Get("namePrefix"));
+			shapeHashSet.Load(shapeFilename, boundingBox);
 
 			PointSeparator separator = new PointSeparator(shapeHashSet, outputFolder);
 
@@ -45,7 +42,7 @@ namespace XYZSeparator {
 
 			separator.Run();
 
-			Polygon.SaveAggregatedMetadata(metadataFilename);
+			Polygon.SaveAllMetadata(metadataFilename, shapeHashSet.GetPolygons().Where(p => p.ContainsPoints));
 
 			Console.WriteLine("Complete.");
 			Console.ReadLine();

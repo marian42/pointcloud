@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Catfood.Shapefile;
 using System.IO;
 using System.Collections.Concurrent;
 using System.Threading;
@@ -53,8 +51,6 @@ namespace XYZSeparator {
 			if (!this.currentPoints.TryRemove(polygon, out points)) {
 				throw new Exception("Failed to remove points from dictionary.");
 			}
-			polygon.SavePolygon(this.outputFolder);
-			polygon.SaveMetadata(this.outputFolder);
 			this.WritePointFile(polygon, points);
 			this.HitCount += points.Count;
 		}
@@ -91,6 +87,7 @@ namespace XYZSeparator {
 			}
 
 			points.Add(point);
+			polygon.ContainsPoints = true;
 		}
 
 		private void processXYZFile(string filename) {

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Catfood.Shapefile;
 using XYZSeparator;
 using System.Globalization;
@@ -18,37 +16,43 @@ public class Polygon {
 	
 	public readonly string Name;
 	private readonly int id;
+	private readonly string address;
 
 	private static int globalId;
 
-	private Dictionary<string, string> metadata;
-	private static List<Dictionary<string, string>> aggregatedMetadata = new List<Dictionary<string, string>>();
-
-	private bool inAggregatedMetadata;
-
 	public readonly Vector3 Center;
 
-	public Polygon(ShapePolygon shapePolygon, int partIndex, double offset) {
+	public bool ContainsPoints;
+
+	public Polygon(ShapePolygon shapePolygon, int partIndex, double offset, string nameOffset) {
 		this.Points = shapePolygon.Parts[partIndex];
 		this.OffsetPoints = Polygon.GetEnlargedPolygon(this.Points.ToList(), offset).ToArray();
+
+		if (this.OffsetPoints.Count() == 0) {
+			throw new InvalidOperationException("Polygon has no area.");
+		}
+
 		this.createBoundingBox();
 		this.id = Polygon.globalId;
 		Polygon.globalId++;
-		this.Name = this.id.ToString().PadLeft(8, '0') + "-" + shapePolygon.GetMetadata("uuid");
-		this.metadata = new Dictionary<string, string>();
-
-		this.metadata["schwerp_x"] = shapePolygon.GetMetadata("schwerp_x");
-		this.metadata["schwerp_y"] = shapePolygon.GetMetadata("schwerp_y");		
-		this.metadata["filename"] = this.Name;
-		this.metadata["address"] = Regex.Replace((shapePolygon.GetMetadata("strasse").Replace("STRA▀E", "Straße").ToLower()), @"(^\w)|(\s\w)", m => m.Value.ToUpper()) + " " + shapePolygon.GetMetadata("hausnr");
 		
-		this.Center = this.getCenter();
-	}
-	
-	private Vector3 getCenter() {
-		double centerx = double.Parse(this.metadata["schwerp_x"].Replace(',', '.'), CultureInfo.InvariantCulture);
-		double centerz = double.Parse(this.metadata["schwerp_y"].Replace(',', '.'), CultureInfo.InvariantCulture);
-		return new Vector3(centerx, 0.0d, centerz);
+		bool hasMetadata = shapePolygon.GetMetadataNames().Count() > 2;				
+		if (hasMetadata) {
+			this.Center = new Vector3(
+				double.Parse(shapePolygon.GetMetadata("schwerp_x").Replace(',', '.'), CultureInfo.InvariantCulture),
+				0.0d,
+				double.Parse(shapePolygon.GetMetadata("schwerp_y").Replace(',', '.'), CultureInfo.InvariantCulture));
+			this.address = Regex.Replace((shapePolygon.GetMetadata("strasse").Replace("STRA▀E", "Straße").ToLower()), @"(^\w)|(\s\w)", m => m.Value.ToUpper()) + " " + shapePolygon.GetMetadata("hausnr");
+			this.Name = nameOffset + this.id.ToString().PadLeft(8, '0') + "-" + shapePolygon.GetMetadata("uuid");
+		} else {
+			this.Center = new Vector3(
+				(this.BoundingBox.Left + this.BoundingBox.Right) / 2.0d,
+				0.0d,
+				(this.BoundingBox.Top + this.BoundingBox.Bottom) / 2.0d);
+			this.address = "";
+			this.Name = nameOffset + this.id.ToString().PadLeft(8, '0');
+		}
+		this.ContainsPoints = false;
 	}
 
 	private void createBoundingBox() {
@@ -73,17 +77,25 @@ public class Polygon {
 		this.BoundingBox = new RectangleD(minX, minY, maxX, maxY);
 	}
 
-	public static IEnumerable<Polygon> ReadShapePolygon(ShapePolygon shapePolygon, double offset) {
+	public static IEnumerable<Polygon> ReadShapePolygon(ShapePolygon shapePolygon, double offset, string namePrefix) {
 		for (int i = 0; i < shapePolygon.Parts.Count; i++) {
-			yield return new Polygon(shapePolygon, i, offset);
+			Polygon polygon = null;
+			try {
+				polygon = new Polygon(shapePolygon, i, offset, namePrefix);
+			} catch (InvalidOperationException exception) {
+				Console.WriteLine("Ignored a polygon. " + exception.Message);
+			}
+
+			if (polygon != null) {
+				yield return polygon;
+			}
 		}
 	}
 
 	// http://csharphelper.com/blog/2016/01/enlarge-a-polygon-in-c/
 	// Return points representing an enlarged polygon.
-	private static List<PointD> GetEnlargedPolygon(
-		List<PointD> old_points, double offset) {
-			List<PointD> enlarged_points = new List<PointD>();
+	private static List<PointD> GetEnlargedPolygon(List<PointD> old_points, double offset) {
+		List<PointD> enlarged_points = new List<PointD>();
 		int num_points = old_points.Count;
 		if (old_points[0].X == old_points[num_points - 1].X && old_points[0].X == old_points[num_points - 1].X) {
 			num_points--;
@@ -127,7 +139,7 @@ public class Polygon {
 				out poi, out close1, out close2);
 			if (lines_intersect && !double.IsNaN(poi.X) && !double.IsNaN(poi.Y)) {
 				enlarged_points.Add(poi);
-			}			
+			}
 		}
 
 		return enlarged_points;
@@ -217,23 +229,21 @@ public class Polygon {
 		File.WriteAllLines(filename, this.Points.Select(p => new Vector3(p.X, 0, p.Y)).Select(p => p.ToXYZLine()));
 	}
 
-	public void SaveMetadata(string folder) {
-		string filename = folder + this.Name + ".json";
-		string json = JsonConvert.SerializeObject(this.metadata, Newtonsoft.Json.Formatting.Indented);
-		File.WriteAllText(filename, json);
-
-		if (!this.inAggregatedMetadata) {
-			Polygon.aggregatedMetadata.Add(this.metadata);
-			this.inAggregatedMetadata = true;
-		}
+	public Dictionary<string, object> GetMetadata() {
+		var result = new Dictionary<string, object>();
+		result["address"] = this.address;
+		result["filename"] = this.Name;
+		result["center"] = new double[] {  Math.Round(this.Center.x, 2), Math.Round(this.Center.z, 2) };
+		result["shape"] = this.Points.Select(p => new double[] { Math.Round(p.X, 2), Math.Round(p.Y, 2) }).ToArray();
+		return result;
 	}
 
-	public static void SaveAggregatedMetadata(string filename) {
+	public static void SaveAllMetadata(string filename, IEnumerable<Polygon> polygons) {
 		Console.WriteLine("Writing metadata...");
 		using (System.IO.StreamWriter file = new System.IO.StreamWriter(filename, false)) {
 			file.Write("[");
-			foreach (var building in Polygon.aggregatedMetadata) {
-				string json = JsonConvert.SerializeObject(building, Newtonsoft.Json.Formatting.Indented);
+			foreach (var building in polygons) {
+				string json = JsonConvert.SerializeObject(building.GetMetadata());
 				file.Write(json);
 				file.Write(", ");
 			}
