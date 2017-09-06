@@ -104,7 +104,6 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 		if (!createAttachments) {
 			this.Triangles = resultMesh;
 			this.CleanMesh = false;
-			this.PointCloud.Stats["attachments"] = "0";
 			return;
 		}
 
@@ -160,7 +159,6 @@ public class ShapeMeshCreator : AbstractMeshCreator {
 			}
 		}
 
-		this.PointCloud.Stats["attachments"] = attachmentCount.ToString();
 		Timekeeping.CompleteTask("Find attachments");
 
 		if (attachmentCount == 0) {

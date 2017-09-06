@@ -90,13 +90,6 @@ public class PointCloudBehaviour : MonoBehaviour {
 		this.DisplayMesh(meshCreator.GetMesh());
 		meshCreator.SaveMesh();
 		Debug.Log(Timekeeping.GetStatus());
-
-		if (type == AbstractMeshCreator.Type.Cutoff || type == AbstractMeshCreator.Type.CutoffWithAttachments) {
-			File.AppendAllText(Application.dataPath + "/data.txt", Timekeeping.GetDataLine(5)
-				+ this.PointCloud.Points.Length + ";"
-				+ this.PointCloud.Stats["attachments"] + ";"
-				+ meshCreator.GetMesh().triangles.Length / 6 + "\n");
-		}		
 	}
 
 	public void FindPlanes(AbstractPlaneFinder.Type type, bool showPlanes) {
