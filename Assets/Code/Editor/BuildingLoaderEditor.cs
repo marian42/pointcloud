@@ -52,7 +52,5 @@ public class BuildingLoaderEditor : Editor {
 		if (GUILayout.Button("Testgebiet Jahnstraße")) {
 			map.CenterWGS84 = new double[] { 7.4603425, 51.5513016 };
 		}
-
-		GUILayout.TextField(map.CenterWGS84[0] + ", " + map.CenterWGS84[1]);
 	}
 }
