@@ -128,10 +128,15 @@ public class BuildingLoader : MonoBehaviour {
 	}
 
 	private void loadMetadata() {
-		var data = JsonUtility.FromJson<MetadataList>(File.ReadAllText(Options.CleanPath(Options.Instance.MetadataFile)));
-		var buildingList = data.buildings;
-		this.buildings = new BuildingHashSet(buildingList);
-		Debug.Log("Loaded metadata for " + buildingList.Count + " buildings.");
+		foreach (var file in new DirectoryInfo(Options.CleanPath(Options.Instance.MetadataFolder)).GetFiles()) {
+			if (file.Extension != ".json") {
+				continue;
+			}
+			var data = JsonUtility.FromJson<MetadataList>(File.ReadAllText(file.FullName));
+			var buildingList = data.buildings;
+			this.buildings = new BuildingHashSet(buildingList);
+			Debug.Log("Loaded metadata for " + buildingList.Count + " buildings (" + file.Name + ").");
+		}
 	}
 
 	private void Start() {

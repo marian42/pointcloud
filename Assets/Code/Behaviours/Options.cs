@@ -6,7 +6,7 @@ public class Options : MonoBehaviour {
 	public static Options Instance { get; private set; }
 
 	public string PointDataFolder;
-	public string MetadataFile;
+	public string MetadataFolder;
 	public string MeshOutputFolder;
 	public bool SaveMeshes;
 
@@ -18,6 +18,12 @@ public class Options : MonoBehaviour {
 
 		if (!this.PointDataFolder.EndsWith("/") && !this.PointDataFolder.EndsWith("\\")) {
 			this.PointDataFolder += "/";
+		}
+		if (!this.MetadataFolder.EndsWith("/") && !this.MetadataFolder.EndsWith("\\")) {
+			this.MetadataFolder += "/";
+		}
+		if (!this.MeshOutputFolder.EndsWith("/") && !this.MeshOutputFolder.EndsWith("\\")) {
+			this.MeshOutputFolder += "/";
 		}
 	}
 
