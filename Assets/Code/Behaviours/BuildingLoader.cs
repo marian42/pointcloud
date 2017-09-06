@@ -10,6 +10,7 @@ using SimpleJson;
 using System.Linq;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
+using UnityEditor;
 
 public class BuildingLoader : MonoBehaviour {
 	public static BuildingLoader Instance {
@@ -91,12 +92,14 @@ public class BuildingLoader : MonoBehaviour {
 		map.MaxZoom = 40.0f;
 		map.CurrentZoom = 18.0f;
 
-		map.CenterWGS84 = new double[2] { 7.4402747, 51.5638601 };
+		map.CenterWGS84 = this.GetComponent<Bookmarks>().Items.First().Coordinates;
 		map.UsesLocation = true;
 		map.InputsEnabled = true;
 
 		OSMTileLayer osmLayer = map.CreateLayer<OSMTileLayer>("OSM");
 		osmLayer.BaseURL = "http://cartodb-basemaps-b.global.ssl.fastly.net/light_all/";
+
+		Selection.activeTransform = this.transform;
 	}
 
 	private static void initiailizeTransforms() {

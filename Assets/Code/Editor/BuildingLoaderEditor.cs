@@ -32,25 +32,5 @@ public class BuildingLoaderEditor : Editor {
 		}
 
 		GUILayout.EndHorizontal();
-
-		var map = UnitySlippyMap.Map.MapBehaviour.Instance;
-
-		EditorGUILayout.LabelField("Bookmarks", EditorStyles.boldLabel);
-
-		if (GUILayout.Button("TU Dortmund")) {
-			map.CenterWGS84 = new double[] { 7.4141978, 51.4921254 };
-		}
-
-		if (GUILayout.Button("Mitte")) {
-			map.CenterWGS84 = new double[] { 7.4649531, 51.5139996 };
-		}
-
-		if (GUILayout.Button("Testdaten")) {
-			map.CenterWGS84 = new double[] { 7.4402747, 51.5638601 };
-		}
-
-		if (GUILayout.Button("Testgebiet Jahnstraße")) {
-			map.CenterWGS84 = new double[] { 7.4603425, 51.5513016 };
-		}
 	}
 }
