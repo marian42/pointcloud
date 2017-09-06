@@ -76,8 +76,12 @@ public class PointCloud {
 		this.Center = this.Metadata.center;
 		this.Points = XYZLoader.LoadPointFile(this.FileInfo.FullName, this.Metadata);
 		this.findGroundPoint();
-		this.Shape = new Vector2[this.Metadata.shape.Length / 2];
-		for (int i = 0; i < this.Shape.Length; i++) {
+		int shapeLength = this.Metadata.shape.Length / 2;
+		if (this.Metadata.shape[0] == this.Metadata.shape[2 * (shapeLength - 1)] && this.Metadata.shape[1] == this.Metadata.shape[2 * (shapeLength - 1) + 1]) {
+			shapeLength--;
+		}
+		this.Shape = new Vector2[shapeLength];
+		for (int i = 0; i < shapeLength; i++) {
 			this.Shape[i] = new Vector2((float)(this.Metadata.shape[i * 2] - this.Center[0]), (float)(this.Metadata.shape[i * 2 + 1] - this.Center[1]));
 		}
 	}
