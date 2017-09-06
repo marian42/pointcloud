@@ -6,14 +6,14 @@ using System.Text;
 
 public abstract class AbstractMeshCreator {
 	public enum Type {
-		Cutoff,
-		CutoffWithAttachments,
-		Permutations,
-		Layout,
-		FromPoints
+		Convex,
+		ConvexWithAttachments,
+		SplitLayout,
+		TriangulatePoints,
+		Layout
 	}
 
-	public static AbstractMeshCreator.Type CurrentType = AbstractMeshCreator.Type.CutoffWithAttachments;	
+	public static AbstractMeshCreator.Type CurrentType = AbstractMeshCreator.Type.ConvexWithAttachments;	
 
 	public bool CleanMesh;
 
@@ -38,17 +38,17 @@ public abstract class AbstractMeshCreator {
 	
 	public static AbstractMeshCreator CreateMesh(PointCloud pointCloud, Type type, bool cleanMesh) {
 		switch (type) {
-			case Type.Cutoff: {
+			case Type.Convex: {
 				var creator = new ShapeMeshCreator(pointCloud, cleanMesh);
 				creator.CreateMeshCutoff(false);
 				return creator;
 			}
-			case Type.CutoffWithAttachments: {
+			case Type.ConvexWithAttachments: {
 				var creator = new ShapeMeshCreator(pointCloud, cleanMesh);
 				creator.CreateMeshCutoff(true);
 				return creator;
 				}
-			case Type.Permutations: {
+			case Type.SplitLayout: {
 				var creator = new ShapeMeshCreator(pointCloud, cleanMesh);
 				creator.CreateMeshWithPermutations();
 				return creator;
@@ -58,7 +58,7 @@ public abstract class AbstractMeshCreator {
 				creator.CreateLayoutMesh();
 				return creator;
 			}
-			case Type.FromPoints: {
+			case Type.TriangulatePoints: {
 				var creator = new PointMeshCreator(pointCloud, cleanMesh);
 				creator.CreateMesh();
 				return creator;
