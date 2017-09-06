@@ -18,8 +18,15 @@ public class XYZLoader {
 		}
 	}
 
-	public static Vector3d[] LoadXYZFile(string fileName) {
-		return File.ReadAllLines(fileName).Select(line => XYZLoader.parseLine(line)).ToArray();
+	public static IEnumerable<Vector3d> LoadXYZFile(string fileName) {
+		using (var filestream = new System.IO.FileStream(fileName, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite)) {
+			using (var streamReader = new System.IO.StreamReader(filestream, System.Text.Encoding.UTF8, true, 128)) {
+				while (!streamReader.EndOfStream) {
+					var line = streamReader.ReadLine();
+					yield return XYZLoader.parseLine(line);
+				}
+			}
+		}
 	}
 
 	public static Vector3[] LoadPointFile(string fileName, BuildingMetadata metadata) {

@@ -54,8 +54,8 @@ public class PointCloud {
 	}
 
 	private void loadXYZFile() {
-		var points = XYZLoader.LoadXYZFile(this.FileInfo.FullName);
-
+		var points = XYZLoader.LoadXYZFile(this.FileInfo.FullName).ToList();
+		
 		this.Center = new double[] {
 			0.5d * (points.Max(p => p.x) + points.Min(p => p.x)),
 			0.5d * (points.Max(p => p.z) + points.Min(p => p.z))
