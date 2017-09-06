@@ -234,20 +234,26 @@ public class Polygon {
 		result["address"] = this.address;
 		result["filename"] = this.Name;
 		result["center"] = new double[] {  Math.Round(this.Center.x, 2), Math.Round(this.Center.z, 2) };
-		result["shape"] = this.Points.Select(p => new double[] { Math.Round(p.X, 2), Math.Round(p.Y, 2) }).ToArray();
+		result["shape"] = this.Points.SelectMany(p => new double[] { Math.Round(p.X, 2), Math.Round(p.Y, 2) }).ToArray();
 		return result;
 	}
 
 	public static void SaveAllMetadata(string filename, IEnumerable<Polygon> polygons) {
 		Console.WriteLine("Writing metadata...");
+		bool first = true;
 		using (System.IO.StreamWriter file = new System.IO.StreamWriter(filename, false)) {
-			file.Write("[");
+			file.Write("{\"buildings\": [");
 			foreach (var building in polygons) {
+				if (first) {
+					first = false;
+				} else {
+					file.Write(", ");
+				}
+				
 				string json = JsonConvert.SerializeObject(building.GetMetadata());
 				file.Write(json);
-				file.Write(", ");
 			}
-			file.Write("]");
+			file.Write("]}");
 		}
 	}
 }

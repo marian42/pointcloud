@@ -30,6 +30,8 @@ public class PointCloud {
 		private set;
 	}
 
+	public Vector2[] Shape;
+
 	public BuildingMetadata Metadata {
 		get;
 		private set;
@@ -43,7 +45,14 @@ public class PointCloud {
 		this.FileInfo = new FileInfo(filename);
 		this.Name = this.FileInfo.Name.Substring(0, this.FileInfo.Name.IndexOf('.'));
 		this.Stats = new Dictionary<string, string>();
+	}
 
+	public PointCloud(BuildingMetadata metadata)
+		: this(Options.CleanPath(Options.Instance.PointDataFolder) + metadata.filename + ".points") {
+		this.Metadata = metadata;
+	}	
+
+	public void Load() {
 		if (this.FileInfo.Extension == ".xyz") {
 			this.loadXYZFile();
 		} else if (this.FileInfo.Extension == ".points") {
@@ -67,16 +76,12 @@ public class PointCloud {
 	}
 
 	private void loadPointFile() {
-		this.loadMetadata();
-		this.Center = this.Metadata.Coordinates;		
+		this.Center = this.Metadata.center;
 		this.Points = XYZLoader.LoadPointFile(this.FileInfo.FullName, this.Metadata);
 		this.findGroundPoint();
-	}
-
-	private void loadMetadata() {
-		string filename = this.FileInfo.Directory + "/" + this.Name + ".json";
-		if (File.Exists(filename)) {
-			this.Metadata = JsonUtility.FromJson<BuildingMetadata>(File.ReadAllText(filename));
+		this.Shape = new Vector2[this.Metadata.shape.Length / 2];
+		for (int i = 0; i < this.Shape.Length; i++) {
+			this.Shape[i] = new Vector2((float)(this.Metadata.shape[i * 2] - this.Center[0]), (float)(this.Metadata.shape[i * 2 + 1] - this.Center[1]));
 		}
 	}
 
@@ -143,15 +148,6 @@ public class PointCloud {
 		}
 	}
 
-	public Vector2[] GetShape() {
-		var shape = XYZLoader.LoadXYZFile(this.FileInfo.Directory + "/" + this.Name + ".xyzshape").Select(v => new Vector2((float)(v.x - this.Center[0]), (float)(v.z - this.Center[1])));
-
-		if (shape.First() == shape.Last()) {
-			shape = shape.Skip(1);
-		}
-		return shape.ToArray();
-	}
-
 	public float GetScore(int index, Plane plane) {
 		var point = this.Points[index];
 		float distance = Mathf.Abs(plane.GetDistanceToPoint(point)) / HoughPlaneFinder.MaxDistance;
@@ -170,7 +166,7 @@ public class PointCloud {
 	}
 
 	public string GetName() {
-		if (this.Metadata != null) {
+		if (this.Metadata != null && this.Metadata.address.Length > 0) {
 			return this.Metadata.address;
 		} else {
 			return this.FileInfo.Name;

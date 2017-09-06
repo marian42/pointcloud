@@ -19,8 +19,6 @@ public class BuildingLoader : MonoBehaviour {
 
 	private MapBehaviour map;
 
-	private const string metadataFilename = "/data/metadata.json";
-
 	private BuildingHashSet buildings;
 
 	private Dictionary<string, PointCloudBehaviour> activeBuildings;
@@ -28,8 +26,6 @@ public class BuildingLoader : MonoBehaviour {
 	private LineRenderer selectionRenderer;
 	private LocationMarkerBehaviour selectionMarker;
 	private PointCloudBehaviour selectedBuilding;
-
-	private string dataPath;
 
 	private Queue<PointCloud> pointCloudsToDisplay;
 
@@ -54,7 +50,7 @@ public class BuildingLoader : MonoBehaviour {
 		private Dictionary<Tuple<int, int>, List<BuildingMetadata>> dict;
 
 		private Tuple<int, int> getBucket(BuildingMetadata building) {
-			return new Tuple<int, int>((int)(Math.Floor(building.Coordinates[0] / bucketSize)), (int)(Math.Floor(building.Coordinates[1] / bucketSize)));
+			return new Tuple<int, int>((int)(Math.Floor(building.center[0] / bucketSize)), (int)(Math.Floor(building.center[1] / bucketSize)));
 		}
 
 		public BuildingHashSet(IEnumerable<BuildingMetadata> data) {
@@ -79,7 +75,7 @@ public class BuildingLoader : MonoBehaviour {
 					}
 					
 					foreach (var item in this.dict[bucket]) {
-						if (Math.Pow(coordinates[0] - item.Coordinates[0], 2) + Math.Pow(coordinates[1] - item.Coordinates[1], 2) < radiusSquared) {
+						if (Math.Pow(coordinates[0] - item.center[0], 2) + Math.Pow(coordinates[1] - item.center[1], 2) < radiusSquared) {
 							yield return item;
 						}
 					}
@@ -129,7 +125,7 @@ public class BuildingLoader : MonoBehaviour {
 	}
 
 	private void loadMetadata() {
-		var data = JsonUtility.FromJson<MetadataList>(File.ReadAllText(this.dataPath + metadataFilename));
+		var data = JsonUtility.FromJson<MetadataList>(File.ReadAllText(Options.CleanPath(Options.Instance.MetadataFile)));
 		var buildingList = data.buildings;
 		this.buildings = new BuildingHashSet(buildingList);
 		Debug.Log("Loaded metadata for " + buildingList.Count + " buildings.");
@@ -142,7 +138,6 @@ public class BuildingLoader : MonoBehaviour {
 		this.buildings = new BuildingHashSet(Enumerable.Empty<BuildingMetadata>());
 		this.activeBuildings = new Dictionary<string, PointCloudBehaviour>();
 
-		this.dataPath = Application.dataPath;
 		var thread = new System.Threading.Thread(this.loadMetadata);
 		thread.Start();
 
@@ -161,11 +156,13 @@ public class BuildingLoader : MonoBehaviour {
 
 	private void updateBuildingsThread() {
 		var center = BuildingLoader.latLonToMeters(this.map.CenterWGS84);
-		foreach (var building in this.buildings.GetBuildings(center, this.LoadRadius).OrderBy(b => getDistance(b.Coordinates, center))) {
+		foreach (var building in this.buildings.GetBuildings(center, this.LoadRadius).OrderBy(b => getDistance(b.center, center))) {
 			if (this.activeBuildings.ContainsKey(building.filename)) {
 				continue;
 			}
-			this.pointCloudsToDisplay.Enqueue((new PointCloud("C:/output/" + building.filename + ".points")));
+			var pointCloud = new PointCloud(building);
+			pointCloud.Load();
+			this.pointCloudsToDisplay.Enqueue(pointCloud);
 		}
 	}
 
@@ -177,7 +174,7 @@ public class BuildingLoader : MonoBehaviour {
 		var center = BuildingLoader.latLonToMeters(this.map.CenterWGS84);
 		var removed = new List<string>();
 		foreach (var building in this.activeBuildings.Values) {
-			if (getDistance(center, building.PointCloud.Metadata.Coordinates) > radius) {
+			if (getDistance(center, building.PointCloud.Metadata.center) > radius) {
 				removed.Add(building.PointCloud.Metadata.filename);
 				GameObject.Destroy(building.gameObject);
 			}
@@ -229,7 +226,7 @@ public class BuildingLoader : MonoBehaviour {
 			gameObject.transform.position = Vector3.up * gameObject.transform.position.y;
 			var marker = gameObject.AddComponent<LocationMarkerBehaviour>();
 			marker.Map = this.map;
-			marker.CoordinatesWGS84 = BuildingLoader.metersToLatLon(pointCloud.Metadata.Coordinates);
+			marker.CoordinatesWGS84 = BuildingLoader.metersToLatLon(pointCloud.Metadata.center);
 			this.activeBuildings[pointCloud.Metadata.filename] = pointCloudBehaviour;
 		}
 	}
@@ -262,7 +259,7 @@ public class BuildingLoader : MonoBehaviour {
 		UnityEditor.Selection.objects = new GameObject[] { selectedBuilding.gameObject };
 
 		this.selectionMarker.CoordinatesWGS84 = selectedBuilding.GetComponent<LocationMarkerBehaviour>().CoordinatesWGS84;
-		var shape = selectedBuilding.GetComponent<PointCloudBehaviour>().PointCloud.GetShape();
+		var shape = selectedBuilding.GetComponent<PointCloudBehaviour>().PointCloud.Shape;
 		this.selectionRenderer.positionCount = shape.Length;
 		this.selectionRenderer.SetPositions(shape.Select(p => new Vector3(p.x, 0.25f, p.y)).ToArray());
 	}

@@ -59,8 +59,10 @@ public class PointCloudBehaviour : MonoBehaviour {
 		string selected = EditorUtility.OpenFilePanel("Load file", Application.dataPath + "/data/buildings/", null);
 		if (selected.Any() && File.Exists(selected)) {
 			GameObject gameObject = new GameObject();
+			var pointcloud = new PointCloud(selected);
+			pointcloud.Load();
 			var pointCloudBehaviour = gameObject.AddComponent<PointCloudBehaviour>();
-			pointCloudBehaviour.Initialize(new PointCloud(selected));
+			pointCloudBehaviour.Initialize(pointcloud);
 			gameObject.transform.position = Vector3.up * gameObject.transform.position.y;
 			var marker = gameObject.AddComponent<LocationMarkerBehaviour>();
 			marker.Map = MapBehaviour.Instance;

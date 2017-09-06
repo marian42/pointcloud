@@ -6,11 +6,13 @@ using System.Linq;
 public class ShapeMeshCreator : AbstractMeshCreator {
 	public static bool CleanMeshDefault = true;
 
-	private Vector2[] shape;
-	
-	public ShapeMeshCreator(PointCloud pointCloud, bool cleanMesh) : base(pointCloud, cleanMesh) {
-		this.shape = this.PointCloud.GetShape();
+	private Vector2[] shape {
+		get {
+			return this.PointCloud.Shape;
+		}
 	}
+
+	public ShapeMeshCreator(PointCloud pointCloud, bool cleanMesh) : base(pointCloud, cleanMesh) { }
 
 	public void CreateLayoutMesh() {
 		var triangles = new List<Triangle>();

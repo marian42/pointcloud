@@ -30,9 +30,6 @@ public class XYZLoader {
 	}
 
 	public static Vector3[] LoadPointFile(string fileName, BuildingMetadata metadata) {
-		double centerX = metadata.Coordinates[0];
-		double centerZ = metadata.Coordinates[1];
-
 		List<Vector3> result = new List<Vector3>();
 
 		using (var fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read)) {
