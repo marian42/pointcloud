@@ -54,8 +54,11 @@ public class BuildingLoader : MonoBehaviour {
 			return new Tuple<int, int>((int)(Math.Floor(building.center[0] / bucketSize)), (int)(Math.Floor(building.center[1] / bucketSize)));
 		}
 
-		public BuildingHashSet(IEnumerable<BuildingMetadata> data) {
-			this.dict = new Dictionary<Tuple<int, int>, List<BuildingMetadata>>();
+		public BuildingHashSet() {
+			this.dict = new Dictionary<Tuple<int, int>, List<BuildingMetadata>>();			
+		}
+
+		public void Add(IEnumerable<BuildingMetadata> data) {
 			foreach (var item in data) {
 				var bucket = this.getBucket(item);
 				if (!this.dict.ContainsKey(bucket)) {
@@ -134,7 +137,7 @@ public class BuildingLoader : MonoBehaviour {
 			}
 			var data = JsonUtility.FromJson<MetadataList>(File.ReadAllText(file.FullName));
 			var buildingList = data.buildings;
-			this.buildings = new BuildingHashSet(buildingList);
+			this.buildings.Add(buildingList);
 			Debug.Log("Loaded metadata for " + buildingList.Count + " buildings (" + file.Name + ").");
 		}
 	}
@@ -143,7 +146,7 @@ public class BuildingLoader : MonoBehaviour {
 		BuildingLoader.Instance = this;
 		this.setupMap();
 		this.pointCloudsToDisplay = new Queue<PointCloud>();
-		this.buildings = new BuildingHashSet(Enumerable.Empty<BuildingMetadata>());
+		this.buildings = new BuildingHashSet();
 		this.activeBuildings = new Dictionary<string, PointCloudBehaviour>();
 
 		var thread = new System.Threading.Thread(this.loadMetadata);
