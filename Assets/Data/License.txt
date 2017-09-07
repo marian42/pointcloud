@@ -1,0 +1,10 @@
+The supplied dataset was calculated using point data and shape data from https://www.opengeodata.nrw.de/
+
+Source for point data:
+https://www.opengeodata.nrw.de/produkte/geobasis/dom/dom1l/dom1l_05913000_Dortmund_EPSG25832_XYZ.zip
+
+Source for shape data:
+https://www.opengeodata.nrw.de/produkte/geobasis/lika/alkis_sek/hu_nw/hu_nw_EPSG4647_Shape.zip
+
+The data was provided by the "Land NRW" under the Data licence Germany – attribution – Version 2.0 (dl-de/by-2-0)
+Full license text is available at http://www.govdata.de/dl-de/by-2-0
