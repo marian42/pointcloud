@@ -607,14 +607,8 @@ namespace UnitySlippyMap.Map
 			get { return cameraFollowsOrientation; }
 			set {
 				cameraFollowsOrientation = value;
-				lastCameraOrientation = 0.0f;
 			}
 		}
-	
-		/// <summary>
-		/// The last camera orientation.
-		/// </summary>
-		private float lastCameraOrientation = 0.0f;
 
 		/// <summary>
 		/// The list of <see cref="UnitySlippyMap.Marker"/> instances.
@@ -626,11 +620,6 @@ namespace UnitySlippyMap.Map
 		/// </summary>
 		/// <value>The list of <see cref="UnitySlippyMap.Marker"/> instances.</value>
 		public List<MarkerBehaviour> Markers { get { return markers; } }
-
-		/// <summary>
-		/// The "shows GUI controls" flag.
-		/// </summary>
-		private bool showsGUIControls = false;
 
 		/// <summary>
 		/// The "inputs enabled" flag.
@@ -690,14 +679,7 @@ namespace UnitySlippyMap.Map
 			get { return inputDelegate; }
 			set { inputDelegate = value; }
 		}
-	
-		/// <summary>
-		/// The "was input intercepted by GUI" flag.
-		/// </summary>
-		private bool wasInputInterceptedByGUI;
-	
-	
-	
+		
 		/// <summary>
 		/// The Well-Known Text representation of the EPSG900913 projection.
 		/// </summary>
@@ -903,7 +885,7 @@ namespace UnitySlippyMap.Map
 		UnitySlippyMap.Profiler.Begin("Map.Update");
 #endif
 
-			inputDelegate(this, wasInputInterceptedByGUI);
+			inputDelegate(this, false);
 
 			// update the centerWGS84 with the last location if enabled
 			if (usesLocation

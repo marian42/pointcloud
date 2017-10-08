@@ -5,8 +5,6 @@ using System.Linq;
 
 [ExecuteInEditMode, SelectionBase]
 public class PlaneBehaviour : MonoBehaviour {
-	private readonly Color orange = new Color(1f, 0.5f, 0f);
-
 	public Plane Plane;
 	public PointCloudBehaviour PointCloudBehaviour;
 
@@ -19,7 +17,7 @@ public class PlaneBehaviour : MonoBehaviour {
 		float inclination = Vector3.Angle(this.Plane.normal, Vector3.up);
 		float direction = Vector3.Angle(this.Plane.normal, Vector3.forward) * (this.Plane.normal.x < 0 ? -1 : 1) + 180.0f;
 		Color color = Color.HSVToRGB(direction / 360.0f, 0.5f + 0.5f * inclination / 60.0f, 1.0f);
-		
+
 		foreach (var meshRenderer in this.transform.GetComponentsInChildren<MeshRenderer>()) {
 			var tempMaterial = new Material(meshRenderer.sharedMaterial);
 			tempMaterial.color = color;
@@ -29,7 +27,7 @@ public class PlaneBehaviour : MonoBehaviour {
 
 	public void Initialize() {
 		this.gameObject.tag = "Quad";
-		
+
 		{
 			var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
 			quad.transform.parent = this.transform;

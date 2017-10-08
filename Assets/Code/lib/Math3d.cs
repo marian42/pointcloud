@@ -1002,7 +1002,6 @@ public class Math3d {
 		Vector3 linePoint;
 		Vector3 lineDirection;
 
-		var p = Math3d.PointOnPlane(plane1);
 		if (Math3d.PlanePlaneIntersection(out linePoint, out lineDirection, plane1.normal, Math3d.PointOnPlane(plane1), plane2.normal, Math3d.PointOnPlane(plane2))) {
 			return new Ray(linePoint, lineDirection);
 		} else {

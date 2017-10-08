@@ -40,14 +40,7 @@ namespace UnitySlippyMap
 		/// The last raycast hit position.
 		/// </summary>
 		private static Vector3	lastHitPosition = Vector3.zero;
-
-		/// <summary>
-		/// The last zoom factor.
-		/// </summary>
-		private static float	lastZoomFactor = 0.0f;
-
-
-
+		
 		private static float zoomLeft = 0.0f;
 
 		/// <summary>
