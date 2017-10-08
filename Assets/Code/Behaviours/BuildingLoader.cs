@@ -32,6 +32,11 @@ public class BuildingLoader : MonoBehaviour {
 
 	private bool doubleClick;
 
+	public bool MetadataLoadingComplete {
+		get;
+		private set;
+	}
+
 	private class MetadataList {
 		public List<BuildingMetadata> buildings;
 	}
@@ -49,6 +54,12 @@ public class BuildingLoader : MonoBehaviour {
 		private const double bucketSize = 100.0f;
 
 		private Dictionary<Tuple<int, int>, List<BuildingMetadata>> dict;
+
+		public IEnumerable<BuildingMetadata> Values {
+			get {
+				return this.dict.Values.SelectMany(list => list);
+			}
+		}
 
 		private Tuple<int, int> getBucket(BuildingMetadata building) {
 			return new Tuple<int, int>((int)(Math.Floor(building.center[0] / bucketSize)), (int)(Math.Floor(building.center[1] / bucketSize)));
@@ -131,6 +142,7 @@ public class BuildingLoader : MonoBehaviour {
 	}
 
 	private void loadMetadata() {
+		this.MetadataLoadingComplete = false;
 		foreach (var file in new DirectoryInfo(Options.CleanPath(Options.Instance.MetadataFolder)).GetFiles()) {
 			if (file.Extension != ".json") {
 				continue;
@@ -140,6 +152,7 @@ public class BuildingLoader : MonoBehaviour {
 			this.buildings.Add(buildingList);
 			Debug.Log("Loaded metadata for " + buildingList.Count + " buildings (" + file.Name + ").");
 		}
+		this.MetadataLoadingComplete = true;
 	}
 
 	private void Start() {
@@ -230,16 +243,20 @@ public class BuildingLoader : MonoBehaviour {
 		}
 
 		while (this.pointCloudsToDisplay.Any()) {
-			var pointCloud = this.pointCloudsToDisplay.Dequeue();
-			GameObject gameObject = new GameObject();
-			var pointCloudBehaviour = gameObject.AddComponent<PointCloudBehaviour>();
-			pointCloudBehaviour.Initialize(pointCloud);
-			gameObject.transform.position = Vector3.up * gameObject.transform.position.y;
-			var marker = gameObject.AddComponent<LocationMarkerBehaviour>();
-			marker.Map = this.map;
-			marker.CoordinatesWGS84 = BuildingLoader.metersToLatLon(pointCloud.Metadata.center);
-			this.activeBuildings[pointCloud.Metadata.filename] = pointCloudBehaviour;
+			this.createGameObject(this.pointCloudsToDisplay.Dequeue());
 		}
+	}
+
+	private PointCloudBehaviour createGameObject(PointCloud pointCloud) {
+		GameObject gameObject = new GameObject();
+		var pointCloudBehaviour = gameObject.AddComponent<PointCloudBehaviour>();
+		pointCloudBehaviour.Initialize(pointCloud);
+		gameObject.transform.position = Vector3.up * gameObject.transform.position.y;
+		var marker = gameObject.AddComponent<LocationMarkerBehaviour>();
+		marker.Map = this.map;
+		marker.CoordinatesWGS84 = BuildingLoader.metersToLatLon(pointCloud.Metadata.center);
+		this.activeBuildings[pointCloud.Metadata.filename] = pointCloudBehaviour;
+		return pointCloudBehaviour;
 	}
 
 	private void selectFromMap() {
@@ -266,11 +283,14 @@ public class BuildingLoader : MonoBehaviour {
 		if (!result.Any()) {
 			return;
 		}
-		selectedBuilding = result.First();
-		UnityEditor.Selection.objects = new GameObject[] { selectedBuilding.gameObject };
+		this.select(result.First());
+		UnityEditor.Selection.objects = new GameObject[] { this.selectedBuilding.gameObject };
+	}
 
-		this.selectionMarker.CoordinatesWGS84 = selectedBuilding.GetComponent<LocationMarkerBehaviour>().CoordinatesWGS84;
-		var shape = selectedBuilding.GetComponent<PointCloudBehaviour>().PointCloud.Shape;
+	private void select(PointCloudBehaviour building) {
+		this.selectedBuilding = building;		
+		this.selectionMarker.CoordinatesWGS84 = this.selectedBuilding.GetComponent<LocationMarkerBehaviour>().CoordinatesWGS84;
+		var shape = this.selectedBuilding.GetComponent<PointCloudBehaviour>().PointCloud.Shape;
 		this.selectionRenderer.positionCount = shape.Length;
 		this.selectionRenderer.SetPositions(shape.Select(p => new Vector3(p.x, 0.25f, p.y)).ToArray());
 	}
@@ -278,4 +298,27 @@ public class BuildingLoader : MonoBehaviour {
 	public IEnumerable<PointCloudBehaviour> GetLoadedPointClouds() {
 		return this.activeBuildings.Values;
 	}
+
+	public PointCloudBehaviour LoadRandom(Func<PointCloud, bool> condition = null) {
+		var buildings = this.buildings.Values.ToList();
+
+		int maxTries = 100;
+		while (maxTries-- > 0) {
+			var building = buildings.TakeRandom();
+
+			if (this.activeBuildings.ContainsKey(building.filename)) {
+				continue;
+			}
+			var pointCloud = new PointCloud(building);
+			pointCloud.Load();
+
+			if (condition != null && !condition.Invoke(pointCloud)) {
+				continue;
+			}
+			var result = this.createGameObject(pointCloud);
+			this.select(result);
+			return result;
+		}
+		throw new Exception("Couldn't find a good building.");
+	}	
 }
