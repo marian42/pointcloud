@@ -830,6 +830,14 @@ namespace UnitySlippyMap.Map
 			scaleMultiplier = halfMapScale / (metersPerPixel * tileResolution);
 			roundedScaleMultiplier = roundedHalfMapScale / (roundedMetersPerPixel * tileResolution);
 		}
+
+		public float GetRoundedHalfMapScale(int zoom) {
+			return GeoHelpers.OsmZoomLevelToMapScale(zoom, 0.0f, tileResolution, 72) / scaleDivider;
+		}
+
+		public float GetRoundedScaleMultiplier(int zoom) {
+			return GetRoundedHalfMapScale(zoom) / (roundedMetersPerPixel * tileResolution);
+		}
     
     #endregion
 	

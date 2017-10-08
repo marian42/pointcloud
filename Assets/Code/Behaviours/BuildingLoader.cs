@@ -112,6 +112,7 @@ public class BuildingLoader : MonoBehaviour {
 
 		OSMTileLayer osmLayer = map.CreateLayer<OSMTileLayer>("OSM");
 		osmLayer.BaseURL = "http://cartodb-basemaps-b.global.ssl.fastly.net/light_all/";
+		osmLayer.MaxDisplayZoom = 18;
 
 		Selection.activeTransform = this.transform;
 	}
