@@ -10,7 +10,7 @@ ExportedObj/
 .consulo/
 *.csproj
 *.unityproj
-*.sln
+pointcloud.sln
 *.suo
 *.tmp
 *.user
