@@ -25,35 +25,35 @@ public class MapEditor : Editor {
 		GUILayout.Label("WGS84");
 		GUILayout.BeginHorizontal();
 		GUILayout.Label("Latitude:");
-		GUILayout.TextField(map.CenterWGS84[0].ToString());
+		EditorGUILayout.TextArea(map.CenterWGS84[0].ToString());
 		GUILayout.EndHorizontal();
 
 		GUILayout.BeginHorizontal();
 		GUILayout.Label("Longitude:");
-		GUILayout.TextField(map.CenterWGS84[1].ToString());
+		EditorGUILayout.TextArea(map.CenterWGS84[1].ToString());
 		GUILayout.EndHorizontal();
 
 		GUILayout.Label("EPSG900913");
 		GUILayout.BeginHorizontal();
 		GUILayout.Label("X:");
-		GUILayout.TextField(map.CenterEPSG900913[0].ToString());
+		EditorGUILayout.TextArea(map.CenterEPSG900913[0].ToString());
 		GUILayout.EndHorizontal();
 
 		GUILayout.BeginHorizontal();
 		GUILayout.Label("Y:");
-		GUILayout.TextField(map.CenterEPSG900913[1].ToString());
+		EditorGUILayout.TextArea(map.CenterEPSG900913[1].ToString());
 		GUILayout.EndHorizontal();
 
 		var meters = BuildingLoader.latLonToMeters(map.CenterWGS84);
 		GUILayout.Label("WGS84 UTM Zone 32");
 		GUILayout.BeginHorizontal();
 		GUILayout.Label("X:");
-		GUILayout.TextField(meters[0].ToString());
+		EditorGUILayout.TextArea(meters[0].ToString());
 		GUILayout.EndHorizontal();
 
 		GUILayout.BeginHorizontal();
 		GUILayout.Label("Y:");
-		GUILayout.TextField(meters[1].ToString());
+		EditorGUILayout.TextArea(meters[1].ToString());
 		GUILayout.EndHorizontal();
 	}
 }
