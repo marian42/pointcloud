@@ -36,7 +36,7 @@ public static class TextureBogusExtension
         
         //bool keepgoing = true;
         //float timeoutAt = Time.time + 10.0f;                
-        _bogusTexture = new Texture ();
+        _bogusTexture = new Texture2D(0, 0);
  
         WWW www = new WWW ("http://www.google.com");
  

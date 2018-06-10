@@ -27,7 +27,6 @@ Shader "Custom/PointCloud"
 			
 			#include "UnityCG.cginc"
 
-			sampler2D _MainTex;
 			float4 _PointColor;
 			float _Size;
 			float _ColorNear;
