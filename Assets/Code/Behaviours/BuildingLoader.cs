@@ -6,7 +6,6 @@ using UnitySlippyMap.Layers;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using SimpleJson;
 using System.Linq;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
