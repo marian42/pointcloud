@@ -20,7 +20,7 @@ The program can process about 25GB of .xyz data per hour.
 Load the project within the Unity Editor.
 Make sure the scene `MapScene` is loaded.
 The application can not run standalone, it requires the Unity Editor.
-If you use your own data, edit the "Settings" object and enter the locations of your files.
+If you use your own data, edit the "Options" object and enter the locations of your files.
 If you want to use the sample data, you don't need to change anything.
 Click Play in the Unity Editor to display the map.
 
